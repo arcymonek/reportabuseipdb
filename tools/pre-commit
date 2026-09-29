@@ -1,0 +1,127 @@
+#!/bin/bash
+# pre-commit hook for reportabuseipdb. Enable once per clone:
+#   git config core.hooksPath tools
+# Checks staged files: bash syntax + shellcheck for *.sh, Python syntax for *.py,
+# the EN/PL documentation pairing rule, the version rules and the privacy scan
+# (see docs/DEVELOPMENT.md).
+# Bypass only knowingly: git commit --no-verify
+fail=0
+staged=()   # portable (no mapfile: macOS ships bash 3.2)
+while IFS= read -r -d '' path; do staged+=("$path"); done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+mk() { mktemp "${TMPDIR:-/tmp}/pre-commit.XXXXXX"; }   # explicit template: works where the default temp dir is not writable
+tmp="$(mk)"; scan="$(mk)"; markers="$(mk)"
+trap 'rm -f "$tmp" "$scan" "$markers"' EXIT
+
+for f in "${staged[@]}"; do
+    case "$f" in
+        *.sh)
+            if ! git show ":$f" | bash -n 2> "$tmp"; then
+                echo "SYNTAX ERROR in $f:"; cat "$tmp"; fail=1; continue
+            fi
+            if command -v shellcheck > /dev/null && ! git show ":$f" | shellcheck -S error -s bash - > "$tmp" 2>&1; then
+                echo "SHELLCHECK (error) in $f:"; cat "$tmp"; fail=1
+            fi
+            ;;
+        *.py)
+            if ! git show ":$f" | python3 -c 'import sys; compile(sys.stdin.read(), sys.argv[1], "exec")' "$f" 2> "$tmp"; then
+                echo "PYTHON SYNTAX ERROR in $f:"; cat "$tmp"; fail=1
+            fi
+            ;;
+    esac
+done
+
+# EN/PL pairs: X.md <-> X.pl.md in the root (README, CHANGELOG, CONTRIBUTING, SECURITY), docs/X.md <-> docs/pl/X.md
+pair_of() {
+    case "$1" in
+        README.md|CHANGELOG.md|CONTRIBUTING.md|SECURITY.md) echo "${1%.md}.pl.md" ;;
+        README.pl.md|CHANGELOG.pl.md|CONTRIBUTING.pl.md|SECURITY.pl.md) echo "${1%.pl.md}.md" ;;
+        docs/pl/*.md) echo "docs/${1#docs/pl/}" ;;
+        docs/*.md) echo "docs/pl/${1#docs/}" ;;
+    esac
+}
+in_staged() { local x; for x in "${staged[@]}"; do [ "$x" = "$1" ] && return 0; done; return 1; }
+
+for f in "${staged[@]}"; do
+    other="$(pair_of "$f")"
+    [ -n "$other" ] || continue
+    if [ ! -f "$other" ]; then
+        echo "MISSING TRANSLATION: $f has no counterpart $other"; fail=1
+    elif ! in_staged "$other"; then
+        echo "EN/PL MISMATCH: $f is staged but $other is not (update both language versions)"; fail=1
+    else
+        en_h="$(git show ":$f" | grep -c '^#')"; pl_h="$(git show ":$other" | grep -c '^#')"
+        [ "$en_h" = "$pl_h" ] || { echo "HEADING COUNT DIFFERS: $f ($en_h) vs $other ($pl_h)"; fail=1; }
+    fi
+done
+
+# Version rules (docs/DEVELOPMENT.md): a commit that CHANGES a version must raise Z by exactly 1
+# (after Z=99 comes Y+1 with Z=0). A commit that leaves the version alone passes: contributors never
+# bump it, the maintainer does when merging. The documents must always show the same version as
+# SCRIPT_VERSION of the generator.
+next_ver() {
+    local x y z
+    IFS=. read -r x y z <<< "$1"
+    if [ "$((10#$z))" -lt 99 ]; then echo "$x.$y.$((10#$z + 1))"; else echo "$x.$((10#$y + 1)).0"; fi
+}
+version_in() {   # version_in <git object> <sed pattern for the assignment>
+    git show "$1" 2> /dev/null | sed -n "s/^$2\"\([0-9]*\.[0-9]*\.[0-9]*\)\".*/\1/p" | head -1
+}
+check_step() {   # check_step <file> <sed pattern>
+    local new old want
+    new="$(version_in ":$1" "$2")"
+    old="$(version_in "HEAD:$1" "$2")"
+    if [ -z "$new" ]; then echo "VERSION MISSING: no SCRIPT_VERSION found in $1"; fail=1; return; fi
+    [ -n "$old" ] || return 0            # first commit of the file
+    [ "$new" != "$old" ] || return 0     # version untouched (a contributor's commit)
+    want="$(next_ver "$old")"
+    if [ "$new" != "$want" ]; then
+        echo "VERSION STEP: $1 has $new, expected $want (previous $old). Raise Z by 1 (after 99: Y+1, Z=0)."; fail=1
+    fi
+}
+if [ "${#staged[@]}" -gt 0 ]; then
+    check_step abuseipdb_report.py 'SCRIPT_VERSION = '
+    in_staged abuseipdb_send.sh && check_step abuseipdb_send.sh 'SCRIPT_VERSION='
+    pyver="$(version_in :abuseipdb_report.py 'SCRIPT_VERSION = ')"
+    for doc in README.md README.pl.md CHANGELOG.md CHANGELOG.pl.md docs/*.md docs/pl/*.md; do
+        case "$doc" in *.pl.md|docs/pl/*) label="Wersja" ;; *) label="Version" ;; esac
+        have="$(git show ":$doc" 2> /dev/null | sed -n "s/^$label: \([0-9.]*\) (.abuseipdb_report\.py.)\$/\1/p" | head -1)"
+        if [ "$have" != "$pyver" ]; then echo "DOC VERSION: $doc shows '${have:-none}', abuseipdb_report.py is '$pyver'"; fail=1; fi
+    done
+fi
+
+# Privacy scan. The lines being added must not reveal the operator's own domains or host
+# names (OWN_NAME_MARKERS of the local config, which is never in the repository), a real
+# API key, or a committed config file. Only these strings are allowed in the repository
+# (author contact details); they are removed before scanning. No config = scan skipped.
+conf="${ABUSEIPDB_CONFIG:-$HOME/.secrets/abuseipdb.conf}"
+for f in "${staged[@]}"; do
+    case "$(basename "$f")" in
+        abuseipdb.conf) echo "PRIVACY: $f is the real config file (secrets and host names) - never commit it"; fail=1 ;;
+    esac
+done
+# The allowed strings are assembled from pieces so that this file does not contain them itself
+# (it would trip its own scan). esc() makes a string safe inside a sed pattern.
+site="arkadiusz""polak.pl"
+allowed=("github@$site" "$site" "Arkadiusz"" Polak" "github.com/arcy""monek/")
+esc() { printf '%s' "$1" | sed 's/[][\.*^$/]/\\&/g'; }
+git diff --cached -U0 --no-color --diff-filter=ACMR | grep '^+' | grep -v '^+++ ' > "$scan"
+for a in "${allowed[@]}"; do
+    sed "s/$(esc "$a")//g" "$scan" > "$tmp" && cat "$tmp" > "$scan"
+done
+if grep -nE '[0-9a-fA-F]{80}|^\+(ABUSEIPDB_API_KEY|NTFY_TOPIC)=[^Yy]' "$scan" > "$tmp"; then
+    echo "PRIVACY: an added line looks like a real API key or ntfy topic:"; cut -c1-60 "$tmp"; fail=1
+fi
+if [ -r "$conf" ]; then
+    sed -n 's/^[[:space:]]*OWN_NAME_MARKERS[[:space:]]*=//p' "$conf" | tr ',' '\n' | tr -d '\r' \
+        | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | grep -v '^$' > "$markers"
+fi
+if [ -s "$markers" ]; then
+    if grep -inF -f "$markers" "$scan" > "$tmp"; then
+        echo "PRIVACY: added lines contain your own domain/host names (OWN_NAME_MARKERS in $conf):"
+        cut -c1-140 "$tmp"; fail=1
+    fi
+else
+    echo "note: privacy scan of own names skipped (no OWN_NAME_MARKERS in $conf)"
+fi
+
+[ "$fail" -eq 0 ] || { echo "Commit aborted. Fix the problems or use: git commit --no-verify"; exit 1; }

@@ -1,0 +1,110 @@
+**English** | [Polski](pl/DEVELOPMENT.md)
+
+Version: 3.6.15 (`abuseipdb_report.py`)
+
+# Development
+
+## Repository layout
+
+```
+abuseipdb_report.py     generator and validator (Python, standard library only)
+abuseipdb_send.sh       cron wrapper (bash)
+tests/                  unittest suites
+tools/pre-commit        repository hook (enable with: git config core.hooksPath tools)
+docs/, docs/pl/         documentation (English, Polish)
+README.md, README.pl.md, CHANGELOG.md, CHANGELOG.pl.md
+```
+
+## Workflow
+
+This is the maintainer's workflow. Contributors: see [CONTRIBUTING.md](../CONTRIBUTING.md); you do not raise the
+version and you do not deploy anything.
+
+1. Edit and test locally in a clone of the repository.
+2. Update the documentation and the changelog in both languages (see the language rules below).
+3. Raise the version (see Versioning), commit with an English message, then push.
+4. Deploy on the server: `git pull --ff-only` in the install directory, then `./abuseipdb_send.sh --dry-run`.
+5. Never edit files in the install directory by hand; the working copy there must stay clean so that `--ff-only`
+   pulls always work.
+
+Cron runs the scripts live, so a broken push is deployed by the next pull. The pre-commit hook and the tests exist
+to catch that before it happens.
+
+## Tests
+
+```bash
+python3 -m unittest discover -v tests                   # everything (wrapper tests are skipped without Linux tools)
+python3 -m unittest -v tests/test_abuseipdb_report.py   # generator only, runs on macOS too
+# Run the suite on the OLDEST supported Python (3.9) as well as the newest: timestamp parsing differs before 3.11.
+```
+
+- The wrapper tests need Linux (`flock`, GNU `date`, `jq`). Run them on the server in the clone, or in a Linux
+  container. The GitHub Actions workflow `.github/workflows/tests.yml` runs the whole suite on Ubuntu with the oldest
+  and the newest supported Python for every push and pull request.
+- `curl`, the generator and `ntfy` are mocks; no test touches AbuseIPDB or the network.
+- After changing a safeguard, run a mutation check: temporarily break the safeguard (for example set
+  `MAX_AGE_DAYS = 600` or empty `EXCLUDE_SCENARIOS`) and confirm that a test fails. Four mutants are known to be
+  equivalent: the final ASCII assertion in `build_rows` (defence in depth behind `sanitize_comment`), the formula
+  prefix check inside the validator, which is covered through `sanitize_comment`, the raw (as written in the alert)
+  form of the reported IP in `leaks_identity`, which the canonical form already covers, and the removal of a trailing
+  backslash after `truncate_bytes` in `build_rows` (samples are only added while the comment fits, so the truncation
+  never cuts anything today).
+- A translation or refactor must keep the generated CSV byte-for-byte identical for the same `--input-json`; compare
+  the old and new output on a fixture.
+
+## Versioning
+
+- Format `X.Y.Z`. The project version is the version of `abuseipdb_report.py` (`SCRIPT_VERSION` and the docstring
+  header). Every change that is committed and pushed raises `Z` by 1 (3.6.1, 3.6.2, ...). After `Z` reaches 99 the next
+  version raises `Y` by 1 and resets `Z` to 0 (3.6.99 is followed by 3.7.0). A major change (`X`) is a deliberate,
+  manual decision.
+- `abuseipdb_send.sh` has its own `SCRIPT_VERSION` and follows the same rule whenever the wrapper changes (update the
+  test that asserts its version string too).
+- In the same commit update: the version in the script, the `Version:` line at the top of `README.md` and of every
+  document in `docs/`, the `Wersja:` line in every Polish counterpart, and both changelogs.
+- The pre-commit hook enforces this: the documents must show the same version as `SCRIPT_VERSION`, and a commit that
+  changes the version must raise it by exactly one step. A commit that leaves the version alone passes the hook, so
+  contributors never have to touch it: they describe their change under "Unreleased" in both changelogs, and the
+  maintainer raises the version when merging. `tests/test_versioning.py` checks the consistency as well.
+
+## Language rules
+
+- Code, comments, log and error messages, `--help`, alerts, tests and commit messages are English only.
+- The report templates (`TPL_*`) must stay English; they are published on AbuseIPDB.
+- README, every document in `docs/` and the changelog exist in English (default) and Polish. English is the source,
+  Polish the translation. A change to one language is not complete until the other one is updated.
+- File pairs: `README.md` and `README.pl.md`, `CHANGELOG.md` and `CHANGELOG.pl.md`, `docs/X.md` and `docs/pl/X.md`.
+  Each file starts with a language switch line. The pre-commit hook refuses a commit that stages one side of a pair
+  only, or where the number of headings differs.
+
+## Adding a scenario or a category
+
+1. Add the scenario to `CATEGORY_MAP` with the weakest category set that the log really supports. Use the short name
+   (`ssh-bf`) for a scenario of `crowdsecurity`, and the FULL name (`author/name`) for a scenario of any other author;
+   without an entry an unknown scenario is not reported at all.
+2. Decide whether it belongs in `EXCLUDE_SCENARIOS` or `WEAK_ONLY_SCENARIOS`. (An operator who only needs to stop
+   reporting a scenario on their own server uses `EXTRA_EXCLUDE_SCENARIOS` in the config instead of changing the code.)
+3. Add a test, run the suite and update the changelog.
+
+## Configuration and the privacy scan
+
+- The only local configuration is `~/.secrets/abuseipdb.conf` (template: `abuseipdb.conf.example`, which documents every
+  line). Real values never enter the repository; `abuseipdb.conf` is in `.gitignore`.
+- Tests never touch the real config: they pass `--config` (generator) or set `ABUSEIPDB_CONFIG` and an empty `HOME`
+  (wrapper), and use only fake keys, topics and the reserved `example.org` / `203.0.113.0/24` names.
+- `tools/pre-commit` also scans the lines a commit adds. If the local config has `OWN_NAME_MARKERS`, any added line that
+  contains one of them is refused (this is what keeps your own domains and host name out of the repository). It also
+  refuses a staged `abuseipdb.conf`, a line that looks like a real API key (80 hex characters) and real values on
+  `ABUSEIPDB_API_KEY=` / `NTFY_TOPIC=` lines. Only the author's contact details are allowed: the contact e-mail address,
+  the website, the author name and the GitHub project URL. Without a config the own-name scan is skipped with a note.
+
+## Release checklist for a public repository
+
+- The license is MIT (`LICENSE`); keep the copyright line and the README "License" section in step.
+- Scan the tree and the history for secrets, addresses and host names. The public history starts at the 3.6.2 release
+  commit (earlier history was squashed) and was re-scanned on 2026-09-29; re-scan before every new publication.
+- GitHub settings: enable private vulnerability reporting (see `SECURITY.md`) and require the `tests` workflow to pass
+  before merging into `main`.
+- Keep the "unofficial, not affiliated" notice in both READMEs.
+- Check that no document contains a real host name, domain, address or ntfy topic (the privacy scan does this on every
+  commit if your config lists your names).

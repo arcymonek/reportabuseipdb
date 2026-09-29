@@ -1,0 +1,35 @@
+# Runs the whole test suite on Linux for every push and pull request. The wrapper tests need
+# flock, GNU date and jq, which the Ubuntu runner provides; nothing here touches AbuseIPDB or ntfy
+# (curl and the generator are mocks in the tests).
+name: tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest supported Python (timestamp parsing differs before 3.11) and the newest.
+        python: ["3.9", "3.x"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Tools
+        run: |
+          command -v jq flock shellcheck || sudo apt-get install -y jq util-linux shellcheck
+      - name: Shell syntax
+        run: |
+          bash -n abuseipdb_send.sh
+          bash -n tools/pre-commit
+          shellcheck -S error abuseipdb_send.sh tools/pre-commit
+      - name: Tests
+        run: python -m unittest discover -v tests

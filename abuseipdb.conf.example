@@ -1,0 +1,60 @@
+# abuseipdb.conf - the ONLY local configuration file of the AbuseIPDB reporter.
+#
+# Install:  cp abuseipdb.conf.example ~/.secrets/abuseipdb.conf
+#           chmod 700 ~/.secrets && chmod 600 ~/.secrets/abuseipdb.conf
+# Location: ~/.secrets/abuseipdb.conf by default. Override with the ABUSEIPDB_CONFIG
+#           environment variable (both scripts) or --config FILE (the generator).
+#
+# Format:   KEY=value, one per line. A line that STARTS with '#' is a comment. A comment
+#           after a value ("EXCLUDE=203.0.113.7 # home") is an ERROR, as are an unknown
+#           key and an invalid EXCLUDE entry: the run stops instead of silently dropping
+#           a safeguard. No quotes, no variables, no $(...): the file is read as plain
+#           text and is never executed.
+#
+# NEVER commit the real file: it holds secrets and the names of your own hosts.
+# (It is listed in .gitignore, and the pre-commit hook scans for your markers.)
+
+# --- Required ---------------------------------------------------------------------
+
+# Your AbuseIPDB API key (https://www.abuseipdb.com/account/api).
+# Used only to authenticate the bulk-report upload. It is sent to curl through stdin
+# and never printed in logs. At least 20 letters or digits.
+ABUSEIPDB_API_KEY=YOUR_ABUSEIPDB_API_KEY
+
+# Private ntfy topic that receives the alerts (failed upload, bad API key, ...).
+# Whoever knows the topic can read AND post to it, so treat it like a password.
+# Replace the example value: alerts are NOT sent while it is still "your-private-ntfy-topic".
+NTFY_TOPIC=your-private-ntfy-topic
+
+# Text fragments that must NEVER appear in a report comment: your own domains and
+# host name. Comma-separated, case-insensitive, matched as substrings (so "example.org"
+# also catches "chat.example.org"). This is an independent second check on top of the
+# fixed English report templates: a sample request that contains such a name is left out
+# of the comment, and a file whose comment still contains one is rejected before the
+# upload. A live upload is REFUSED while this list is empty or still holds the two
+# example values below.
+OWN_NAME_MARKERS=your-domain.example,your-host.example
+
+# --- Optional ---------------------------------------------------------------------
+
+# ntfy server. Default: https://ntfy.sh. Change it only for a self-hosted ntfy.
+#NTFY_URL=https://ntfy.sh
+
+# Addresses or networks (CIDR) that are NEVER reported: your home, office, VPN.
+# One entry per line; repeat the key for more. These are added to the addresses
+# excluded automatically (the server's own public addresses and every address with a
+# successful SSH login in the last 60 days). The deprecated file
+# ~/.secrets/abuseipdb_exclude.txt is still read and added to this list.
+#EXCLUDE=203.0.113.7
+#EXCLUDE=198.51.100.0/24
+
+# Ports your web server listens on. CrowdSec does not record the port, so this is what the
+# public report states ("Target: HTTP/HTTPS (ports 80/443).") - set it if yours differ, or
+# the report names a wrong port. Port numbers separated by '/'. Default: 80/443.
+#HTTP_PORTS=80/443
+
+# CrowdSec scenarios that must NEVER be reported from this server, e.g. one that raised
+# false alarms on your own traffic. Comma-separated; a short name (http-probing) matches
+# every author, a full name (author/name) only that author. This only ADDS to the built-in
+# exclusions; it cannot switch any of them off.
+#EXTRA_EXCLUDE_SCENARIOS=http-probing,someone/my-scenario

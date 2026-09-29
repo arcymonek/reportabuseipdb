@@ -1,0 +1,18 @@
+# local configuration with secrets (only abuseipdb.conf.example is versioned)
+abuseipdb.conf
+
+# runtime data (never versioned)
+reports.csv
+reports.csv.tmp
+*.log
+.state/
+
+# python / macOS
+__pycache__/
+*.pyc
+.DS_Store
+
+# local-only agent and editor files
+CLAUDE.md
+.claude/
+.vscode/
