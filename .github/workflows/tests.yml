@@ -1,10 +1,12 @@
-# Runs the whole test suite on Linux for every push and pull request. The wrapper tests need
+# Runs the whole test suite on Linux for every push to main and for every pull request (a branch is
+# tested through its pull request; a draft is enough). The wrapper tests need
 # flock, GNU date and jq, which the Ubuntu runner provides; nothing here touches AbuseIPDB or ntfy
 # (curl and the generator are mocks in the tests).
 name: tests
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
@@ -12,15 +14,17 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # Pinned, not "ubuntu-latest": GitHub moves that label to Ubuntu 26 on 2026-10-19, and the tools the tests use
+    # (jq, shellcheck, bash) should change when we decide, not on GitHub's schedule.
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         # The oldest supported Python (timestamp parsing differs before 3.11) and the newest.
         python: ["3.9", "3.x"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
       - name: Tools
