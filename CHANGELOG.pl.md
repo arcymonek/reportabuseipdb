@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.19 (`abuseipdb_report.py`)
+Wersja: 3.6.20 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,15 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-09-30 - formularz pomysłów w Discussions (3.6.20)
+
+- `.github/DISCUSSION_TEMPLATE/ideas.yml`: kategoria Ideas w GitHub Discussions ma teraz też formularz, z ostrzeżeniem o
+  prywatności, tym samym obowiązkowym potwierdzeniem prywatności co zgłoszenie błędu oraz polami na cel, pomysł i
+  (opcjonalnie) alternatywy i ryzyka. Pomysły idą do Discussions zamiast do osobnego formularza zgłoszeń: pomysł często
+  dotyka bezpiecznika i wymaga najpierw decyzji, a zaakceptowany można zamienić na zgłoszenie.
+- `.github/ISSUE_TEMPLATE/config.yml`: własny link "Security vulnerability" usunięty. Prowadził do formularza
+  prywatnego zgłaszania podatności, który GitHub sam oferuje po włączeniu tej funkcji, więc byłby duplikatem.
 
 ## 2026-09-30 - zgłoszenie błędu jako formularz (3.6.19)
 

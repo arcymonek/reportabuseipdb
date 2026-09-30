@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.19 (`abuseipdb_report.py`)
+Version: 3.6.20 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,16 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-09-30 - form for ideas in Discussions (3.6.20)
+
+- `.github/DISCUSSION_TEMPLATE/ideas.yml`: the Ideas category of GitHub Discussions now has a form too, with the privacy
+  warning, the same required privacy check as the bug report, and fields for the goal, the idea and (optional)
+  alternatives and risks. Ideas go to Discussions instead of a separate issue form: an idea often touches a safeguard
+  and needs a decision first, and an accepted one can be converted to an issue.
+- `.github/ISSUE_TEMPLATE/config.yml`: the own "Security vulnerability" link is removed. It pointed to the private
+  vulnerability reporting form, which GitHub already offers itself once that feature is enabled, so it would have
+  been a duplicate.
 
 ## 2026-09-30 - bug report as an issue form (3.6.19)
 
