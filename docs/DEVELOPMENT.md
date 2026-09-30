@@ -1,6 +1,6 @@
 **English** | [Polski](pl/DEVELOPMENT.md)
 
-Version: 3.6.16 (`abuseipdb_report.py`)
+Version: 3.6.17 (`abuseipdb_report.py`)
 
 # Development
 
@@ -18,18 +18,49 @@ README.md, README.pl.md, CHANGELOG.md, CHANGELOG.pl.md
 
 ## Workflow
 
-This is the maintainer's workflow. Contributors: see [CONTRIBUTING.md](../CONTRIBUTING.md); you do not raise the
-version and you do not deploy anything.
+This is the maintainer's workflow. Contributors: see [CONTRIBUTING.md](../CONTRIBUTING.md) (fork, branch, pull
+request); you do not raise the version, deploy or merge.
 
-1. Edit and test locally in a clone of the repository.
-2. Update the documentation and the changelog in both languages (see the language rules below).
-3. Raise the version (see Versioning), commit with an English message, then push.
-4. Deploy on the server: `git pull --ff-only` in the install directory, then `./abuseipdb_send.sh --dry-run`.
-5. Never edit files in the install directory by hand; the working copy there must stay clean so that `--ff-only`
-   pulls always work.
+There are two paths. The rule of thumb: if the program would behave differently after the change, or a description of
+a safeguard would say something different, use a branch.
 
-Cron runs the scripts live, so a broken push is deployed by the next pull. The pre-commit hook and the tests exist
-to catch that before it happens.
+| Straight to `main` | Through a branch, green CI before the merge |
+|---|---|
+| typos and wording in `*.md` that do not change a description of behaviour | `abuseipdb_report.py`, `abuseipdb_send.sh`, `abuseipdb.conf.example` |
+| Polish translations that follow the English source | `tests/`, `tools/pre-commit`, `.github/workflows/` |
+| changelog entries | any change to how a safeguard is described (`docs/COMPLIANCE.md`, the safeguard lists in `README.md`, `AGENTS.md`) |
+| | changes to this workflow |
+
+**Path A, documentation straight to `main`**
+
+1. Edit, keep the English and Polish files in step, raise the version and complete both changelogs (see Versioning).
+2. Commit with an English message and run the pre-commit hook (it runs by itself on `git commit`).
+3. `git push origin main`, then (after the deployment check below, if the server needs the change) `git push github main`.
+
+**Path B, code through a branch**
+
+1. `git switch -c fix-short-description`. Name = type, a dash and the topic (`fix-`, `feat-`, `test-`, `ci-`), lower case,
+   one topic per branch.
+2. Edit and test locally (`python3 -m unittest discover -v tests`). Commit as you go with English messages. These work
+   commits do not touch the version.
+3. The last commit of the branch raises the version (once, see Versioning) and completes the documentation and both
+   changelogs.
+4. `git push github fix-short-description`. Branches go only to `github`, where the CI runs; the private `origin`
+   receives `main` only. Open a pull request from the branch to `main` (a draft is fine): the `tests` workflow runs for
+   every pull request.
+5. Wait for the green run of both Python versions. If it is red, fix it on the branch and push again.
+6. Merge on your machine, never with the GitHub button: `git switch main`, then `git merge --ff-only fix-short-description`.
+   If Git refuses because `main` moved, run `git rebase main` on the branch, test again and repeat.
+7. `git push origin main`, deploy and check on the server (below), then `git push github main`. GitHub closes the pull
+   request by itself because its commits are now in `main`.
+8. Clean up: `git branch -d fix-short-description` and `git push github --delete fix-short-description`.
+
+**Deploying** (both paths): on the server run `git pull --ff-only` in the install directory, then
+`./abuseipdb_send.sh --dry-run`. Never edit files in the install directory by hand; the working copy there must stay
+clean so that `--ff-only` pulls always work.
+
+Cron runs the scripts live, so a broken push is deployed by the next pull. The pre-commit hook, the tests and the
+green CI before the merge exist to catch that before it happens.
 
 ## Tests
 
@@ -56,11 +87,13 @@ python3 -m unittest -v tests/test_abuseipdb_report.py   # generator only, runs o
 ## Versioning
 
 - Format `X.Y.Z`. The project version is the version of `abuseipdb_report.py` (`SCRIPT_VERSION` and the docstring
-  header). Every change that is committed and pushed raises `Z` by 1 (3.6.1, 3.6.2, ...). After `Z` reaches 99 the next
+  header). Every change that reaches `main` (a direct push or a merged branch) raises `Z` by 1 (3.6.1, 3.6.2, ...). After `Z` reaches 99 the next
   version raises `Y` by 1 and resets `Z` to 0 (3.6.99 is followed by 3.7.0). A major change (`X`) is a deliberate,
   manual decision.
 - `abuseipdb_send.sh` has its own `SCRIPT_VERSION` and follows the same rule whenever the wrapper changes (update the
   test that asserts its version string too).
+- A branch carries exactly one version change, in its last commit. Two bumps on one branch would raise the version by
+  two steps once merged, and the hook only compares each commit with the one before it.
 - In the same commit update: the version in the script, the `Version:` line at the top of `README.md` and of every
   document in `docs/`, the `Wersja:` line in every Polish counterpart, and both changelogs.
 - The pre-commit hook enforces this: the documents must show the same version as `SCRIPT_VERSION`, and a commit that
@@ -84,18 +117,26 @@ python3 -m unittest -v tests/test_abuseipdb_report.py   # generator only, runs o
 
 ## Accepting a pull request
 
-The maintainer's routine for a contribution from outside. The repository on the maintainer's machine is the source of
-truth, so a pull request is never merged with the GitHub button (the private repository would fall behind).
+The maintainer's routine for a contribution from outside. Contributors work in a fork and open a pull request; nobody
+else has write access. The repository on the maintainer's machine is the source of truth, so a pull request is never
+merged with the GitHub button (the private repository would fall behind).
 
-1. Fetch it locally (`git fetch <remote> pull/N/head` or the contributor's branch) and read the diff. The
-   contributor's assistant may have written it: the tests and the description carry the argument, so check them too.
-2. Run the whole suite and the pre-commit hook. If a safeguard is touched, do the mutation check yourself.
-3. Add the Polish translation of every changed English document in a follow-up commit on top of the contribution
-   (English stays the source; the contributor is not asked to translate). Read the translation once: it is the
-   maintainer's check that the change was understood.
+1. Fetch it into a local review branch and read the diff: `git fetch github pull/N/head:pr-N`, then `git switch pr-N`.
+   The contributor's assistant may have written it: the tests and the description carry the argument, so check them too.
+2. Run the whole suite and the pre-commit hook (`EN_ONLY=1` if the pull request changes only the English side of a
+   document pair). If a safeguard is touched, do the mutation check yourself. Approve the CI run of the pull request on
+   GitHub (the first run of an outside contributor needs your click).
+3. Add the Polish translation of every changed English document in a follow-up commit on `pr-N` (English stays the
+   source; the contributor is not asked to translate). Read the translation once: it is the maintainer's check that the
+   change was understood.
 4. Raise the version (see Versioning) and fill in both changelogs, moving the contributor's "Unreleased" note into the
    new entry and crediting them there.
-5. Push to the private remote first, deploy and check on the server, and only then push to the public one.
+5. Merge on your machine: `git switch main`, `git merge --ff-only pr-N` (or `git rebase main` on `pr-N` first if `main`
+   moved). Push to the private remote first, deploy and check on the server, and only then push to the public one. The
+   pull request is marked as merged or closed by GitHub afterwards. Delete `pr-N`.
+
+A contributor whose pull requests you have merged and trust may later be invited as a collaborator to push branches to
+this repository. Nothing else changes: the branch is still merged only by the maintainer.
 
 ## Adding a scenario or a category
 
@@ -123,8 +164,10 @@ truth, so a pull request is never merged with the GitHub button (the private rep
 - The license is MIT (`LICENSE`); keep the copyright line and the README "License" section in step.
 - Scan the tree and the history for secrets, addresses and host names. The public history starts at the 3.6.2 release
   commit (earlier history was squashed) and was re-scanned on 2026-09-29; re-scan before every new publication.
-- GitHub settings: enable private vulnerability reporting (see `SECURITY.md`) and require the `tests` workflow to pass
-  before merging into `main`.
+- GitHub settings: enable private vulnerability reporting (see `SECURITY.md`) and protect `main` with a ruleset that
+  blocks force pushes and branch deletion. Do not require the `tests` check in the ruleset: a result exists only after
+  a push, so the requirement would also block the maintainer's own direct pushes of documentation. The maintainer looks
+  at the green run of a branch before merging it.
 - Keep the "unofficial, not affiliated" notice in both READMEs.
 - Check that no document contains a real host name, domain, address or ntfy topic (the privacy scan does this on every
   commit if your config lists your names).

@@ -1,18 +1,32 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.16 (`abuseipdb_report.py`)
+Version: 3.6.17 (`abuseipdb_report.py`)
 
 # Changelog
 
 All notable changes to this project. Every entry is mirrored in [CHANGELOG.pl.md](CHANGELOG.pl.md).
 
-Version numbering is `X.Y.Z`. The project version is the version of `abuseipdb_report.py`. Every change that is
-committed and pushed raises `Z` by 1; after `Z` reaches 99 the next version raises `Y` by 1 and resets `Z` to 0
+Version numbering is `X.Y.Z`. The project version is the version of `abuseipdb_report.py`. Every change that
+reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` reaches 99 the next version raises `Y` by 1 and resets `Z` to 0
 (3.6.99 is followed by 3.7.0). `abuseipdb_send.sh` has its own version and follows the same rule whenever it changes.
 
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-09-30 - branch workflow for code (3.6.17)
+
+- `docs/DEVELOPMENT.md`: the workflow now has two paths. Documentation and wording go straight to `main`; code, tests, the
+  hook, the CI workflow and any change to how a safeguard is described go through a branch, pushed to `github` only, with
+  a green `tests` run before the maintainer merges it locally (`--ff-only`) and pushes `origin` and then `github`. The
+  version is raised once per change that reaches `main` (on a branch, in its last commit), not once per commit.
+- `docs/DEVELOPMENT.md`: "Accepting a pull request" rewritten for forks (`pull/N/head`, a local `pr-N` branch, merge on
+  the maintainer's machine, the pull request closes by itself). The release checklist no longer asks for a required
+  `tests` status check in the ruleset (it would block direct pushes of documentation); it asks for a ruleset that blocks
+  force pushes and branch deletion.
+- `CONTRIBUTING.md` / `CONTRIBUTING.pl.md`: a new "How to send a change" section (fork, branch, pull request, how to
+  keep the branch current; only the maintainer merges).
+- `AGENTS.md`: agents work on a branch and never commit to `main` or merge.
 
 ## 2026-09-30 - AGENTS.md and English-only contributions (3.6.16)
 

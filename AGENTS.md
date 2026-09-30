@@ -70,6 +70,8 @@ GitHub Actions workflow does this for every pull request.
   version and translates when merging.
 - One topic per pull request. Explain in plain language what changed and why: the reviewer may not read every line, so
   the description and the tests must carry the argument. State what you did not verify.
+- Work on a branch (`git switch -c fix-short-description`) and never commit directly to `main`; do not merge. Outside
+  contributors submit through a fork and a pull request (see `CONTRIBUTING.md`).
 - Do not run `git push` or open pull requests on your own initiative; propose the change and let the person you work
   for decide.
 

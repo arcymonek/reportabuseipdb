@@ -1,18 +1,33 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.16 (`abuseipdb_report.py`)
+Wersja: 3.6.17 (`abuseipdb_report.py`)
 
 # Historia zmian
 
 Wszystkie istotne zmiany w projekcie. Każdy wpis ma odpowiednik w [CHANGELOG.md](CHANGELOG.md).
 
-Numeracja wersji to `X.Y.Z`. Wersją projektu jest wersja `abuseipdb_report.py`. Każda zmiana, która jest
-zacommitowana i wypchnięta, podnosi `Z` o 1; gdy `Z` dojdzie do 99, następna wersja podnosi `Y` o 1 i zeruje `Z`
+Numeracja wersji to `X.Y.Z`. Wersją projektu jest wersja `abuseipdb_report.py`. Każda zmiana, która trafia
+na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` dojdzie do 99, następna wersja podnosi `Y` o 1 i zeruje `Z`
 (po 3.6.99 następna to 3.7.0). `abuseipdb_send.sh` ma własną wersję i podlega tej samej regule, gdy się zmienia.
 
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-09-30 - workflow z gałęziami dla kodu (3.6.17)
+
+- `docs/pl/DEVELOPMENT.md`: workflow ma teraz dwie ścieżki. Dokumentacja i redakcja idą wprost na `main`; kod, testy,
+  hook, workflow CI i każda zmiana opisu bezpiecznika idą przez gałąź, wypychaną wyłącznie na `github`, z zielonym
+  przebiegiem `tests` przed lokalnym scaleniem przez opiekuna (`--ff-only`) i pushem najpierw na `origin`, potem na
+  `github`. Wersja rośnie raz na zmianę, która trafia na `main` (na gałęzi w jej ostatnim commicie), a nie na każdy
+  commit.
+- `docs/pl/DEVELOPMENT.md`: "Przyjmowanie pull requesta" przepisane pod forki (`pull/N/head`, lokalna gałąź `pr-N`,
+  scalenie na komputerze opiekuna, pull request zamyka się sam). Lista kontrolna przed publikacją nie wymaga już
+  wymaganego sprawdzenia `tests` w rulesecie (blokowałoby bezpośrednie pushe dokumentacji); wymaga rulesetu blokującego
+  force-push i usuwanie gałęzi.
+- `CONTRIBUTING.md` / `CONTRIBUTING.pl.md`: nowa sekcja "Jak wysłać zmianę" (fork, gałąź, pull request, utrzymanie
+  gałęzi w aktualności; scala wyłącznie opiekun).
+- `AGENTS.md`: agenci pracują na gałęzi i nigdy nie commitują na `main` ani nie scalają.
 
 ## 2026-09-30 - AGENTS.md i wkład tylko po angielsku (3.6.16)
 

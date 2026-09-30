@@ -28,6 +28,24 @@ Nowy scenariusz CrowdSeca w `CATEGORY_MAP` wymaga najsłabszego zestawu kategori
 testu; patrz [docs/pl/DEVELOPMENT.md](docs/pl/DEVELOPMENT.md). Jeśli chcesz tylko przestać zgłaszać scenariusz na
 własnym serwerze, użyj `EXTRA_EXCLUDE_SCENARIOS` w swoim configu.
 
+## Jak wysłać zmianę
+
+Nie potrzebujesz uprawnień zapisu ani zaproszenia: pracuj w forku.
+
+1. Zrób fork repozytorium na GitHubie (przycisk "Fork"), potem sklonuj **swój fork**.
+2. Utwórz gałąź na jeden temat: `git switch -c fix-krotki-opis`.
+3. Wprowadź zmianę, uruchom testy, zrób commit z komunikatem po angielsku (patrz niżej).
+4. Wypchnij gałąź do swojego forka: `git push -u origin fix-krotki-opis`.
+5. Na GitHubie otwórz pull request z Twojej gałęzi do `main` tego repozytorium (GitHub pokaże przycisk po pushu).
+6. Workflow `tests` uruchomi się na Twoim pull requeście; pierwszy przebieg nowego kontrybutora wymaga zatwierdzenia
+   przez opiekuna. Poprawiaj to, co pada, dopychając kolejne commity do tej samej gałęzi.
+7. Scala wyłącznie opiekun. Żeby utrzymać gałąź aktualną, dodaj raz to repozytorium jako drugi remote
+   (`git remote add upstream https://github.com/arcymonek/reportabuseipdb.git`) i używaj `git pull --rebase upstream main`.
+
+Opiekun stosuje zaakceptowane zmiany na swoim komputerze, dodaje polskie tłumaczenie i wersję, a GitHub oznacza potem
+Twój pull request jako scalony lub zamknięty. Stałych kontrybutorów można później zaprosić do wypychania gałęzi
+bezpośrednio do tego repozytorium; pull request i scalenie przez opiekuna pozostają bez zmian.
+
 ## Pull requesty
 
 - Jeden temat na pull request. Kod ma być prosty i czytelny; komentarze wyjaśniają dlaczego, a nie tylko co.

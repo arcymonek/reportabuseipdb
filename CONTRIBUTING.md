@@ -28,6 +28,24 @@ A new CrowdSec scenario in `CATEGORY_MAP` needs the weakest category set that th
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). If you only want to stop reporting a scenario on your own server, use
 `EXTRA_EXCLUDE_SCENARIOS` in your config instead.
 
+## How to send a change
+
+You do not need write access or an invitation: work in a fork.
+
+1. Fork the repository on GitHub (the "Fork" button), then clone **your fork**.
+2. Create a branch for one topic: `git switch -c fix-short-description`.
+3. Make the change, run the tests, commit with an English message (see below).
+4. Push the branch to your fork: `git push -u origin fix-short-description`.
+5. On GitHub open a pull request from your branch to `main` of this repository (GitHub offers the button after the push).
+6. The `tests` workflow runs on your pull request; the first run of a new contributor needs the maintainer's approval.
+   Fix what fails by pushing more commits to the same branch.
+7. Only the maintainer merges. To keep your branch current, add this repository as a second remote once
+   (`git remote add upstream https://github.com/arcymonek/reportabuseipdb.git`) and run `git pull --rebase upstream main`.
+
+The maintainer applies accepted changes on their own machine, adds the Polish translation and the version, and GitHub
+then marks your pull request as merged or closed. Regular contributors may later be invited to push branches to this
+repository directly; the pull request and the maintainer's merge stay the same.
+
 ## Pull requests
 
 - One topic per pull request. Keep the code simple and readable; comments explain why, not only what.
