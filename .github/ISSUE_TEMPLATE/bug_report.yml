@@ -50,7 +50,7 @@ body:
     attributes:
       label: Generator version
       description: "Output of `python3 abuseipdb_report.py --version`"
-      placeholder: "abuseipdb_report.py 3.6.20"
+      placeholder: "abuseipdb_report.py 3.6.21"
     validations:
       required: true
   - type: input

@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.20 (`abuseipdb_report.py`)
+Version: 3.6.21 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,13 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-09-30 - form for questions in Discussions (3.6.21)
+
+- `.github/DISCUSSION_TEMPLATE/q-a.yml`: the Q&A category of GitHub Discussions now has a form, like Ideas: the privacy
+  warning and link to `SECURITY.md`, a pointer to the README and `docs/OPERATIONS.md`, the same required privacy check,
+  a required question, and optional fields for what was already tried, the versions and a log fragment (the last 60
+  lines of `abuseipdb_cron.log`). People paste logs in questions too, so the privacy check belongs here as well.
 
 ## 2026-09-30 - form for ideas in Discussions (3.6.20)
 

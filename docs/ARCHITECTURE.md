@@ -1,6 +1,6 @@
 **English** | [Polski](pl/ARCHITECTURE.md)
 
-Version: 3.6.20 (`abuseipdb_report.py`)
+Version: 3.6.21 (`abuseipdb_report.py`)
 
 # Architecture
 

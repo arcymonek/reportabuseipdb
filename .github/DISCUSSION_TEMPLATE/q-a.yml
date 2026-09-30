@@ -1,0 +1,52 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Before you post:** this space is public. Remove your own domain and host names, your home directory path,
+        your ntfy topic and your own IP addresses from anything you write or paste. Never paste the API key or the
+        config file.
+
+        **A security problem does not belong here.** Report it privately, see
+        [SECURITY.md](https://github.com/arcymonek/reportabuseipdb/blob/main/SECURITY.md).
+
+        Something that does not work as documented is a bug: please open an issue with the bug report form instead.
+        Start with the [README](https://github.com/arcymonek/reportabuseipdb/blob/main/README.md) and
+        [docs/OPERATIONS.md](https://github.com/arcymonek/reportabuseipdb/blob/main/docs/OPERATIONS.md): the answer is
+        often there.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      description: Everything you write or paste below is public and cannot be fully taken back.
+      options:
+        - label: I removed my own domain and host names, home directory path, ntfy topic and own IP addresses from everything below.
+          required: true
+        - label: I am not pasting the API key or the config file (`abuseipdb.conf`).
+          required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What do you want to know or do?
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you already tried
+      description: "Optional. Which documentation did you read, and what happened?"
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: "Optional. Output of `./abuseipdb_send.sh --version` and `python3 abuseipdb_report.py --version`"
+      placeholder: "abuseipdb_send.sh v1.1.6, abuseipdb_report.py 3.6.21"
+  - type: textarea
+    id: log
+    attributes:
+      label: Log fragment
+      description: |
+        Optional. If the question is about an error or an alert, paste the last 60 lines: `tail -n 60 abuseipdb_cron.log`
+        in the project directory. Only a fragment, not the whole file, and read it once more before you paste: hosts,
+        IP addresses, the ntfy topic.
+      render: shell

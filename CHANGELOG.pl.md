@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.20 (`abuseipdb_report.py`)
+Wersja: 3.6.21 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,14 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-09-30 - formularz pytań w Discussions (3.6.21)
+
+- `.github/DISCUSSION_TEMPLATE/q-a.yml`: kategoria Q&A w GitHub Discussions ma teraz formularz, tak jak Ideas:
+  ostrzeżenie o prywatności i link do `SECURITY.md`, wskazówka o README i `docs/OPERATIONS.md`, to samo obowiązkowe
+  potwierdzenie prywatności, obowiązkowe pytanie oraz opcjonalne pola na to, co już próbowano, wersje i fragment logu
+  (ostatnie 60 linii `abuseipdb_cron.log`). W pytaniach też wklejane są logi, więc potwierdzenie prywatności należy tu
+  również.
 
 ## 2026-09-30 - formularz pomysłów w Discussions (3.6.20)
 
