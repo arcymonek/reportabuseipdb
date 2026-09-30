@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.15 (`abuseipdb_report.py`)
+Wersja: 3.6.16 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,22 @@ zacommitowana i wypchnięta, podnosi `Z` o 1; gdy `Z` dojdzie do 99, następna w
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-09-30 - AGENTS.md i wkład tylko po angielsku (3.6.16)
+
+- Nowy `AGENTS.md` (tylko po angielsku, bez polskiego odpowiednika): zasady dla agentów AI pracujących nad
+  repozytorium, żeby asystent kontrybutora znał bezpieczniki, których nie wolno osłabiać, czego nigdy nie robić
+  (prawdziwa wysyłka, prawdziwe klucze, nazwy hostów), konwencje i kilka nieoczywistych faktów o danych. Linkowany z
+  README i `CONTRIBUTING.md`.
+- `CONTRIBUTING.md` / `CONTRIBUTING.pl.md`: sekcja "Język" (zgłoszenia, pull requesty i przeglądy po angielsku) oraz
+  "Praca z asystentem AI". Kontrybutorzy piszą dokumentację tylko po angielsku; polskie tłumaczenie i wpis w
+  changelogu dodaje opiekun, więc nie muszą już aktualizować obu języków.
+- `tools/pre-commit`: `EN_ONLY=1 git commit ...` pomija tylko regułę parowania EN/PL dla kontrybutorów piszących
+  wyłącznie po angielsku; skan prywatności i wszystkie pozostałe kontrole nadal działają (sprawdzone ręcznie: bez
+  zmiennej zmiana jednostronna jest odrzucana, ze zmienną commit przechodzi, a sztuczny klucz nadal jest odrzucany).
+- `docs/pl/DEVELOPMENT.md`: `AGENTS.md` jako jedyny udokumentowany wyjątek od reguły parowania, przepływ z `EN_ONLY` i
+  nowa sekcja "Przyjmowanie pull requesta" (ściągnij lokalnie, przetestuj, dodaj tłumaczenie, podnieś wersję, najpierw
+  push do prywatnego repozytorium). `docs/pl/ARCHITECTURE.md` i oba README wymieniają nowy plik.
 
 ## 2026-09-29 - kontakt autora i kolejność w README (3.6.15)
 

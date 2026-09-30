@@ -1,6 +1,6 @@
 [English](../DEVELOPMENT.md) | **Polski**
 
-Wersja: 3.6.15 (`abuseipdb_report.py`)
+Wersja: 3.6.16 (`abuseipdb_report.py`)
 
 # Rozwój
 
@@ -11,6 +11,7 @@ abuseipdb_report.py     generator i walidator (Python, tylko biblioteka standard
 abuseipdb_send.sh       wrapper crona (bash)
 tests/                  zestawy testów unittest
 tools/pre-commit        hook repozytorium (włączenie: git config core.hooksPath tools)
+AGENTS.md               zasady dla agentów AI (tylko po angielsku, bez polskiego odpowiednika)
 docs/, docs/pl/         dokumentacja (angielska, polska)
 README.md, README.pl.md, CHANGELOG.md, CHANGELOG.pl.md
 ```
@@ -62,8 +63,8 @@ python3 -m unittest -v tests/test_abuseipdb_report.py   # tylko generator, dzia�
   `docs/`, linię `Wersja:` w każdym polskim odpowiedniku oraz oba changelogi.
 - Wymusza to hook pre-commit: dokumenty muszą pokazywać tę samą wersję co `SCRIPT_VERSION`, a commit, który zmienia
   wersję, musi ją podnieść dokładnie o jeden krok. Commit, który wersji nie rusza, przechodzi przez hook, więc
-  kontrybutorzy nigdy nie muszą jej zmieniać: opisują zmianę w sekcji "Niewydane"/"Unreleased" obu changelogów, a
-  opiekun podnosi wersję przy scalaniu. Spójność sprawdza też `tests/test_versioning.py`.
+  kontrybutorzy nigdy nie muszą jej zmieniać: opisują zmianę w sekcji "Unreleased" w `CHANGELOG.md`, a opiekun
+  podnosi wersję i uzupełnia `CHANGELOG.pl.md` przy scalaniu. Spójność sprawdza też `tests/test_versioning.py`.
 
 ## Zasady językowe
 
@@ -76,6 +77,26 @@ python3 -m unittest -v tests/test_abuseipdb_report.py   # tylko generator, dzia�
 - Pary plików: `README.md` i `README.pl.md`, `CHANGELOG.md` i `CHANGELOG.pl.md`, `docs/X.md` i `docs/pl/X.md`.
   Każdy plik zaczyna się linią przełącznika języka. Hook pre-commit odmawia commita, który zawiera tylko jedną stronę
   pary albo w którym liczba nagłówków się różni.
+- `AGENTS.md` jest jedynym wyjątkiem: tylko po angielsku, bez polskiego odpowiednika i bez linii wersji, bo czytają go
+  agenci, a czytelnik nie wybiera języka. Aktualizuj go razem z tymi zasadami, gdy się zmieniają.
+- Kontrybutorzy piszą tylko po angielsku (patrz [CONTRIBUTING.pl.md](../../CONTRIBUTING.pl.md)). Commitują z
+  `EN_ONLY=1`, co sprawia, że hook pomija wyłącznie regułę parowania. Polską stronę dodaje opiekun (patrz następna
+  sekcja).
+
+## Przyjmowanie pull requesta
+
+Rutyna opiekuna dla wkładu z zewnątrz. Repozytorium na komputerze opiekuna jest źródłem prawdy, więc pull requesta
+nigdy nie scala się przyciskiem GitHuba (prywatne repozytorium zostałoby w tyle).
+
+1. Ściągnij go lokalnie (`git fetch <remote> pull/N/head` albo gałąź kontrybutora) i przeczytaj diff. Mógł go napisać
+   asystent kontrybutora: argumentem są testy i opis, więc sprawdź także je.
+2. Uruchom cały zestaw testów i hook pre-commit. Jeśli dotknięty jest bezpiecznik, zrób test mutacyjny samodzielnie.
+3. Dodaj polskie tłumaczenie każdego zmienionego angielskiego dokumentu w osobnym commicie na wierzchu wkładu
+   (źródłem pozostaje angielski; kontrybutor nie musi tłumaczyć). Przeczytaj tłumaczenie raz: to kontrola opiekuna, że
+   zmiana została zrozumiana.
+4. Podnieś wersję (patrz Wersjonowanie) i uzupełnij oba changelogi, przenosząc notatkę kontrybutora z "Unreleased" do
+   nowego wpisu i wymieniając go tam.
+5. Wypchnij najpierw do prywatnego remote'a, wdróż i sprawdź na serwerze, dopiero potem do publicznego.
 
 ## Dodawanie scenariusza lub kategorii
 

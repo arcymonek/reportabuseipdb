@@ -34,10 +34,10 @@ A new CrowdSec scenario in `CATEGORY_MAP` needs the weakest category set that th
 - Code, comments, messages, tests and commit messages are English only. The report templates (`TPL_*`) must stay
   English because they are published on AbuseIPDB.
 - Documentation exists in English and Polish (`README.md` and `README.pl.md`, `docs/X.md` and `docs/pl/X.md`, and so
-  on). Update both. If you cannot write Polish, update the English file and say so in the pull request; the maintainer
-  adds the translation.
-- Do not raise the version. Describe your change under "Unreleased" in `CHANGELOG.md` (and `CHANGELOG.pl.md` if you
-  can); the maintainer raises the version when merging.
+  on). You only need to write the English file; you do not have to know Polish. The maintainer adds the Polish
+  translation before merging, so please do not machine-translate it yourself.
+- Do not raise the version. Describe your change under "Unreleased" in `CHANGELOG.md`; the maintainer raises the
+  version and updates `CHANGELOG.pl.md` when merging.
 - Tests use only fake data: reserved addresses (`203.0.113.0/24`, `198.51.100.0/24`, `2001:db8::/32`) or well-known
   public resolvers as attacker stand-ins, `example.org` / `.example` / `.test` names, fake keys and topics. Never a real
   API key, never a real upload to AbuseIPDB, never your own host names or addresses.
@@ -45,12 +45,31 @@ A new CrowdSec scenario in `CATEGORY_MAP` needs the weakest category set that th
   safeguard, break it on purpose and check that a test fails (a mutation check, see
   [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)).
 
+## Language
+
+Issues, pull requests, review comments and commit messages are in English, so that everyone can follow them. The
+maintainer is Polish and may read your text in translation and answer in English; write plainly and you will be fine.
+
+## Working with an AI assistant
+
+AI-assisted contributions are welcome; the maintainer works that way too. Point your assistant at
+[AGENTS.md](AGENTS.md): it holds the rules (the safeguards that must not be weakened, what never to do, the
+conventions and a few non-obvious facts about the data) in the format that many coding agents read automatically. If
+yours does not, tell it to read the file first (Claude Code reads `CLAUDE.md`, so put the line `@AGENTS.md` in one). You stay responsible
+for what you submit: run the tests and the pre-commit hook yourself, read the diff, and state in the pull request what
+you did and did not verify. Never let an assistant upload anything to AbuseIPDB or paste real keys, host names or
+addresses.
+
 ## Running the tests
 
 ```bash
 python3 -m unittest discover -v tests     # generator tests run anywhere; wrapper tests need Linux
 git config core.hooksPath tools           # optional: the pre-commit hook (syntax, EN/PL pairs, versions, privacy scan)
 ```
+
+The hook refuses a commit that changes only the English side of a documentation pair. Since you only write English,
+commit with `EN_ONLY=1 git commit ...`: that skips this one rule and keeps every other check (the privacy scan
+included). Do not use `--no-verify`, which switches all checks off.
 
 The GitHub Actions workflow runs the whole suite on Ubuntu for every pull request; it has to pass before a merge.
 

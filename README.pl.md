@@ -1,6 +1,6 @@
 [English](README.md) | **Polski**
 
-Wersja: 3.6.15 (`abuseipdb_report.py`)
+Wersja: 3.6.16 (`abuseipdb_report.py`)
 
 # reportabuseipdb
 
@@ -180,12 +180,14 @@ python3 -m unittest discover -v tests     # testy generatora działają wszędzi
 | [CHANGELOG.pl.md](CHANGELOG.pl.md) | historia wersji |
 | [CONTRIBUTING.pl.md](CONTRIBUTING.pl.md) | jak zgłosić błąd, zaproponować zmianę i wysłać pull request |
 | [SECURITY.pl.md](SECURITY.pl.md) | jak prywatnie zgłosić podatność |
+| [AGENTS.md](AGENTS.md) | zasady dla agentów AI pracujących nad tym repozytorium (tylko po angielsku) |
 
-Wszystkie dokumenty istnieją po angielsku i po polsku (`*.pl.md`, `docs/pl/`).
+Wszystkie dokumenty istnieją po angielsku i po polsku (`*.pl.md`, `docs/pl/`), z wyjątkiem `AGENTS.md` (tylko po angielsku).
 
 ## Współpraca i bezpieczeństwo
 
-Zgłoszenia błędów i pull requesty są mile widziane, patrz [CONTRIBUTING.pl.md](CONTRIBUTING.pl.md). Pull request
+Zgłoszenia błędów i pull requesty są mile widziane, po angielsku, także pisane z pomocą asystenta AI; patrz
+[CONTRIBUTING.pl.md](CONTRIBUTING.pl.md) i, dla agentów programistycznych, [AGENTS.md](AGENTS.md). Pull request
 osłabiający bezpiecznik wymaga bardzo dobrego powodu. Podatności zgłaszaj prywatnie, jak opisano w
 [SECURITY.pl.md](SECURITY.pl.md), a nie w publicznym zgłoszeniu.
 

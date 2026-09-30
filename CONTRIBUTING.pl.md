@@ -34,10 +34,10 @@ własnym serwerze, użyj `EXTRA_EXCLUDE_SCENARIOS` w swoim configu.
 - Kod, komentarze, komunikaty, testy i komunikaty commitów są wyłącznie po angielsku. Szablony zgłoszeń (`TPL_*`)
   muszą zostać po angielsku, bo są publikowane w AbuseIPDB.
 - Dokumentacja istnieje po angielsku i po polsku (`README.md` i `README.pl.md`, `docs/X.md` i `docs/pl/X.md` itd.).
-  Aktualizuj obie wersje. Jeśli nie piszesz po polsku, zaktualizuj plik angielski i napisz to w pull requeście;
-  tłumaczenie doda opiekun projektu.
-- Nie podnoś wersji. Opisz zmianę w sekcji "Unreleased" w `CHANGELOG.md` (i "Niewydane" w `CHANGELOG.pl.md`, jeśli
-  możesz); opiekun podnosi wersję przy scalaniu.
+  Wystarczy, że napiszesz plik angielski; nie musisz znać polskiego. Polskie tłumaczenie dodaje opiekun projektu przed
+  scaleniem, więc prosimy, żeby nie tłumaczyć maszynowo na własną rękę.
+- Nie podnoś wersji. Opisz zmianę w sekcji "Unreleased" w `CHANGELOG.md`; opiekun podnosi wersję i uzupełnia
+  `CHANGELOG.pl.md` przy scalaniu.
 - Testy używają wyłącznie sztucznych danych: adresów zarezerwowanych (`203.0.113.0/24`, `198.51.100.0/24`,
   `2001:db8::/32`) albo znanych publicznych resolverów jako zastępczych atakujących, nazw `example.org` / `.example` /
   `.test`, sztucznych kluczy i tematów. Nigdy prawdziwego klucza API, nigdy prawdziwej wysyłki do AbuseIPDB, nigdy
@@ -45,12 +45,33 @@ własnym serwerze, użyj `EXTRA_EXCLUDE_SCENARIOS` w swoim configu.
 - Refaktoryzacja musi zachować wygenerowany CSV bajt w bajt dla tego samego `--input-json`. Po zmianie bezpiecznika
   zepsuj go celowo i sprawdź, że test pada (test mutacyjny, patrz [docs/pl/DEVELOPMENT.md](docs/pl/DEVELOPMENT.md)).
 
+## Język
+
+Zgłoszenia, pull requesty, komentarze w przeglądzie i komunikaty commitów są po angielsku, żeby każdy mógł je
+śledzić. Opiekun jest Polakiem i może czytać Twój tekst w tłumaczeniu, a odpowiadać po angielsku; pisz prosto, a
+wszystko będzie zrozumiałe.
+
+## Praca z asystentem AI
+
+Wkład tworzony z pomocą AI jest mile widziany; opiekun też tak pracuje. Wskaż swojemu asystentowi plik
+[AGENTS.md](AGENTS.md): zawiera zasady (bezpieczniki, których nie wolno osłabiać, czego nigdy nie robić, konwencje i
+kilka nieoczywistych faktów o danych) w formacie, który wielu agentów programistycznych czyta automatycznie. Jeśli
+Twój tego nie robi, każ mu przeczytać ten plik na początku (Claude Code czyta `CLAUDE.md`, więc wpisz do niego linię
+`@AGENTS.md`). Za to, co
+wysyłasz, odpowiadasz Ty: uruchom testy i hook pre-commit samodzielnie, przeczytaj diff i napisz w pull requeście, co
+sprawdzono, a czego nie. Nigdy nie pozwól asystentowi wysyłać czegokolwiek do AbuseIPDB ani wklejać prawdziwych
+kluczy, nazw hostów lub adresów. Plik `AGENTS.md` jest tylko po angielsku i nie ma polskiego odpowiednika.
+
 ## Uruchamianie testów
 
 ```bash
 python3 -m unittest discover -v tests     # testy generatora działają wszędzie; testy wrappera wymagają Linuksa
 git config core.hooksPath tools           # opcjonalnie: hook pre-commit (składnia, pary EN/PL, wersje, skan prywatności)
 ```
+
+Hook odmawia commita, który zmienia tylko angielską stronę pary dokumentów. Skoro piszesz tylko po angielsku,
+commituj przez `EN_ONLY=1 git commit ...`: pomija to jedną regułę i zostawia wszystkie pozostałe kontrole (w tym skan
+prywatności). Nie używaj `--no-verify`, który wyłącza wszystkie kontrole.
 
 Workflow GitHub Actions uruchamia cały zestaw na Ubuntu dla każdego pull requesta; musi przejść przed scaleniem.
 

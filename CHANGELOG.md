@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.15 (`abuseipdb_report.py`)
+Version: 3.6.16 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,22 @@ committed and pushed raises `Z` by 1; after `Z` reaches 99 the next version rais
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-09-30 - AGENTS.md and English-only contributions (3.6.16)
+
+- New `AGENTS.md` (English only, no Polish twin): rules for AI coding agents that work on the repository, so that a
+  contributor's assistant knows the safeguards that must not be weakened, what it must never do (a real upload, real
+  keys, host names), the conventions and a few non-obvious facts about the data. Linked from the README and
+  `CONTRIBUTING.md`.
+- `CONTRIBUTING.md` / `CONTRIBUTING.pl.md`: a "Language" section (issues, pull requests and reviews in English) and a
+  "Working with an AI assistant" section. Contributors write English documentation only; the maintainer adds the Polish
+  translation and the changelog entry, so they no longer have to update both languages.
+- `tools/pre-commit`: `EN_ONLY=1 git commit ...` skips only the EN/PL pairing rule for contributors who write English
+  only; the privacy scan and every other check still run (checked by hand: without the variable a one-sided change is
+  refused, with it the commit passes, and a fake key is still refused).
+- `docs/DEVELOPMENT.md`: `AGENTS.md` as the single documented exception to the pairing rule, the `EN_ONLY` workflow and
+  a new "Accepting a pull request" section (fetch locally, test, add the translation, raise the version, push to the
+  private repository first). `docs/ARCHITECTURE.md` and both READMEs list the new file.
 
 ## 2026-09-29 - author contact and README order (3.6.15)
 

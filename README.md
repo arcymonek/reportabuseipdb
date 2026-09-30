@@ -1,6 +1,6 @@
 **English** | [Polski](README.pl.md)
 
-Version: 3.6.15 (`abuseipdb_report.py`)
+Version: 3.6.16 (`abuseipdb_report.py`)
 
 # reportabuseipdb
 
@@ -181,12 +181,14 @@ python3 -m unittest discover -v tests     # generator tests run anywhere; wrappe
 | [CHANGELOG.md](CHANGELOG.md) | version history |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | how to report a bug, propose a change and send a pull request |
 | [SECURITY.md](SECURITY.md) | how to report a vulnerability privately |
+| [AGENTS.md](AGENTS.md) | rules for AI coding agents working on this repository (English only) |
 
-All documents exist in English and Polish (`*.pl.md`, `docs/pl/`).
+All documents exist in English and Polish (`*.pl.md`, `docs/pl/`), except `AGENTS.md` (English only).
 
 ## Contributing and security
 
-Bug reports and pull requests are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md). A pull request that weakens a
+Bug reports and pull requests are welcome, in English and also when written with an AI assistant; see
+[CONTRIBUTING.md](CONTRIBUTING.md) and, for coding agents, [AGENTS.md](AGENTS.md). A pull request that weakens a
 safeguard needs a very good reason. Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md),
 not in a public issue.
 

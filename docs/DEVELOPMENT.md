@@ -1,6 +1,6 @@
 **English** | [Polski](pl/DEVELOPMENT.md)
 
-Version: 3.6.15 (`abuseipdb_report.py`)
+Version: 3.6.16 (`abuseipdb_report.py`)
 
 # Development
 
@@ -11,6 +11,7 @@ abuseipdb_report.py     generator and validator (Python, standard library only)
 abuseipdb_send.sh       cron wrapper (bash)
 tests/                  unittest suites
 tools/pre-commit        repository hook (enable with: git config core.hooksPath tools)
+AGENTS.md               rules for AI coding agents (English only, no Polish twin)
 docs/, docs/pl/         documentation (English, Polish)
 README.md, README.pl.md, CHANGELOG.md, CHANGELOG.pl.md
 ```
@@ -64,8 +65,8 @@ python3 -m unittest -v tests/test_abuseipdb_report.py   # generator only, runs o
   document in `docs/`, the `Wersja:` line in every Polish counterpart, and both changelogs.
 - The pre-commit hook enforces this: the documents must show the same version as `SCRIPT_VERSION`, and a commit that
   changes the version must raise it by exactly one step. A commit that leaves the version alone passes the hook, so
-  contributors never have to touch it: they describe their change under "Unreleased" in both changelogs, and the
-  maintainer raises the version when merging. `tests/test_versioning.py` checks the consistency as well.
+  contributors never have to touch it: they describe their change under "Unreleased" in `CHANGELOG.md`, and the
+  maintainer raises the version and completes `CHANGELOG.pl.md` when merging. `tests/test_versioning.py` checks the consistency as well.
 
 ## Language rules
 
@@ -76,6 +77,25 @@ python3 -m unittest -v tests/test_abuseipdb_report.py   # generator only, runs o
 - File pairs: `README.md` and `README.pl.md`, `CHANGELOG.md` and `CHANGELOG.pl.md`, `docs/X.md` and `docs/pl/X.md`.
   Each file starts with a language switch line. The pre-commit hook refuses a commit that stages one side of a pair
   only, or where the number of headings differs.
+- `AGENTS.md` is the one exception: English only, no Polish twin, no version line, because coding agents read it and a
+  reader does not pick a language. Keep it in step with these rules when they change.
+- Contributors write English only (see [CONTRIBUTING.md](../CONTRIBUTING.md)). They commit with `EN_ONLY=1`, which
+  makes the hook skip only the pairing rule. The maintainer supplies the Polish side (see the next section).
+
+## Accepting a pull request
+
+The maintainer's routine for a contribution from outside. The repository on the maintainer's machine is the source of
+truth, so a pull request is never merged with the GitHub button (the private repository would fall behind).
+
+1. Fetch it locally (`git fetch <remote> pull/N/head` or the contributor's branch) and read the diff. The
+   contributor's assistant may have written it: the tests and the description carry the argument, so check them too.
+2. Run the whole suite and the pre-commit hook. If a safeguard is touched, do the mutation check yourself.
+3. Add the Polish translation of every changed English document in a follow-up commit on top of the contribution
+   (English stays the source; the contributor is not asked to translate). Read the translation once: it is the
+   maintainer's check that the change was understood.
+4. Raise the version (see Versioning) and fill in both changelogs, moving the contributor's "Unreleased" note into the
+   new entry and crediting them there.
+5. Push to the private remote first, deploy and check on the server, and only then push to the public one.
 
 ## Adding a scenario or a category
 

@@ -1,6 +1,6 @@
 [English](../ARCHITECTURE.md) | **Polski**
 
-Wersja: 3.6.15 (`abuseipdb_report.py`)
+Wersja: 3.6.16 (`abuseipdb_report.py`)
 
 # Architektura
 
@@ -12,6 +12,7 @@ Wersja: 3.6.15 (`abuseipdb_report.py`)
 | `abuseipdb_send.sh` | Wrapper crona: wybór okna, wywołanie generatora, druga walidacja, wysyłka, kontrola odpowiedzi API, alerty, znacznik. |
 | `tests/` | Testy jednostkowe i end-to-end (Python `unittest`, atrapy `curl`, generatora i `ntfy`). |
 | `tools/pre-commit` | Hook repozytorium: kontrola składni, reguła parowania dokumentacji EN/PL, reguły wersji i skan prywatności. |
+| `AGENTS.md` | Zasady dla agentów AI: bezpieczniki, czego nigdy nie robić, konwencje. Tylko po angielsku. |
 | zewnętrzny monitor (opcjonalny) | Poza tym repozytorium. Co godzinę sprawdza, czy znacznik nie jest starszy niż 36 h. |
 
 ## Przepływ danych

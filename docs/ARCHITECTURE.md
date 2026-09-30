@@ -1,6 +1,6 @@
 **English** | [Polski](pl/ARCHITECTURE.md)
 
-Version: 3.6.15 (`abuseipdb_report.py`)
+Version: 3.6.16 (`abuseipdb_report.py`)
 
 # Architecture
 
@@ -12,6 +12,7 @@ Version: 3.6.15 (`abuseipdb_report.py`)
 | `abuseipdb_send.sh` | Cron wrapper: window selection, generator call, second validation, upload, API answer checks, alerts, watermark. |
 | `tests/` | Unit and end-to-end tests (Python `unittest`, mocks for `curl`, the generator and `ntfy`). |
 | `tools/pre-commit` | Repository hook: syntax checks, the EN/PL documentation pairing rule, version rules and a privacy scan. |
+| `AGENTS.md` | Rules for AI coding agents: safeguards, what never to do, conventions. English only. |
 | external monitor (optional) | Not part of this repository. Hourly check that the watermark is not older than 36 h. |
 
 ## Data flow

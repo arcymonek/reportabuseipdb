@@ -5,6 +5,8 @@
 # the EN/PL documentation pairing rule, the version rules and the privacy scan
 # (see docs/DEVELOPMENT.md).
 # Bypass only knowingly: git commit --no-verify
+# Contributors who write English only: EN_ONLY=1 git commit ... skips just the EN/PL pairing rule (the maintainer adds
+# the Polish translation); every other check, including the privacy scan, still runs.
 fail=0
 staged=()   # portable (no mapfile: macOS ships bash 3.2)
 while IFS= read -r -d '' path; do staged+=("$path"); done < <(git diff --cached --name-only --diff-filter=ACMR -z)
@@ -42,6 +44,7 @@ pair_of() {
 in_staged() { local x; for x in "${staged[@]}"; do [ "$x" = "$1" ] && return 0; done; return 1; }
 
 for f in "${staged[@]}"; do
+    [ "${EN_ONLY:-0}" = "1" ] && break   # contributor mode: no Polish twin required
     other="$(pair_of "$f")"
     [ -n "$other" ] || continue
     if [ ! -f "$other" ]; then
