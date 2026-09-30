@@ -1,0 +1,86 @@
+name: Bug report
+description: Something does not work as documented
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Before you paste anything:** remove your own domain and host names, your home directory path, your ntfy topic
+        and your own IP addresses. Never paste the API key or the config file.
+
+        **A security problem does not belong here.** Report it privately, see
+        [SECURITY.md](https://github.com/arcymonek/reportabuseipdb/blob/main/SECURITY.md).
+
+        This issue will be public. A question ("how do I...?") is better asked in
+        [Discussions](https://github.com/arcymonek/reportabuseipdb/discussions).
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      description: Everything you write or paste below is public and cannot be fully taken back.
+      options:
+        - label: I removed my own domain and host names, home directory path, ntfy topic and own IP addresses from everything below.
+          required: true
+        - label: I am not pasting the API key or the config file (`abuseipdb.conf`).
+          required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you do, and what did you see?
+    validations:
+      required: true
+  - type: textarea
+    id: what-expected
+    attributes:
+      label: What you expected
+      description: What should have happened instead?
+    validations:
+      required: true
+  - type: input
+    id: send-version
+    attributes:
+      label: Wrapper version
+      description: "Output of `./abuseipdb_send.sh --version`"
+      placeholder: "abuseipdb_send.sh v1.1.6"
+    validations:
+      required: true
+  - type: input
+    id: report-version
+    attributes:
+      label: Generator version
+      description: "Output of `python3 abuseipdb_report.py --version`"
+      placeholder: "abuseipdb_report.py 3.6.19"
+    validations:
+      required: true
+  - type: input
+    id: crowdsec-version
+    attributes:
+      label: CrowdSec version
+      description: "Output of `cscli version` (the line with the version number is enough)"
+    validations:
+      required: true
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      description: "Output of `python3 --version` (time parsing differs before 3.11, so this often matters)"
+      placeholder: "Python 3.11.2"
+    validations:
+      required: true
+  - type: input
+    id: distribution
+    attributes:
+      label: Distribution
+      description: "Optional. The `PRETTY_NAME` line of `/etc/os-release`"
+      placeholder: "Debian GNU/Linux 12 (bookworm)"
+  - type: textarea
+    id: log
+    attributes:
+      label: Log of the last run (last 60 lines)
+      description: |
+        Run `tail -n 60 abuseipdb_cron.log` in the project directory, or `./abuseipdb_send.sh --dry-run` (it sends nothing).
+        Please paste only a fragment, not the whole file: the file grows every day and is hard to check for private data.
+        Read it once more before you paste: hosts, IP addresses, the ntfy topic. If the error needs more than 60 lines,
+        add them after that check.
+      render: shell

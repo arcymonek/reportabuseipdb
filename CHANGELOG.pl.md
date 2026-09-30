@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.18 (`abuseipdb_report.py`)
+Wersja: 3.6.19 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,16 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-09-30 - zgłoszenie błędu jako formularz (3.6.19)
+
+- `.github/ISSUE_TEMPLATE/bug_report.yml` zastępuje `bug_report.md`: zgłoszenie błędu jest teraz formularzem z
+  osobnymi polami zamiast jednego pola tekstowego. Ostrzeżenie o prywatności i link do `SECURITY.md` są na górze i nie
+  da się ich skasować, dalej jest obowiązkowe potwierdzenie prywatności (dwa pola wyboru), potem obowiązkowe pola: co się
+  stało, czego oczekiwano, wersje wrappera i generatora oraz wersje CrowdSeca i Pythona, opcjonalne pole dystrybucji i
+  pole na log z ostatnich 60 linii `abuseipdb_cron.log` (fragment, nie cały plik).
+- `.github/ISSUE_TEMPLATE/config.yml`: puste zgłoszenia są wyłączone, więc każde zgłoszenie przechodzi przez formularz;
+  nowy link kieruje pytania i pomysły do GitHub Discussions.
 
 ## 2026-09-30 - wyzwalacze CI, aktualne akcje, przypięty runner (3.6.18)
 

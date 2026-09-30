@@ -1,6 +1,6 @@
 [English](../COMPLIANCE.md) | **Polski**
 
-Wersja: 3.6.18 (`abuseipdb_report.py`)
+Wersja: 3.6.19 (`abuseipdb_report.py`)
 
 # Zgodność z AbuseIPDB
 

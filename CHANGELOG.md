@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.18 (`abuseipdb_report.py`)
+Version: 3.6.19 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,16 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-09-30 - bug report as an issue form (3.6.19)
+
+- `.github/ISSUE_TEMPLATE/bug_report.yml` replaces `bug_report.md`: the bug report is now a form with separate fields
+  instead of one text box. The privacy warning and the link to `SECURITY.md` sit at the top and cannot be edited away,
+  a required privacy check (two boxes) comes next, then required fields for what happened, what was expected, the
+  wrapper and generator versions, and the CrowdSec and Python versions, an optional distribution field, and a log field
+  for the last 60 lines of `abuseipdb_cron.log` (a fragment, not the whole file).
+- `.github/ISSUE_TEMPLATE/config.yml`: blank issues are switched off, so every issue goes through the form; a new link
+  sends questions and ideas to GitHub Discussions.
 
 ## 2026-09-30 - CI triggers, current actions, pinned runner (3.6.18)
 
