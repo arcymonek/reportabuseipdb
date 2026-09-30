@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.17 (`abuseipdb_report.py`)
+Version: 3.6.18 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,16 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-09-30 - CI triggers, current actions, pinned runner (3.6.18)
+
+- `.github/workflows/tests.yml`: tests run on pushes to `main` and on pull requests, not on every push to every branch,
+  so a pull request no longer starts two identical runs. A branch is tested through its pull request (a draft is enough).
+- `actions/checkout` and `actions/setup-python` moved from `@v4` / `@v5` to `@v7`: the old versions ran on Node 20,
+  which GitHub is retiring (the warning in the CI run of 3.6.16).
+- The runner is pinned to `ubuntu-24.04` instead of `ubuntu-latest`. GitHub moves that label to Ubuntu 26 on
+  2026-10-19; the tools used by the tests should change when we decide. This is the first change that went through a
+  branch and a pull request (the workflow described in 3.6.17).
 
 ## 2026-09-30 - branch workflow for code (3.6.17)
 

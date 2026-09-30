@@ -1,6 +1,6 @@
 **English** | [Polski](pl/DEVELOPMENT.md)
 
-Version: 3.6.17 (`abuseipdb_report.py`)
+Version: 3.6.18 (`abuseipdb_report.py`)
 
 # Development
 
@@ -71,8 +71,8 @@ python3 -m unittest -v tests/test_abuseipdb_report.py   # generator only, runs o
 ```
 
 - The wrapper tests need Linux (`flock`, GNU `date`, `jq`). Run them on the server in the clone, or in a Linux
-  container. The GitHub Actions workflow `.github/workflows/tests.yml` runs the whole suite on Ubuntu with the oldest
-  and the newest supported Python for every push and pull request.
+  container. The GitHub Actions workflow `.github/workflows/tests.yml` runs the whole suite on Ubuntu (24.04, pinned on
+  purpose) with the oldest and the newest supported Python for every push to `main` and every pull request.
 - `curl`, the generator and `ntfy` are mocks; no test touches AbuseIPDB or the network.
 - After changing a safeguard, run a mutation check: temporarily break the safeguard (for example set
   `MAX_AGE_DAYS = 600` or empty `EXCLUDE_SCENARIOS`) and confirm that a test fails. Four mutants are known to be

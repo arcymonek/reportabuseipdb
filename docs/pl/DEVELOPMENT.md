@@ -1,6 +1,6 @@
 [English](../DEVELOPMENT.md) | **Polski**
 
-Wersja: 3.6.17 (`abuseipdb_report.py`)
+Wersja: 3.6.18 (`abuseipdb_report.py`)
 
 # Rozwój
 
@@ -71,8 +71,8 @@ python3 -m unittest -v tests/test_abuseipdb_report.py   # tylko generator, dzia�
 ```
 
 - Testy wrappera wymagają Linuksa (`flock`, GNU `date`, `jq`). Uruchamiaj je na serwerze w klonie albo w kontenerze
-  z Linuksem. Workflow GitHub Actions `.github/workflows/tests.yml` uruchamia cały zestaw na Ubuntu z najstarszym i
-  najnowszym wspieranym Pythonem przy każdym pushu i pull requeście.
+  z Linuksem. Workflow GitHub Actions `.github/workflows/tests.yml` uruchamia cały zestaw na Ubuntu (24.04, przypięte
+  celowo) z najstarszym i najnowszym wspieranym Pythonem przy każdym pushu na `main` i każdym pull requeście.
 - `curl`, generator i `ntfy` to atrapy; żaden test nie dotyka AbuseIPDB ani sieci.
 - Po zmianie bezpiecznika zrób test mutacyjny: tymczasowo zepsuj bezpiecznik (na przykład `MAX_AGE_DAYS = 600` albo
   pusty `EXCLUDE_SCENARIOS`) i sprawdź, że któryś test pada. Cztery mutanty są znanymi równoważnikami: końcowa asercja

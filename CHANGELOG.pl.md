@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.17 (`abuseipdb_report.py`)
+Wersja: 3.6.18 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,17 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-09-30 - wyzwalacze CI, aktualne akcje, przypięty runner (3.6.18)
+
+- `.github/workflows/tests.yml`: testy uruchamiają się przy pushu na `main` i na pull requestach, a nie przy każdym
+  pushu na każdą gałąź, więc pull request nie uruchamia już dwóch identycznych przebiegów. Gałąź testuje się przez jej
+  pull request (wystarczy szkic).
+- `actions/checkout` i `actions/setup-python` przeszły z `@v4` / `@v5` na `@v7`: stare wersje działały na Node 20,
+  który GitHub wycofuje (ostrzeżenie w przebiegu CI dla 3.6.16).
+- Runner przypięty do `ubuntu-24.04` zamiast `ubuntu-latest`. GitHub przesuwa tę etykietę na Ubuntu 26 dnia
+  2026-10-19; narzędzia używane w testach mają się zmieniać wtedy, kiedy zdecydujemy. To pierwsza zmiana, która przeszła
+  przez gałąź i pull request (workflow opisany w 3.6.17).
 
 ## 2026-09-30 - workflow z gałęziami dla kodu (3.6.17)
 
