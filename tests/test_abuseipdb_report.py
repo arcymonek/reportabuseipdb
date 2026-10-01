@@ -322,11 +322,14 @@ class HttpPortsAndExtraExclusions(unittest.TestCase):
             self.assertEqual(len(rows_for([probe, ssh])), 2)          # another author: not excluded
 
     def test_extra_exclusions_only_add(self):
-        # The built-in list stays whatever the config says.
-        with mock.patch.object(m, "EXTRA_EXCLUDE_SCENARIOS", frozenset()):
+        # The built-in list stays whatever the config says. The scenario is mapped on purpose: without
+        # that, "unknown scenario" would drop it too and this test could not tell the two rules apart.
+        with mock.patch.object(m, "EXTRA_EXCLUDE_SCENARIOS", frozenset()), \
+                mock.patch.dict(m.CATEGORY_MAP, {"http-crawl-non_statics": "21"}):
             a = alert("8.8.8.8", "http-crawl-non_statics", NOW - timedelta(minutes=10), events=http_events(3))
-            with contextlib.redirect_stderr(io.StringIO()):
+            with contextlib.redirect_stderr(io.StringIO()) as err:
                 self.assertEqual(rows_for([a]), [])
+            self.assertIn("scenario on the blacklist", err.getvalue())
 
     def test_config_keys_end_to_end(self):
         with tempfile.TemporaryDirectory() as td:
@@ -408,6 +411,23 @@ class Filters(unittest.TestCase):
                   alert("9.9.9.9", "http-probing", NOW - timedelta(hours=1), events=http_events(2), kind="capi"),
                   alert("1.1.1.1", "http-probing", NOW - timedelta(hours=1), events=http_events(2), simulated=True)]
         self.assertEqual(rows_for(alerts), [])
+
+    def test_builtin_exclusion_works_on_its_own_not_only_as_an_unknown_scenario(self):
+        # http-crawl-non_statics is not in CATEGORY_MAP, so the "unknown scenario" rule would drop it
+        # anyway and hide a broken EXCLUDE_SCENARIOS. Map it, so that only the exclusion can stop it.
+        a = alert("8.8.8.8", "http-crawl-non_statics", NOW - timedelta(hours=1), events=http_events(2))
+        with mock.patch.dict(m.CATEGORY_MAP, {"http-crawl-non_statics": "21"}):
+            self.assertIsNotNone(m.category_for("crowdsecurity/http-crawl-non_statics"))   # really mapped
+            with contextlib.redirect_stderr(io.StringIO()) as err:
+                self.assertEqual(rows_for([a]), [])
+        self.assertIn("scenario on the blacklist (http-crawl-non_statics)", err.getvalue())
+        # the same IP with a second, legitimate scenario is still reported, but only for that one
+        b = alert("8.8.8.8", "http-probing", NOW - timedelta(hours=1), events=http_events(2, prefix="/q"))
+        with mock.patch.dict(m.CATEGORY_MAP, {"http-crawl-non_statics": "21"}):
+            with contextlib.redirect_stderr(io.StringIO()):
+                rows = rows_for([a, b])
+        self.assertIn("Triggered rules: http-probing.", rows[0][3])
+        self.assertNotIn("crawl", rows[0][3])
 
     def test_range_scope_ignored(self):
         a = alert("8.8.8.0/24", "http-probing", NOW - timedelta(hours=1), events=http_events(2))
@@ -1214,6 +1234,41 @@ class EndToEnd(unittest.TestCase):
         self.assertNotIn("Traceback", r.stderr)
 
 
+class SizeAndDateLimits(unittest.TestCase):
+    """Limits that only a very busy day reaches, so nothing else in the suite exercises them."""
+
+    def test_8_mb_limit_cuts_the_file_and_marks_it(self):
+        # 9,000 rows of ~1 KB are about 9.3 MB: over the 8 MB limit, under the row limit.
+        rows = [[f"8.8.{i // 250}.{i % 250 + 1}", "15,21", "2026-09-28T01:00:00+00:00", "x" * 1000]
+                for i in range(9000)]
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            kept = m.enforce_size_limits(rows)
+        self.assertLess(len(kept), len(rows))
+        self.assertEqual(kept, rows[:len(kept)])                     # a prefix, nothing reordered
+        self.assertTrue(err.getvalue().startswith(m.TRUNCATED_MARKER), err.getvalue())
+        self.assertIn("8 MB", err.getvalue())
+        buf = io.StringIO(newline="")
+        m.write_csv(buf, kept)
+        self.assertLessEqual(len(buf.getvalue().encode("utf-8")), m.MAX_FILE_BYTES)
+        self.assertGreater(len(buf.getvalue().encode("utf-8")), m.MAX_FILE_BYTES - 2000)   # cut as late as possible
+
+    def test_small_files_are_not_cut(self):
+        rows = [["8.8.8.8", "15,21", "2026-09-28T01:00:00+00:00", "x" * 1000]] * 100
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            self.assertEqual(m.enforce_size_limits(rows), rows)
+        self.assertEqual(err.getvalue(), "")
+
+    def test_report_date_is_never_in_the_future(self):
+        # An alert stamped up to 5 minutes ahead (clock skew) is accepted, but ReportDate must not follow it.
+        created = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(minutes=3)
+        a = alert("8.8.8.8", "http-probing", created, events=http_events(2))
+        with contextlib.redirect_stderr(io.StringIO()):
+            rows = rows_for([a])
+        self.assertEqual(len(rows), 1)
+        reported = datetime.fromisoformat(rows[0][2])
+        self.assertLessEqual(reported, datetime.now(timezone.utc) + timedelta(seconds=2))
+
+
 class Portability(unittest.TestCase):
     """Assumptions about the host that must hold on other systems than the author's."""
 
@@ -1248,6 +1303,20 @@ class Portability(unittest.TestCase):
         self.assertTrue(as_user[2].endswith("cscli"), as_user)
         for cmd in seen:
             self.assertEqual(cmd[-8:], ["alerts", "list", "-o", "json", "--since", "24h", "--limit", "100"])
+
+    def test_own_addresses_come_from_ip_addr_and_only_global_ones(self):
+        out = ("1: lo    inet 127.0.0.1/8 scope host lo\n"
+               "2: ens3    inet 8.8.4.4/24 brd 8.8.4.255 scope global ens3\n"
+               "2: ens3    inet6 2001:4860:4860::1/64 scope global\n"
+               "3: docker0    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0\n"
+               "4: tun0    inet 100.64.0.5/10 scope global tun0\n"
+               "2: ens3    inet6 fe80::1/64 scope link\n")
+        res = mock.Mock(stdout=out)
+        with mock.patch.object(m.shutil, "which", return_value="/usr/sbin/ip"), \
+                mock.patch.object(m.subprocess, "run", return_value=res), \
+                contextlib.redirect_stderr(io.StringIO()):
+            nets = m.harvest_local_addresses()
+        self.assertEqual(sorted(str(n) for n in nets), ["2001:4860:4860::1/128", "8.8.4.4/32"])
 
     def test_cut_off_data_is_marked_for_the_wrapper(self):
         two = json.dumps([{"a": 1}, {"a": 2}])

@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.22 (`abuseipdb_report.py`)
+Wersja: 3.6.23 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,17 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-10-01 - testy wbudowanego wykluczenia scenariusza i dwóch limitów (3.6.23)
+
+- Tylko testy, zachowanie bez zmian. Test mutacyjny (celowe zepsucie bezpiecznika) pokazał, że opróżnienie
+  `EXCLUDE_SCENARIOS` nie robiło czerwonym żadnego testu: `http-crawl-non_statics` nie ma w `CATEGORY_MAP`, więc
+  reguła "nieznany scenariusz" i tak go odrzucała i ukrywała zepsuty bezpiecznik. Testy najpierw mapują scenariusz,
+  więc zatrzymać go może tylko wykluczenie (także dla `EXTRA_EXCLUDE_SCENARIOS`, które może tylko dodawać do listy
+  wbudowanej).
+- Nowe testy: cięcie pliku CSV przy 8 MB (plik jest cięty jak najpóźniej i oznaczany `[TRUNCATED]`), `ReportDate` nigdy
+  z przyszłości, gdy alert ma znacznik o kilka minut do przodu, oraz odczyt własnych adresów serwera z `ip addr`
+  (tylko globalne). Wszystkie cztery sprawdzone mutacją.
 
 ## 2026-10-01 - w README podane środowisko testowe (3.6.22)
 

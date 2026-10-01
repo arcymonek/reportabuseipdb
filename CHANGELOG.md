@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.22 (`abuseipdb_report.py`)
+Version: 3.6.23 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,16 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-10-01 - tests for the built-in scenario exclusion and for two limits (3.6.23)
+
+- Tests only, no change in behaviour. A mutation check (breaking a safeguard on purpose) showed that emptying
+  `EXCLUDE_SCENARIOS` did not turn any test red: `http-crawl-non_statics` is not in `CATEGORY_MAP`, so the "unknown
+  scenario" rule dropped it anyway and hid the broken safeguard. The tests now map the scenario first, so only the
+  exclusion can stop it (also for `EXTRA_EXCLUDE_SCENARIOS`, which may only add to the built-in list).
+- New tests for the 8 MB cut of the CSV (the file is cut as late as possible and marked `[TRUNCATED]`), for
+  `ReportDate` never being in the future when an alert is stamped a few minutes ahead, and for the server's own
+  addresses being read from `ip addr` (global addresses only). All four were verified by mutation.
 
 ## 2026-10-01 - tested environment stated in the README (3.6.22)
 
