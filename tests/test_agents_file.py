@@ -38,6 +38,22 @@ class AgentsFile(unittest.TestCase):
         self.assertIn("EN_ONLY=1", (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8"))
         self.assertIn("EN_ONLY=1", (ROOT / "CONTRIBUTING.pl.md").read_text(encoding="utf-8"))
 
+    # AGENTS.md is deliberately self-contained (an agent may not follow links), so its rules repeat what
+    # CONTRIBUTING.md and docs/COMPLIANCE.md say. These tests do not forbid the repetition; they make sure the copies
+    # cannot drift apart silently: a rule removed from one file but left in another fails here.
+    def test_contributor_conventions_are_in_both_agents_and_contributing(self):
+        contributing = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+        for token in ("Unreleased", "byte-for-byte", "203.0.113.0/24", "example.org", "--no-verify", "TPL_"):
+            self.assertIn(token, self.text, f"AGENTS.md lacks '{token}'")
+            self.assertIn(token, contributing, f"CONTRIBUTING.md lacks '{token}'")
+
+    def test_every_safeguard_named_in_agents_is_described_in_compliance(self):
+        compliance = (ROOT / "docs" / "COMPLIANCE.md").read_text(encoding="utf-8")
+        for token in ("EXCLUDE_SCENARIOS", "WEAK_ONLY_SCENARIOS", "20 h", "kind == \"crowdsec\"",
+                      "Accept: application/json"):
+            self.assertIn(token, self.text, f"AGENTS.md lacks '{token}'")
+            self.assertIn(token, compliance, f"docs/COMPLIANCE.md lacks '{token}'")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
