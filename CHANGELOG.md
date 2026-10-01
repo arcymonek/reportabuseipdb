@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.25 (`abuseipdb_report.py`)
+Version: 3.6.26 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,20 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-10-01 - own-name, IP and e-mail checks also see percent-encoded text (3.6.26)
+
+Found by the code audit of 2026-10-01 (a sample `www%2Eexample%2Eorg` passed a marker `example.org`).
+
+- A request path comes from the attacker, who (or whose scanner) may encode the very characters the checks look for.
+  `leaks_identity()` (which leaves out a hostile sample) and the CSV validator (which rejects the file) now also test
+  the text after one and after two rounds of percent-decoding (`decoded_views()`): an own name written `www%2Eexample%2Eorg`,
+  an e-mail written `jane%40mail.example.net` or the reported IP written `8%2E8%2E8%2E8` is caught like the plain form.
+  Ordinary encoding (`%20`, `%2F`, `%3C`) is left alone, and a broken sequence never raises.
+- This strengthens a hard safeguard (the own-name check); it can only leave out MORE samples, never add one. On 437 real
+  alerts (8 days) the generated CSV is byte for byte identical to the previous version.
+- Tests: encoded name, double-encoded name, encoded e-mail, encoded reported IP, ordinary encoding unchanged,
+  validator rejection, broken sequences. Verified by mutation (each plain-text-only variant turns a test red).
 
 ## 2026-10-01 - privacy hooks: no blanket allowance for the author's domain, commit messages scanned (3.6.25)
 

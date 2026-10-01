@@ -1,6 +1,6 @@
 [English](../ARCHITECTURE.md) | **Polski**
 
-Wersja: 3.6.25 (`abuseipdb_report.py`)
+Wersja: 3.6.26 (`abuseipdb_report.py`)
 
 # Architektura
 
@@ -84,7 +84,7 @@ kategoriach z okna 24 h.
 Komentarz jest składany wyłącznie ze stałych angielskich `TPL_*` w generatorze: zdanie o źródle, protokół i porty
 celu, uruchomione scenariusze, liczba pasujących zdarzeń, zakres czasu w UTC oraz próbka prawdziwych żądań HTTP
 (metoda, ścieżka, status). Próbka zawierająca znacznik własnej nazwy, zgłaszany IP, jeden z własnych adresów
-publicznych serwera albo adres e-mail jest pomijana (ścieżki pochodzą od atakującego). Liczba zdarzeń jest zachowawcza (unikalne żądania, nigdy suma po nakładających się
+publicznych serwera albo adres e-mail jest pomijana, także gdy jest zapisany z kodowaniem procentowym (ścieżki pochodzą od atakującego; sprawdzany jest też tekst po jednej i po dwóch rundach dekodowania). Liczba zdarzeń jest zachowawcza (unikalne żądania, nigdy suma po nakładających się
 scenariuszach). Tekst jest sprowadzany do ASCII, znaki sterujące są usuwane, a prefiksy formuł arkusza
 neutralizowane. Cudzysłów jest zapisywany jako `%22`, a komentarz nigdy nie kończy się backslashem, bo parser CSV
 AbuseIPDB traktuje backslash jako znak ucieczki; pozostałe backslashe zostają (są dowodem, np. `\x5Cthink`).

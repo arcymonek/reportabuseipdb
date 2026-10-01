@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.25 (`abuseipdb_report.py`)
+Wersja: 3.6.26 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,21 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-10-01 - kontrola własnych nazw, IP i e-maili widzi też tekst zakodowany procentowo (3.6.26)
+
+Znalezione audytem kodu z 2026-10-01 (próbka `www%2Eexample%2Eorg` przechodziła obok znacznika `example.org`).
+
+- Ścieżka żądania pochodzi od atakującego, który (albo jego skaner) może zakodować dokładnie te znaki, których szukają
+  kontrole. `leaks_identity()` (pomija wrogą próbkę) i walidator CSV (odrzuca plik) sprawdzają teraz także tekst po jednej
+  i po dwóch rundach dekodowania procentowego (`decoded_views()`): własna nazwa zapisana `www%2Eexample%2Eorg`, e-mail
+  zapisany `jane%40mail.example.net` albo zgłaszany IP zapisany `8%2E8%2E8%2E8` jest wychwytywany tak jak zwykła forma.
+  Zwykłe kodowanie (`%20`, `%2F`, `%3C`) zostaje bez zmian, a uszkodzona sekwencja nigdy nie rzuca wyjątku.
+- To wzmacnia twardy bezpiecznik (kontrolę własnych nazw); może tylko pominąć WIĘCEJ próbek, nigdy żadnej nie dodać.
+  Na 437 prawdziwych alertach (8 dni) wygenerowany CSV jest bajt w bajt identyczny z poprzednią wersją.
+- Testy: zakodowana nazwa, podwójnie zakodowana nazwa, zakodowany e-mail, zakodowany zgłaszany IP, zwykłe kodowanie bez
+  zmian, odrzucenie przez walidator, uszkodzone sekwencje. Sprawdzone mutacją (każdy wariant tylko na zwykłym tekście
+  robi czerwony test).
 
 ## 2026-10-01 - hooki prywatności: koniec ogólnej zgody na domenę autora, skan komunikatów commitów (3.6.25)
 

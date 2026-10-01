@@ -1,6 +1,6 @@
 [English](../COMPLIANCE.md) | **Polski**
 
-Wersja: 3.6.25 (`abuseipdb_report.py`)
+Wersja: 3.6.26 (`abuseipdb_report.py`)
 
 # Zgodność z AbuseIPDB
 
@@ -80,7 +80,7 @@ CIDR (CSV przyjmuje pojedyncze adresy).
   dopasowywana jako całe słowo, nie jako podciąg). To działanie w miarę możliwości, nie gwarancja: sekret w samej
   ścieżce (`/share/<token>`), pod nietypową nazwą parametru albo w nazwie zakodowanej procentowo nie zostanie rozpoznany.
 - **Adresy e-mail w próbkach żądań.** FAQ AbuseIPDB prosi, by nie umieszczać danych osobowych w komentarzach, więc
-  próbka wyglądająca na zawierającą adres e-mail jest pomijana, tak jak próbka z własną nazwą.
+  próbka wyglądająca na zawierającą adres e-mail jest pomijana, tak jak próbka z własną nazwą. Kontrole własnej nazwy, zgłaszanego IP i e-maila działają też na tekście zdekodowanym procentowo (jedna i dwie rundy), więc `www%2Eexample%2Eorg` jest wychwytywane tak samo jak `www.example.org`; walidator robi to samo.
 - **Cudzysłowy i backslashe.** Strona bulk-report mówi, że backslashe i cudzysłowy wymagają eskejpowania: parser CSV
   AbuseIPDB traktuje backslash jako znak ucieczki. Cudzysłów jest zapisywany jako `%22`, a komentarz nigdy nie kończy
   się backslashem; walidator odrzuca backslash przed cudzysłowem lub na końcu. Pozostałe backslashe zostają jako dowód.

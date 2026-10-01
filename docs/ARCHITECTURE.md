@@ -1,6 +1,6 @@
 **English** | [Polski](pl/ARCHITECTURE.md)
 
-Version: 3.6.25 (`abuseipdb_report.py`)
+Version: 3.6.26 (`abuseipdb_report.py`)
 
 # Architecture
 
@@ -83,7 +83,7 @@ Re-sending the same file is safe: AbuseIPDB merges reports with an identical com
 The comment is assembled only from the English `TPL_*` constants in the generator: source sentence, target protocol
 and ports, triggered scenarios, number of matching events, time range in UTC and a sample of the real HTTP requests
 (method, path, status). A sample that contains an own-name marker, the reported IP, one of the server's own public
-addresses or an e-mail address is omitted (the paths come from the attacker). The event count is conservative (unique requests, never a sum across overlapping
+addresses or an e-mail address is omitted, also when it is written percent-encoded (the paths come from the attacker; the check also looks at the text after one and two rounds of decoding). The event count is conservative (unique requests, never a sum across overlapping
 scenarios). The text is sanitised to ASCII, control characters are removed and spreadsheet formula prefixes are
 neutralised. A double quote is written as `%22` and the comment never ends with a backslash, because the AbuseIPDB CSV
 parser treats a backslash as an escape character; other backslashes stay (they are evidence, e.g. `\x5Cthink`).
