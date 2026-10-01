@@ -7,7 +7,7 @@ Version: 3.6.32 (`abuseipdb_report.py`)
 Automated, policy-compliant reporting of attackers detected by your own [CrowdSec](https://www.crowdsec.net/)
 instance to [AbuseIPDB](https://www.abuseipdb.com/).
 
-The project is a small pair of tools for a self-hosted Linux server:
+The project is a pair of tools for a self-hosted Linux server:
 
 - `abuseipdb_report.py` reads **locally detected** CrowdSec alerts and builds a bulk-report CSV that is
   validated against the AbuseIPDB rules. It sends nothing itself.
@@ -24,30 +24,21 @@ The project is a small pair of tools for a self-hosted Linux server:
 > The author is not a professional programmer, which is why the project has extensive tests and documentation.
 > Before live use, run `--dry-run` and review the CSV.
 
-## Why this exists
+## The main rule
 
 A false report can get an AbuseIPDB account suspended, so the tool is built around one priority: **never report
 something that is not a real, locally observed attack**, and never report the operator's own address. Everything else
-(convenience, coverage) comes second.
+(convenience, coverage) comes second. Full list of protections: [Safeguards](#safeguards).
 
 ## How it works
 
-```
-cron 05:30 -> abuseipdb_send.sh
-                 |  window = (watermark, now]         (no overlaps, no gaps)
-                 v
-              abuseipdb_report.py   <- cscli alerts list (local detections only)
-                 |  filters + safeguards + CSV validation
-                 v
-              reports.csv  -> independent --validate -> curl (bulk-report)
-                 |                                         |
-                 |                          HTTP code + JSON checked
-                 v                                         v
-              watermark advances only after a successful upload; ntfy alert otherwise
-```
-
-The time window is the interval `(watermark, now]`, so consecutive runs neither overlap nor leave gaps. The
-watermark moves only after a successful upload; on any error the operator gets an ntfy alert.
+1. Cron at 05:30 runs `abuseipdb_send.sh`, which picks the time window `(watermark, now]`: consecutive runs neither
+   overlap nor leave gaps.
+2. `abuseipdb_report.py` reads only **locally detected** alerts from `cscli alerts list`, applies the filters and
+   safeguards and builds `reports.csv`.
+3. The wrapper validates that file again, independently of the generator (`--validate`).
+4. `curl` uploads the file to the `bulk-report` endpoint; the HTTP code and the JSON answer are checked.
+5. The watermark moves only after a successful upload. On any error the operator gets an ntfy alert.
 
 ## Example of a report
 
@@ -66,27 +57,21 @@ IP,Categories,ReportDate,Comment
   reported address. Sample requests come from the attacker: one that contains such a name is left out, and the values
   of parameters that look like credentials are replaced by `***`.
 
-## Safeguards (never weaken these)
+## Requirements
 
-- Only alerts detected by this server (`kind == "crowdsec"`); community blocklist bans are never reported.
-- Reports older than 60 days are dropped on every row.
-- Private, reserved, CGNAT and other non-global addresses are never reported.
-- Scenarios with a history of false alarms are excluded; scenarios that are only a weak signal do not qualify alone.
-- Unknown scenarios are never reported (only `crowdsecurity` scenarios that are in the category map or named after a CVE);
-  a scenario of another author needs an explicit entry in `CATEGORY_MAP` under its full name.
-- Operator exclusion list (`EXCLUDE` in the config file, on by default) and **SSH auto-trust**: any address that logged in over SSH in the last
-  60 days is never reported (kept in a persistent store because the journal gets trimmed). An IPv6 login trusts its whole
-  /64 network, because an IPv6 machine rotates addresses inside it (`SSH_TRUST_IPV6_PREFIX`).
-- The server's own public addresses are always excluded.
-- The comment text is built only from English constants, is ASCII-only, never contains the reported IP, the
-  server's hostname or its domain names (a second check against your `OWN_NAME_MARKERS`), and is capped at
-  1,024 bytes. A sample request from the attacker that would contain such a name, the reported IP or one of the
-  server's own addresses is left out of the comment, so one hostile path never blocks the whole file.
-- Every file is validated twice (generator and wrapper) and a failing file never replaces the previous one.
+- Linux with systemd, `bash`, `curl`, `jq`, `flock` (util-linux), GNU `date`, `journalctl` and `ip`.
+- Tested only on Debian 12 (production) and Ubuntu 24.04 (CI), with CrowdSec 1.7 and 1.8 and nginx as the reverse
+  proxy. Other distributions, web servers and CrowdSec versions are untested: run `--dry-run`, read the CSV and
+  expect to adapt the setup. macOS, BSD and systems without systemd are not supported (the wrapper needs GNU `date`
+  and `flock`), and `cscli` must run on the same host as the scripts (CrowdSec in a container needs a wrapper of your own).
+- Python 3.9 or newer (developed on 3.11, tested on 3.9 and 3.14), standard library only.
+- CrowdSec with `cscli`, callable as `sudo -n cscli alerts list` by the service user (passwordless sudo rule);
+  when the script runs as root, `cscli` is called directly and `sudo` is not needed.
+- The service user may read the whole journal (group `systemd-journal` or `adm`).
+- An AbuseIPDB API key.
+- Optional: an ntfy topic for alerts.
 
-See [docs/COMPLIANCE.md](docs/COMPLIANCE.md) for the policy mapping.
-
-## Is this tool for you?
+## Before you go live
 
 Every report is published under your AbuseIPDB account, so check these points before the first live run:
 
@@ -106,20 +91,6 @@ Every report is published under your AbuseIPDB account, so check these points be
   one /64 between customers, set `SSH_TRUST_IPV6_PREFIX=128` to trust the exact address only. IPv4 is always exact.
 - **Other web ports.** If your web server does not listen on 80 and 443, set `HTTP_PORTS`, or the reports state a
   wrong port.
-
-## Requirements
-
-- Linux with systemd, `bash`, `curl`, `jq`, `flock` (util-linux), GNU `date`, `journalctl` and `ip`.
-- Tested only on Debian 12 (production) and Ubuntu 24.04 (CI), with CrowdSec 1.7 and 1.8 and nginx as the reverse
-  proxy. Other distributions, web servers and CrowdSec versions are untested: run `--dry-run`, read the CSV and
-  expect to adapt the setup. macOS, BSD and systems without systemd are not supported (the wrapper needs GNU `date`
-  and `flock`), and `cscli` must run on the same host as the scripts (CrowdSec in a container needs a wrapper of your own).
-- Python 3.9 or newer (developed on 3.11, tested on 3.9 and 3.14), standard library only.
-- CrowdSec with `cscli`, callable as `sudo -n cscli alerts list` by the service user (passwordless sudo rule);
-  when the script runs as root, `cscli` is called directly and `sudo` is not needed.
-- The service user may read the whole journal (group `systemd-journal` or `adm`).
-- An AbuseIPDB API key.
-- Optional: an ntfy topic for alerts.
 
 ## Quick start
 
@@ -155,6 +126,29 @@ Crontab entry (one run per day is the AbuseIPDB guideline):
 30 5 * * * /path/to/abuseipdb/abuseipdb_send.sh >> /path/to/abuseipdb/abuseipdb_cron.log 2>&1
 ```
 
+## Configuration
+
+All configuration lives in **one file outside the repository**, `~/.secrets/abuseipdb.conf` (mode 600; override
+the path with `ABUSEIPDB_CONFIG` or `--config`). Copy [abuseipdb.conf.example](abuseipdb.conf.example), which explains
+every line. The file is `KEY=value` text, read as data and never executed. It is checked strictly: a malformed line,
+an unknown key, a comment after a value or an invalid `EXCLUDE` entry stops the run with an error instead of quietly
+switching a safeguard off (comments go on their own line):
+
+- `ABUSEIPDB_API_KEY`: AbuseIPDB API key (required)
+- `NTFY_TOPIC`: ntfy topic for alerts (required for alerts; treat as a secret)
+- `NTFY_URL`: ntfy server (optional, default `https://ntfy.sh`)
+- `OWN_NAME_MARKERS`: comma-separated fragments (your own domains and host) that must never appear in a report comment; a live upload is refused while the list is empty or still holds the example values
+- `EXCLUDE`: an IP or CIDR that is never reported; repeat the key for more entries (optional)
+- `HTTP_PORTS`: the ports your web server listens on, stated in HTTP reports (optional, default `80/443`; e.g. `443` or `8080/8443`)
+- `SSH_TRUST_IPV6_PREFIX`: prefix length (64-128, default `64`) of the network trusted around an IPv6 address with a successful SSH login; `128` trusts only the exact address (optional)
+- `EXTRA_EXCLUDE_SCENARIOS`: comma-separated CrowdSec scenarios never reported, e.g. one that gave false alarms on your own traffic; a short name (`http-probing`) matches every author, a full name (`author/name`) only that author; it only adds to the built-in exclusions (optional)
+
+Generated next to it: `~/.secrets/ssh_trusted_seen.txt` (IPs with a successful SSH login, entries expire after
+60 days). The older separate files `abuseipdb_api_key`, `ntfy_topic` and `abuseipdb_exclude.txt` still work as a
+deprecated fallback while you migrate; the config file wins.
+
+Runtime data next to the scripts (ignored by git): `reports.csv`, `abuseipdb_cron.log`, `.state/`.
+
 ## Usage
 
 ```bash
@@ -165,28 +159,25 @@ python3 abuseipdb_report.py --validate reports.csv   # check a CSV against the A
 python3 abuseipdb_report.py --help
 ```
 
-All configuration lives in **one file outside the repository**, `~/.secrets/abuseipdb.conf` (mode 600; override
-the path with `ABUSEIPDB_CONFIG` or `--config`). Copy [abuseipdb.conf.example](abuseipdb.conf.example), which explains
-every line. The file is `KEY=value` text, read as data and never executed. It is checked strictly: a malformed line,
-an unknown key, a comment after a value or an invalid `EXCLUDE` entry stops the run with an error instead of quietly
-switching a safeguard off (comments go on their own line):
+## Safeguards
 
-| Key | Purpose |
-|---|---|
-| `ABUSEIPDB_API_KEY` | AbuseIPDB API key (required) |
-| `NTFY_TOPIC` | ntfy topic for alerts (required for alerts; treat as a secret) |
-| `NTFY_URL` | ntfy server (optional, default `https://ntfy.sh`) |
-| `OWN_NAME_MARKERS` | comma-separated fragments (your own domains and host) that must never appear in a report comment; a live upload is refused while the list is empty or still holds the example values |
-| `EXCLUDE` | an IP or CIDR that is never reported; repeat the key for more entries (optional) |
-| `HTTP_PORTS` | the ports your web server listens on, stated in HTTP reports (optional, default `80/443`; e.g. `443` or `8080/8443`) |
-| `SSH_TRUST_IPV6_PREFIX` | prefix length (64-128, default `64`) of the network trusted around an IPv6 address with a successful SSH login; `128` trusts only the exact address (optional) |
-| `EXTRA_EXCLUDE_SCENARIOS` | comma-separated CrowdSec scenarios never reported, e.g. one that gave false alarms on your own traffic; a short name (`http-probing`) matches every author, a full name (`author/name`) only that author; it only adds to the built-in exclusions (optional) |
+- Only alerts detected by this server (`kind == "crowdsec"`); community blocklist bans are never reported.
+- Reports older than 60 days are dropped on every row.
+- Private, reserved, CGNAT and other non-global addresses are never reported.
+- Scenarios with a history of false alarms are excluded; scenarios that are only a weak signal do not qualify alone.
+- Unknown scenarios are never reported (only `crowdsecurity` scenarios that are in the category map or named after a CVE);
+  a scenario of another author needs an explicit entry in `CATEGORY_MAP` under its full name.
+- Operator exclusion list (`EXCLUDE` in the config file, on by default) and **SSH auto-trust**: any address that logged in over SSH in the last
+  60 days is never reported (kept in a persistent store because the journal gets trimmed). An IPv6 login trusts its whole
+  /64 network, because an IPv6 machine rotates addresses inside it (`SSH_TRUST_IPV6_PREFIX`).
+- The server's own public addresses are always excluded.
+- The comment text is built only from English constants, is ASCII-only, never contains the reported IP, the
+  server's hostname or its domain names (a second check against your `OWN_NAME_MARKERS`), and is capped at
+  1,024 bytes. A sample request from the attacker that would contain such a name, the reported IP or one of the
+  server's own addresses is left out of the comment, so one hostile path never blocks the whole file.
+- Every file is validated twice (generator and wrapper) and a failing file never replaces the previous one.
 
-Generated next to it: `~/.secrets/ssh_trusted_seen.txt` (IPs with a successful SSH login, entries expire after
-60 days). The older separate files `abuseipdb_api_key`, `ntfy_topic` and `abuseipdb_exclude.txt` still work as a
-deprecated fallback while you migrate; the config file wins.
-
-Runtime data next to the scripts (ignored by git): `reports.csv`, `abuseipdb_cron.log`, `.state/`.
+See [docs/COMPLIANCE.md](docs/COMPLIANCE.md) for the policy mapping.
 
 ## Tests
 
@@ -196,29 +187,29 @@ python3 -m unittest discover -v tests     # generator tests run anywhere; wrappe
 
 ## Documentation
 
-| Document | Content |
-|---|---|
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | data flow, time windows, state files, exit codes, error handling |
-| [docs/COMPLIANCE.md](docs/COMPLIANCE.md) | AbuseIPDB policy and API limits mapped to the implementation |
-| [docs/OPERATIONS.md](docs/OPERATIONS.md) | cron, monitoring, alerts, troubleshooting, first-run checklist |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | workflow, tests, versioning, language rules, release checklist |
-| [CHANGELOG.md](CHANGELOG.md) | version history |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | how to report a bug, propose a change and send a pull request |
-| [SECURITY.md](SECURITY.md) | how to report a vulnerability privately |
-| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | how we treat each other (Contributor Covenant 2.1) |
-| [AGENTS.md](AGENTS.md) | rules for AI coding agents working on this repository (English only) |
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): data flow, time windows, state files, exit codes, error handling
+- [docs/COMPLIANCE.md](docs/COMPLIANCE.md): AbuseIPDB policy and API limits mapped to the implementation
+- [docs/OPERATIONS.md](docs/OPERATIONS.md): cron, monitoring, alerts, troubleshooting, first-run checklist
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md): workflow, tests, versioning, language rules, release checklist
+- [CHANGELOG.md](CHANGELOG.md): version history
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to report a bug, propose a change and send a pull request
+- [SECURITY.md](SECURITY.md): how to report a vulnerability privately
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md): how we treat each other (Contributor Covenant 2.1)
+- [AGENTS.md](AGENTS.md): rules for AI coding agents working on this repository (English only)
 
 All documents exist in English and Polish (`README.pl.md`, `docs/pl/`), except `AGENTS.md` (English only).
 
 ## Contributing and security
 
 Bug reports and pull requests are welcome, in English and also when written with an AI assistant; see
-[CONTRIBUTING.md](CONTRIBUTING.md) and, for coding agents, [AGENTS.md](AGENTS.md). A pull request that weakens a
-safeguard needs a very good reason. Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md),
-not in a public issue.
+[CONTRIBUTING.md](CONTRIBUTING.md) and, for coding agents, [AGENTS.md](AGENTS.md).\
+A pull request that weakens a safeguard needs a very good reason.\
+Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md), not in a public issue.
 
 ## License and author
 
-[MIT](LICENSE). Copyright (c) 2026 Arkadiusz Polak.
+[MIT license](LICENSE).
 
-Arkadiusz Polak, <github@arkadiuszpolak.pl>, [arkadiuszpolak.pl](https://arkadiuszpolak.pl).
+Copyright (c) 2026 Arkadiusz Polak.
+
+Arkadiusz Polak | <github@arkadiuszpolak.pl> | [arkadiuszpolak.pl](https://arkadiuszpolak.pl)
