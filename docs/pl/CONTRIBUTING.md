@@ -1,4 +1,4 @@
-[English](CONTRIBUTING.md) | **Polski**
+[English](../../CONTRIBUTING.md) | **Polski**
 
 # Współpraca
 
@@ -13,18 +13,18 @@ Otwórz zgłoszenie (issue) z szablonu zgłoszenia błędu. Podaj wersję (`./ab
 `abuseipdb_cron.log` albo z `--dry-run`.
 
 Zanim cokolwiek wkleisz, usuń własne nazwy domen i hostów, ścieżkę katalogu domowego, temat ntfy i własne adresy IP.
-Nigdy nie wklejaj klucza API ani pliku konfiguracji. Podatność zgłaszaj według [SECURITY.pl.md](SECURITY.pl.md), a nie
+Nigdy nie wklejaj klucza API ani pliku konfiguracji. Podatność zgłaszaj według [SECURITY.md](SECURITY.md), a nie
 w publicznym zgłoszeniu.
 
 ## Proponowanie zmiany
 
 Przy czymś większym niż literówka najpierw otwórz zgłoszenie i opisz problem. Zmiany bezpieczników (lista jest w sekcji
-"Hard safeguards" w [AGENTS.md](AGENTS.md), uzasadnienia w [docs/pl/COMPLIANCE.md](docs/pl/COMPLIANCE.md)) są omawiane,
+"Hard safeguards" w [AGENTS.md](../../AGENTS.md), uzasadnienia w [docs/pl/COMPLIANCE.md](COMPLIANCE.md)) są omawiane,
 zanim powstanie kod. Pull request, który osłabia któryś z nich, wymaga bardzo dobrego powodu i będzie z tym na uwadze
 przeglądany.
 
 Nowy scenariusz CrowdSeca w `CATEGORY_MAP` wymaga najsłabszego zestawu kategorii, który log naprawdę uzasadnia, oraz
-testu; patrz [docs/pl/DEVELOPMENT.md](docs/pl/DEVELOPMENT.md). Jeśli chcesz tylko przestać zgłaszać scenariusz na
+testu; patrz [docs/pl/DEVELOPMENT.md](DEVELOPMENT.md). Jeśli chcesz tylko przestać zgłaszać scenariusz na
 własnym serwerze, użyj `EXTRA_EXCLUDE_SCENARIOS` w swoim configu.
 
 ## Jak wysłać zmianę
@@ -50,17 +50,17 @@ bezpośrednio do tego repozytorium; pull request i scalenie przez opiekuna pozos
 - Jeden temat na pull request. Kod ma być prosty i czytelny; komentarze wyjaśniają dlaczego, a nie tylko co.
 - Kod, komentarze, komunikaty, testy i komunikaty commitów są wyłącznie po angielsku. Szablony zgłoszeń (`TPL_*`)
   muszą zostać po angielsku, bo są publikowane w AbuseIPDB.
-- Dokumentacja istnieje po angielsku i po polsku (`README.md` i `README.pl.md`, `docs/X.md` i `docs/pl/X.md` itd.).
+- Dokumentacja istnieje po angielsku i po polsku (`README.md` i `README.pl.md`, każdy inny `X.md` i `docs/pl/X.md` itd.).
   Wystarczy, że napiszesz plik angielski; nie musisz znać polskiego. Polskie tłumaczenie dodaje opiekun projektu przed
   scaleniem, więc prosimy, żeby nie tłumaczyć maszynowo na własną rękę.
 - Nie podnoś wersji. Opisz zmianę w sekcji "Unreleased" w `CHANGELOG.md`; opiekun decyduje, czy wersja rośnie
-  (rośnie, gdy zmienia się program), i uzupełnia `CHANGELOG.pl.md` przy scalaniu.
+  (rośnie, gdy zmienia się program), i uzupełnia `docs/pl/CHANGELOG.md` przy scalaniu.
 - Testy używają wyłącznie sztucznych danych: adresów zarezerwowanych (`203.0.113.0/24`, `198.51.100.0/24`,
   `2001:db8::/32`) albo znanych publicznych resolverów jako zastępczych atakujących, nazw `example.org` / `.example` /
   `.test`, sztucznych kluczy i tematów. Nigdy prawdziwego klucza API, nigdy prawdziwej wysyłki do AbuseIPDB, nigdy
   własnych nazw hostów ani adresów.
 - Refaktoryzacja musi zachować wygenerowany CSV bajt w bajt dla tego samego `--input-json`. Po zmianie bezpiecznika
-  zepsuj go celowo i sprawdź, że test pada (test mutacyjny, patrz [docs/pl/DEVELOPMENT.md](docs/pl/DEVELOPMENT.md)).
+  zepsuj go celowo i sprawdź, że test pada (test mutacyjny, patrz [docs/pl/DEVELOPMENT.md](DEVELOPMENT.md)).
 
 ## Język
 
@@ -71,7 +71,7 @@ wszystko będzie zrozumiałe.
 ## Praca z asystentem AI
 
 Wkład tworzony z pomocą AI jest mile widziany; opiekun też tak pracuje. Wskaż swojemu asystentowi plik
-[AGENTS.md](AGENTS.md): zawiera zasady (bezpieczniki, których nie wolno osłabiać, czego nigdy nie robić, konwencje i
+[AGENTS.md](../../AGENTS.md): zawiera zasady (bezpieczniki, których nie wolno osłabiać, czego nigdy nie robić, konwencje i
 kilka nieoczywistych faktów o danych) w formacie, który wielu agentów programistycznych czyta automatycznie. Jeśli
 Twój tego nie robi, każ mu przeczytać ten plik na początku (Claude Code czyta `CLAUDE.md`, więc wpisz do niego linię
 `@AGENTS.md`). Za to, co
@@ -94,9 +94,9 @@ Workflow GitHub Actions uruchamia cały zestaw na Ubuntu dla każdego pull reque
 
 ## Kodeks postępowania
 
-Projekt stosuje [Contributor Covenant](CODE_OF_CONDUCT.pl.md). Biorąc udział w zgłoszeniach, dyskusjach i pull
+Projekt stosuje [Contributor Covenant](CODE_OF_CONDUCT.md). Biorąc udział w zgłoszeniach, dyskusjach i pull
 requestach, akceptujesz go.
 
 ## Licencja
 
-Wnosząc wkład, zgadzasz się, że jest on objęty [licencją MIT](LICENSE) tego projektu.
+Wnosząc wkład, zgadzasz się, że jest on objęty [licencją MIT](../../LICENSE) tego projektu.

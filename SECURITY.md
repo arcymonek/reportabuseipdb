@@ -1,4 +1,4 @@
-**English** | [Polski](SECURITY.pl.md)
+**English** | [Polski](docs/pl/SECURITY.md)
 
 # Security policy
 

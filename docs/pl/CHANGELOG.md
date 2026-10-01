@@ -1,10 +1,10 @@
-[English](CHANGELOG.md) | **Polski**
+[English](../../CHANGELOG.md) | **Polski**
 
 Wersja: 3.6.32 (`abuseipdb_report.py`)
 
 # Historia zmian
 
-Istotne zmiany dla osób, które uruchamiają narzędzie. Każdy wpis ma odpowiednik w [CHANGELOG.md](CHANGELOG.md). Format:
+Istotne zmiany dla osób, które uruchamiają narzędzie. Każdy wpis ma odpowiednik w [CHANGELOG.md](../../CHANGELOG.md). Format:
 [Keep a Changelog](https://keepachangelog.com/). Szczegółowa historia każdego commita jest w `git log`.
 
 Numeracja to `X.Y.Z`. Wersją projektu jest wersja `abuseipdb_report.py`. Rośnie, gdy zmienia się **program**: dwa
@@ -21,6 +21,9 @@ są ważne dla opiekuna i kontrybutorów, są wypisane w sekcji "Development" z 
 
 Hooki, testy, CI i pliki GitHuba. Bez numeru wersji: te zmiany nie wpływają na to, co działa na twoim serwerze.
 
+- 2026-10-01 - Polskie wersje `CHANGELOG`, `CONTRIBUTING`, `SECURITY` i `CODE_OF_CONDUCT` przeniesione z katalogu głównego
+  do `docs/pl/` (jako `docs/pl/X.md`); `README.pl.md` zostaje w katalogu głównym. Hook pre-commit i testy uwzględniają
+  nowe pary.
 - 2026-10-01 - Hook pre-commit pilnuje pary EN/PL pliku `CODE_OF_CONDUCT.md`; reguła parowania ma teraz testy.
 - 2026-10-01 - Kodeks postępowania (Contributor Covenant 2.1, z nieoficjalnym tłumaczeniem na polski) i szablon pull requestu.
 - 2026-10-01 - Akcje CI są przypięte do skrótów commitów; sprawdzanie nowszych wersji jest ręczne (patrz

@@ -62,8 +62,8 @@ GitHub Actions workflow does this for every pull request.
 
 - Code, comments, log and error messages, `--help`, alerts, tests, commit messages, issues and pull requests: English
   only. Comments explain why, not only what. Keep code simple and readable; avoid clever tricks.
-- Documentation exists in English and Polish (`README.md` and `README.pl.md`, `CHANGELOG.md` and `CHANGELOG.pl.md`,
-  `docs/X.md` and `docs/pl/X.md`). English is the source. As a contributor you write and update **English only**; the
+- Documentation exists in English and Polish (`README.md` and `README.pl.md`, `CHANGELOG.md` and
+  `docs/pl/CHANGELOG.md`, `docs/X.md` and `docs/pl/X.md`). English is the source. As a contributor you write and update **English only**; the
   maintainer adds the Polish translation. Do not create or edit Polish files yourself. This file (`AGENTS.md`) has no
   Polish twin.
 - Do not raise the version. Describe your change under "Unreleased" in `CHANGELOG.md`; the maintainer decides

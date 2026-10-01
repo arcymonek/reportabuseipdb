@@ -1,4 +1,4 @@
-**English** | [Polski](CONTRIBUTING.pl.md)
+**English** | [Polski](docs/pl/CONTRIBUTING.md)
 
 # Contributing
 
@@ -50,7 +50,7 @@ repository directly; the pull request and the maintainer's merge stay the same.
 - One topic per pull request. Keep the code simple and readable; comments explain why, not only what.
 - Code, comments, messages, tests and commit messages are English only. The report templates (`TPL_*`) must stay
   English because they are published on AbuseIPDB.
-- Documentation exists in English and Polish (`README.md` and `README.pl.md`, `docs/X.md` and `docs/pl/X.md`, and so
+- Documentation exists in English and Polish (`README.md` and `README.pl.md`, every other `X.md` and `docs/pl/X.md`, and so
   on). You only need to write the English file; you do not have to know Polish. The maintainer adds the Polish
   translation before merging, so please do not machine-translate it yourself.
 - Do not raise the version. Describe your change under "Unreleased" in `CHANGELOG.md`; the maintainer decides

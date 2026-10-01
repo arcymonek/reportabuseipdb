@@ -1,10 +1,10 @@
-**English** | [Polski](CHANGELOG.pl.md)
+**English** | [Polski](docs/pl/CHANGELOG.md)
 
 Version: 3.6.32 (`abuseipdb_report.py`)
 
 # Changelog
 
-Notable changes for people who run the tool. Every entry is mirrored in [CHANGELOG.pl.md](CHANGELOG.pl.md). Format:
+Notable changes for people who run the tool. Every entry is mirrored in [docs/pl/CHANGELOG.md](docs/pl/CHANGELOG.md). Format:
 [Keep a Changelog](https://keepachangelog.com/). The detailed history of every commit is in `git log`.
 
 Version numbering is `X.Y.Z`. The project version is the version of `abuseipdb_report.py`. It rises when the **program**
@@ -21,6 +21,8 @@ its own version (currently 1.1.7) and follows the same rule.
 
 Hooks, tests, CI and GitHub files. Not versioned: these changes do not affect what runs on your server.
 
+- 2026-10-01 - The Polish versions of `CHANGELOG`, `CONTRIBUTING`, `SECURITY` and `CODE_OF_CONDUCT` moved from the root to
+  `docs/pl/` (as `docs/pl/X.md`); `README.pl.md` stays in the root. The pre-commit hook and the tests follow the new pairs.
 - 2026-10-01 - The pre-commit hook enforces the EN/PL pair of `CODE_OF_CONDUCT.md`; the pairing rule now has tests.
 - 2026-10-01 - Code of conduct (Contributor Covenant 2.1, with an unofficial Polish translation) and a pull request template.
 - 2026-10-01 - CI actions are pinned to commit SHAs; checking for newer versions is manual (see `docs/DEVELOPMENT.md`).

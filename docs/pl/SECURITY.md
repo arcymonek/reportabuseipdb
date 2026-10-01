@@ -1,4 +1,4 @@
-[English](SECURITY.md) | **Polski**
+[English](../../SECURITY.md) | **Polski**
 
 # Polityka bezpieczeństwa
 

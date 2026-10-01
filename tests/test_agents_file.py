@@ -36,7 +36,7 @@ class AgentsFile(unittest.TestCase):
         hook = (ROOT / "tools" / "pre-commit").read_text(encoding="utf-8")
         self.assertIn("EN_ONLY", hook)
         self.assertIn("EN_ONLY=1", (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8"))
-        self.assertIn("EN_ONLY=1", (ROOT / "CONTRIBUTING.pl.md").read_text(encoding="utf-8"))
+        self.assertIn("EN_ONLY=1", (ROOT / "docs" / "pl" / "CONTRIBUTING.md").read_text(encoding="utf-8"))
 
     # AGENTS.md is deliberately self-contained (an agent may not follow links), so its rules repeat what
     # CONTRIBUTING.md and docs/COMPLIANCE.md say. These tests do not forbid the repetition; they make sure the copies

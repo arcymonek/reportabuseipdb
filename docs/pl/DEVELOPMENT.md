@@ -15,12 +15,12 @@ tools/commit-msg        hook repozytorium dla komunikatu commita (ten sam skan p
 tools/lib-privacy.sh    reguły prywatności wspólne dla obu hooków (wczytywany, nie jest hookiem)
 AGENTS.md               zasady dla agentów AI (tylko po angielsku, bez polskiego odpowiednika)
 docs/, docs/pl/         dokumentacja (angielska, polska)
-README.md, README.pl.md, CHANGELOG.md, CHANGELOG.pl.md
+README.md, README.pl.md, CHANGELOG.md, CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md
 ```
 
 ## Workflow
 
-To workflow opiekuna projektu. Kontrybutorzy: patrz [CONTRIBUTING.pl.md](../../CONTRIBUTING.pl.md) (fork, gałąź, pull
+To workflow opiekuna projektu. Kontrybutorzy: patrz [CONTRIBUTING.md](CONTRIBUTING.md) (fork, gałąź, pull
 request); nie podnosicie wersji, niczego nie wdrażacie ani nie scalacie.
 
 Są dwie ścieżki. Reguła praktyczna: jeśli po zmianie program zachowywałby się inaczej albo opis bezpiecznika mówiłby
@@ -123,7 +123,7 @@ kwartał i gdy GitHub ostrzega o wycofanej:
 - Hook pre-commit wymusza to, co da się sprawdzić: dokumenty muszą pokazywać tę samą wersję co `SCRIPT_VERSION`, a
   commit, który zmienia wersję, musi ją podnieść dokładnie o jeden krok. Commit, który wersji nie rusza, przechodzi
   przez hook, więc kontrybutorzy nigdy nie muszą jej zmieniać: opisują zmianę w sekcji "Unreleased" w `CHANGELOG.md`,
-  a opiekun decyduje, czy podnosi wersję, uzupełnia `CHANGELOG.pl.md` i przenosi notatkę przy scalaniu. Spójność
+  a opiekun decyduje, czy podnosi wersję, uzupełnia `docs/pl/CHANGELOG.md` i przenosi notatkę przy scalaniu. Spójność
   sprawdza też `tests/test_versioning.py`.
 
 ## Zasady językowe
@@ -134,13 +134,13 @@ kwartał i gdy GitHub ostrzega o wycofanej:
 - README, każdy dokument w `docs/` i changelog istnieją po angielsku (domyślnie) i po polsku. Angielski jest
   źródłem, polski tłumaczeniem. Zmiana w jednym języku nie jest skończona, dopóki drugi nie zostanie
   zaktualizowany.
-- Pary plików: `README.md` i `README.pl.md`, `CHANGELOG.md` i `CHANGELOG.pl.md`, `CONTRIBUTING.md`, `SECURITY.md` i
-  `CODE_OF_CONDUCT.md` z ich odpowiednikami `.pl.md`, `docs/X.md` i `docs/pl/X.md`.
+- Pary plików: `README.md` i `README.pl.md` (jedyny polski plik w katalogu głównym), każdy inny dokument `X.md` (w
+  katalogu głównym lub w `docs/`) i `docs/pl/X.md`.
   Każdy plik zaczyna się linią przełącznika języka. Hook pre-commit odmawia commita, który zawiera tylko jedną stronę
   pary albo w którym liczba nagłówków się różni.
 - `AGENTS.md` jest jedynym wyjątkiem: tylko po angielsku, bez polskiego odpowiednika i bez linii wersji, bo czytają go
   agenci, a czytelnik nie wybiera języka. Aktualizuj go razem z tymi zasadami, gdy się zmieniają.
-- Kontrybutorzy piszą tylko po angielsku (patrz [CONTRIBUTING.pl.md](../../CONTRIBUTING.pl.md)). Commitują z
+- Kontrybutorzy piszą tylko po angielsku (patrz [CONTRIBUTING.md](CONTRIBUTING.md)). Commitują z
   `EN_ONLY=1`, co sprawia, że hook pomija wyłącznie regułę parowania. Polską stronę dodaje opiekun (patrz następna
   sekcja).
 
@@ -199,7 +199,7 @@ wypychać gałęzie do tego repozytorium. Nic innego się nie zmienia: gałąź 
 - Przeskanuj drzewo i historię pod kątem sekretów, adresów i nazw hostów. Historia publiczna zaczyna się od commita
   wydania 3.6.2 (wcześniejsza historia została zsquashowana) i była ponownie przeskanowana 2026-09-29; skanuj ją przed
   każdą nową publikacją.
-- Ustawienia GitHuba: włącz prywatne zgłaszanie podatności (patrz `SECURITY.pl.md`) i chroń `main` rulesetem, który
+- Ustawienia GitHuba: włącz prywatne zgłaszanie podatności (patrz `docs/pl/SECURITY.md`) i chroń `main` rulesetem, który
   blokuje force-push i usuwanie gałęzi. Nie wymagaj sprawdzenia `tests` w rulesecie: wynik istnieje dopiero po pushu,
   więc wymóg blokowałby także bezpośrednie pushe dokumentacji opiekuna. Opiekun ogląda zielony przebieg gałęzi przed jej
   scaleniem. Ruleset nie jest dostępny dla prywatnego repozytorium na darmowym koncie (GitHub odpowiada HTTP 403), więc

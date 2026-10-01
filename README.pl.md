@@ -202,20 +202,20 @@ python3 -m unittest discover -v tests     # testy generatora działają wszędzi
 | [docs/pl/COMPLIANCE.md](docs/pl/COMPLIANCE.md) | polityka i limity API AbuseIPDB odniesione do implementacji |
 | [docs/pl/OPERATIONS.md](docs/pl/OPERATIONS.md) | cron, monitoring, alerty, diagnostyka, lista kontrolna pierwszego przebiegu |
 | [docs/pl/DEVELOPMENT.md](docs/pl/DEVELOPMENT.md) | workflow, testy, wersjonowanie, zasady językowe, lista przed publikacją |
-| [CHANGELOG.pl.md](CHANGELOG.pl.md) | historia wersji |
-| [CONTRIBUTING.pl.md](CONTRIBUTING.pl.md) | jak zgłosić błąd, zaproponować zmianę i wysłać pull request |
-| [SECURITY.pl.md](SECURITY.pl.md) | jak prywatnie zgłosić podatność |
-| [CODE_OF_CONDUCT.pl.md](CODE_OF_CONDUCT.pl.md) | jak traktujemy się nawzajem (Contributor Covenant 2.1) |
+| [docs/pl/CHANGELOG.md](docs/pl/CHANGELOG.md) | historia wersji |
+| [docs/pl/CONTRIBUTING.md](docs/pl/CONTRIBUTING.md) | jak zgłosić błąd, zaproponować zmianę i wysłać pull request |
+| [docs/pl/SECURITY.md](docs/pl/SECURITY.md) | jak prywatnie zgłosić podatność |
+| [docs/pl/CODE_OF_CONDUCT.md](docs/pl/CODE_OF_CONDUCT.md) | jak traktujemy się nawzajem (Contributor Covenant 2.1) |
 | [AGENTS.md](AGENTS.md) | zasady dla agentów AI pracujących nad tym repozytorium (tylko po angielsku) |
 
-Wszystkie dokumenty istnieją po angielsku i po polsku (`*.pl.md`, `docs/pl/`), z wyjątkiem `AGENTS.md` (tylko po angielsku).
+Wszystkie dokumenty istnieją po angielsku i po polsku (`README.pl.md`, `docs/pl/`), z wyjątkiem `AGENTS.md` (tylko po angielsku).
 
 ## Współpraca i bezpieczeństwo
 
 Zgłoszenia błędów i pull requesty są mile widziane, po angielsku, także pisane z pomocą asystenta AI; patrz
-[CONTRIBUTING.pl.md](CONTRIBUTING.pl.md) i, dla agentów programistycznych, [AGENTS.md](AGENTS.md). Pull request
+[docs/pl/CONTRIBUTING.md](docs/pl/CONTRIBUTING.md) i, dla agentów programistycznych, [AGENTS.md](AGENTS.md). Pull request
 osłabiający bezpiecznik wymaga bardzo dobrego powodu. Podatności zgłaszaj prywatnie, jak opisano w
-[SECURITY.pl.md](SECURITY.pl.md), a nie w publicznym zgłoszeniu.
+[docs/pl/SECURITY.md](docs/pl/SECURITY.md), a nie w publicznym zgłoszeniu.
 
 ## Licencja i autor
 

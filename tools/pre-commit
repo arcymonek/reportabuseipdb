@@ -37,11 +37,15 @@ for f in "${staged[@]}"; do
     esac
 done
 
-# EN/PL pairs: X.md <-> X.pl.md in the root (README, CHANGELOG, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT), docs/X.md <-> docs/pl/X.md
+# EN/PL pairs: README.md <-> README.pl.md (the only Polish file in the root); every other document lives in the
+# Polish tree: X.md <-> docs/pl/X.md (X = CHANGELOG, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT) and docs/X.md <-> docs/pl/X.md.
+# The root names must come before the generic docs/pl/*.md rule, which would map them to docs/X.md.
 pair_of() {
     case "$1" in
-        README.md|CHANGELOG.md|CONTRIBUTING.md|SECURITY.md|CODE_OF_CONDUCT.md) echo "${1%.md}.pl.md" ;;
-        README.pl.md|CHANGELOG.pl.md|CONTRIBUTING.pl.md|SECURITY.pl.md|CODE_OF_CONDUCT.pl.md) echo "${1%.pl.md}.md" ;;
+        README.md) echo "README.pl.md" ;;
+        README.pl.md) echo "README.md" ;;
+        CHANGELOG.md|CONTRIBUTING.md|SECURITY.md|CODE_OF_CONDUCT.md) echo "docs/pl/$1" ;;
+        docs/pl/CHANGELOG.md|docs/pl/CONTRIBUTING.md|docs/pl/SECURITY.md|docs/pl/CODE_OF_CONDUCT.md) echo "${1#docs/pl/}" ;;
         docs/pl/*.md) echo "docs/${1#docs/pl/}" ;;
         docs/*.md) echo "docs/pl/${1#docs/}" ;;
     esac
@@ -90,7 +94,9 @@ if [ "${#staged[@]}" -gt 0 ]; then
     check_step abuseipdb_report.py 'SCRIPT_VERSION = '
     in_staged abuseipdb_send.sh && check_step abuseipdb_send.sh 'SCRIPT_VERSION='
     pyver="$(version_in :abuseipdb_report.py 'SCRIPT_VERSION = ')"
-    for doc in README.md README.pl.md CHANGELOG.md CHANGELOG.pl.md docs/*.md docs/pl/*.md; do
+    for doc in README.md README.pl.md CHANGELOG.md docs/*.md docs/pl/*.md; do
+        # CONTRIBUTING, SECURITY and CODE_OF_CONDUCT never carried a version line (in any language)
+        case "$doc" in docs/pl/CONTRIBUTING.md|docs/pl/SECURITY.md|docs/pl/CODE_OF_CONDUCT.md) continue ;; esac
         case "$doc" in *.pl.md|docs/pl/*) label="Wersja" ;; *) label="Version" ;; esac
         have="$(git show ":$doc" 2> /dev/null | sed -n "s/^$label: \([0-9.]*\) (.abuseipdb_report\.py.)\$/\1/p" | head -1)"
         if [ "$have" != "$pyver" ]; then echo "DOC VERSION: $doc shows '${have:-none}', abuseipdb_report.py is '$pyver'"; fail=1; fi

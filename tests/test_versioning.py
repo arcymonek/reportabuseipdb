@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DOCS = (["README.md", "README.pl.md", "CHANGELOG.md", "CHANGELOG.pl.md"]
+DOCS = (["README.md", "README.pl.md", "CHANGELOG.md", "docs/pl/CHANGELOG.md"]
         + [f"docs/{n}.md" for n in ("ARCHITECTURE", "COMPLIANCE", "OPERATIONS", "DEVELOPMENT")]
         + [f"docs/pl/{n}.md" for n in ("ARCHITECTURE", "COMPLIANCE", "OPERATIONS", "DEVELOPMENT")])
 
@@ -23,7 +23,7 @@ class Versioning(unittest.TestCase):
     def test_every_document_shows_the_current_version(self):
         version, _ = script_version()
         for rel in DOCS:
-            label = "Wersja" if rel.endswith(".pl.md") or "/pl/" in rel else "Version"
+            label = "Wersja" if rel == "README.pl.md" or rel.startswith("docs/pl/") else "Version"
             text = (ROOT / rel).read_text(encoding="utf-8")
             m = re.search(rf"^{label}: (\d+\.\d+\.\d+) \(`abuseipdb_report\.py`\)$", text, re.M)
             self.assertIsNotNone(m, f"{rel}: missing '{label}: X.Y.Z (`abuseipdb_report.py`)' line")
@@ -33,7 +33,7 @@ class Versioning(unittest.TestCase):
         # The entry is a heading "## X.Y.Z - date". A change that does not touch the program (documentation, hooks,
         # tests, CI) does not raise the version, so the newest entry may be older than the newest commit.
         version, _ = script_version()
-        for rel in ("CHANGELOG.md", "CHANGELOG.pl.md"):
+        for rel in ("CHANGELOG.md", "docs/pl/CHANGELOG.md"):
             text = (ROOT / rel).read_text(encoding="utf-8")
             self.assertRegex(text, rf"(?m)^## {re.escape(version)} - \d{{4}}-\d{{2}}-\d{{2}}$", rel)
 

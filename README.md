@@ -208,7 +208,7 @@ python3 -m unittest discover -v tests     # generator tests run anywhere; wrappe
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | how we treat each other (Contributor Covenant 2.1) |
 | [AGENTS.md](AGENTS.md) | rules for AI coding agents working on this repository (English only) |
 
-All documents exist in English and Polish (`*.pl.md`, `docs/pl/`), except `AGENTS.md` (English only).
+All documents exist in English and Polish (`README.pl.md`, `docs/pl/`), except `AGENTS.md` (English only).
 
 ## Contributing and security
 

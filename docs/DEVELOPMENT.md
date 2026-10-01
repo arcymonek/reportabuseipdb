@@ -15,7 +15,7 @@ tools/commit-msg        repository hook for the commit message (same privacy sca
 tools/lib-privacy.sh    the privacy rules both hooks share (sourced, not a hook)
 AGENTS.md               rules for AI coding agents (English only, no Polish twin)
 docs/, docs/pl/         documentation (English, Polish)
-README.md, README.pl.md, CHANGELOG.md, CHANGELOG.pl.md
+README.md, README.pl.md, CHANGELOG.md, CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md
 ```
 
 ## Workflow
@@ -124,7 +124,7 @@ deprecated one:
 - The pre-commit hook enforces what can be checked: the documents must show the same version as `SCRIPT_VERSION`, and a
   commit that changes the version must raise it by exactly one step. A commit that leaves the version alone passes the
   hook, so contributors never have to touch it: they describe their change under "Unreleased" in `CHANGELOG.md`, and the
-  maintainer decides whether it raises the version, completes `CHANGELOG.pl.md` and moves the note when merging.
+  maintainer decides whether it raises the version, completes `docs/pl/CHANGELOG.md` and moves the note when merging.
   `tests/test_versioning.py` checks the consistency as well.
 
 ## Language rules
@@ -133,8 +133,8 @@ deprecated one:
 - The report templates (`TPL_*`) must stay English; they are published on AbuseIPDB.
 - README, every document in `docs/` and the changelog exist in English (default) and Polish. English is the source,
   Polish the translation. A change to one language is not complete until the other one is updated.
-- File pairs: `README.md` and `README.pl.md`, `CHANGELOG.md` and `CHANGELOG.pl.md`, `CONTRIBUTING.md`, `SECURITY.md` and
-  `CODE_OF_CONDUCT.md` with their `.pl.md` twins, `docs/X.md` and `docs/pl/X.md`.
+- File pairs: `README.md` and `README.pl.md` (the only Polish file in the root), every other document `X.md` (in the
+  root or in `docs/`) and `docs/pl/X.md`.
   Each file starts with a language switch line. The pre-commit hook refuses a commit that stages one side of a pair
   only, or where the number of headings differs.
 - `AGENTS.md` is the one exception: English only, no Polish twin, no version line, because coding agents read it and a

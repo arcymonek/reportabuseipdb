@@ -1,4 +1,4 @@
-[English](CODE_OF_CONDUCT.md) | **Polski**
+[English](../../CODE_OF_CONDUCT.md) | **Polski**
 
 *Nieoficjalne tłumaczenie Contributor Covenant 2.1 (oficjalnej polskiej wersji nie ma). W razie wątpliwości obowiązuje
 wersja angielska.*

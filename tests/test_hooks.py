@@ -22,9 +22,9 @@ DOM = "arkadiusz" + "polak.pl"                 # the one domain of the author th
 PROFILE = "github.com/arcy" + "monek/"          # the author's GitHub profile path (allowed)
 NAME = "Arkadiusz" + " Polak"                   # the author's name (allowed)
 HAVE_TOOLS = bool(shutil.which("git") and shutil.which("bash"))
+# Root files only; docs/ (including docs/pl/ with the Polish CHANGELOG, CONTRIBUTING, ...) is copied as a whole.
 FILES = ["abuseipdb_report.py", "abuseipdb_send.sh", "README.md", "README.pl.md", "CHANGELOG.md",
-         "CHANGELOG.pl.md", "CONTRIBUTING.md", "CONTRIBUTING.pl.md", "SECURITY.md", "SECURITY.pl.md",
-         "CODE_OF_CONDUCT.md", "CODE_OF_CONDUCT.pl.md"]
+         "CONTRIBUTING.md", "SECURITY.md", "CODE_OF_CONDUCT.md"]
 
 
 @unittest.skipUnless(HAVE_TOOLS, "requires git and bash")
@@ -179,11 +179,12 @@ class Pairing(HookBase):
     """The EN/PL pairing rule: a change to one side of a pair must be staged together with the other side.
 
     The rule only knows the pairs listed in pair_of(). A document missing from that list (CODE_OF_CONDUCT was, until
-    now) could drift away from its translation without the hook noticing, so every root pair is tested here.
+    now) could drift away from its translation without the hook noticing, so every pair is tested here.
     """
-    PAIRS = [("README.md", "README.pl.md"), ("CHANGELOG.md", "CHANGELOG.pl.md"),
-             ("CONTRIBUTING.md", "CONTRIBUTING.pl.md"), ("SECURITY.md", "SECURITY.pl.md"),
-             ("CODE_OF_CONDUCT.md", "CODE_OF_CONDUCT.pl.md")]
+    PAIRS = [("README.md", "README.pl.md"), ("CHANGELOG.md", "docs/pl/CHANGELOG.md"),
+             ("CONTRIBUTING.md", "docs/pl/CONTRIBUTING.md"), ("SECURITY.md", "docs/pl/SECURITY.md"),
+             ("CODE_OF_CONDUCT.md", "docs/pl/CODE_OF_CONDUCT.md"),
+             ("docs/ARCHITECTURE.md", "docs/pl/ARCHITECTURE.md")]
 
     def touch(self, name, extra="\nA harmless extra sentence.\n"):
         with open(self.repo / name, "a") as f:
@@ -212,7 +213,7 @@ class Pairing(HookBase):
 
     def test_a_different_number_of_headings_is_refused(self):
         self.touch("CODE_OF_CONDUCT.md", "\n## One more heading\n")
-        self.touch("CODE_OF_CONDUCT.pl.md")
+        self.touch("docs/pl/CODE_OF_CONDUCT.md")
         r = self.run_hook("pre-commit")
         self.assertEqual(r.returncode, 1, r.out)
         self.assertIn("HEADING COUNT DIFFERS", r.out)
