@@ -18,11 +18,10 @@ to a public issue.
 
 ## Proposing a change
 
-For anything larger than a typo, open an issue first and describe the problem. Changes to the safeguards listed in
-[docs/COMPLIANCE.md](docs/COMPLIANCE.md) are discussed before any code is written. A pull request that weakens one of
-them (the 60-day filter, non-global addresses, excluded or weak scenarios, SSH auto-trust, exclusions, own addresses,
-the local-alerts-only data source, the comment rules, the double validation, the watermark, the 20 h guard, the API
-key handling) needs a very good reason and will be reviewed with that in mind.
+For anything larger than a typo, open an issue first and describe the problem. Changes to the safeguards (the list is
+under "Hard safeguards" in [AGENTS.md](AGENTS.md), the reasons are in [docs/COMPLIANCE.md](docs/COMPLIANCE.md)) are
+discussed before any code is written. A pull request that weakens one of them needs a very good reason and will be
+reviewed with that in mind.
 
 A new CrowdSec scenario in `CATEGORY_MAP` needs the weakest category set that the log really supports and a test; see
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). If you only want to stop reporting a scenario on your own server, use

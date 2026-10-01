@@ -202,7 +202,8 @@ wypychać gałęzie do tego repozytorium. Nic innego się nie zmienia: gałąź 
 - Ustawienia GitHuba: włącz prywatne zgłaszanie podatności (patrz `SECURITY.pl.md`) i chroń `main` rulesetem, który
   blokuje force-push i usuwanie gałęzi. Nie wymagaj sprawdzenia `tests` w rulesecie: wynik istnieje dopiero po pushu,
   więc wymóg blokowałby także bezpośrednie pushe dokumentacji opiekuna. Opiekun ogląda zielony przebieg gałęzi przed jej
-  scaleniem.
+  scaleniem. Ruleset nie jest dostępny dla prywatnego repozytorium na darmowym koncie (GitHub odpowiada HTTP 403), więc
+  utwórz go zaraz po upublicznieniu repozytorium.
 - Zachowaj uwagę "nieoficjalny, niezwiązany" w obu README.
 - Sprawdź, że żaden dokument nie zawiera prawdziwej nazwy hosta, domeny, adresu ani tematu ntfy (skan prywatności robi
   to przy każdym commicie, jeśli twój config zawiera twoje nazwy).

@@ -53,7 +53,7 @@ Version: 3.6.32 (`abuseipdb_report.py`)
 | `.state/abuseipdb-send.lock` | wrapper | `flock` lock file |
 | `reports.csv`, `reports.csv.tmp` | generator | deleted by the wrapper before every real run so a stale file is never sent |
 | `abuseipdb_cron.log` | cron | trimmed in place by the wrapper to about 2,000 lines |
-| `~/.secrets/abuseipdb.conf` | operator | the single config file, mode 600, `KEY=value` text that is never executed: `ABUSEIPDB_API_KEY` (never in arguments or logs), `NTFY_TOPIC` (passed to `curl` through stdin), `NTFY_URL`, `OWN_NAME_MARKERS`, `EXCLUDE`, `HTTP_PORTS`, `EXTRA_EXCLUDE_SCENARIOS`, `SSH_TRUST_IPV6_PREFIX` |
+| `~/.secrets/abuseipdb.conf` | operator | the single config file, mode 600, `KEY=value` text that is never executed; every key is documented in `abuseipdb.conf.example` and in the README. The API key is never in arguments or logs and the ntfy topic reaches `curl` through stdin |
 | `~/.secrets/abuseipdb_api_key`, `ntfy_topic`, `abuseipdb_exclude.txt` | operator | deprecated fallback while migrating; the config wins, exclusions from both are combined |
 | `~/.secrets/ssh_trusted_seen.txt` | generator | trusted SSH addresses (single addresses; IPv6 is widened to `SSH_TRUST_IPV6_PREFIX` when read), mode 600, entries expire after 60 days |
 

@@ -198,7 +198,8 @@ this repository. Nothing else changes: the branch is still merged only by the ma
 - GitHub settings: enable private vulnerability reporting (see `SECURITY.md`) and protect `main` with a ruleset that
   blocks force pushes and branch deletion. Do not require the `tests` check in the ruleset: a result exists only after
   a push, so the requirement would also block the maintainer's own direct pushes of documentation. The maintainer looks
-  at the green run of a branch before merging it.
+  at the green run of a branch before merging it. A ruleset is not available for a private repository on a free
+  account (GitHub answers HTTP 403), so create it right after the repository becomes public.
 - Keep the "unofficial, not affiliated" notice in both READMEs.
 - Check that no document contains a real host name, domain, address or ntfy topic (the privacy scan does this on every
   commit if your config lists your names).

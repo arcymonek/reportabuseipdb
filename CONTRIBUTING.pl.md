@@ -18,11 +18,10 @@ w publicznym zgłoszeniu.
 
 ## Proponowanie zmiany
 
-Przy czymś większym niż literówka najpierw otwórz zgłoszenie i opisz problem. Zmiany bezpieczników wymienionych w
-[docs/pl/COMPLIANCE.md](docs/pl/COMPLIANCE.md) są omawiane, zanim powstanie kod. Pull request, który osłabia któryś z
-nich (filtr 60 dni, adresy nieglobalne, wykluczone lub słabe scenariusze, auto-zaufanie SSH, wykluczenia, własne
-adresy, źródło danych tylko z lokalnych alertów, zasady komentarza, podwójna walidacja, znacznik, blokada 20 h,
-obsługa klucza API), wymaga bardzo dobrego powodu i będzie z tym na uwadze przeglądany.
+Przy czymś większym niż literówka najpierw otwórz zgłoszenie i opisz problem. Zmiany bezpieczników (lista jest w sekcji
+"Hard safeguards" w [AGENTS.md](AGENTS.md), uzasadnienia w [docs/pl/COMPLIANCE.md](docs/pl/COMPLIANCE.md)) są omawiane,
+zanim powstanie kod. Pull request, który osłabia któryś z nich, wymaga bardzo dobrego powodu i będzie z tym na uwadze
+przeglądany.
 
 Nowy scenariusz CrowdSeca w `CATEGORY_MAP` wymaga najsłabszego zestawu kategorii, który log naprawdę uzasadnia, oraz
 testu; patrz [docs/pl/DEVELOPMENT.md](docs/pl/DEVELOPMENT.md). Jeśli chcesz tylko przestać zgłaszać scenariusz na
