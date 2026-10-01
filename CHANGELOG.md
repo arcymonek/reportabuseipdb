@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.26 (`abuseipdb_report.py`)
+Version: 3.6.27 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,21 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-10-01 - one spelling of an address and UTC for every timestamp (3.6.27)
+
+Found by the code audit of 2026-10-01. Hygiene: nothing in the data of the live server triggered either problem (437 real
+alerts: every address already canonical, every timestamp `...Z`), so the generated CSV is byte for byte identical to 3.6.26.
+
+- **Addresses are canonicalised** before alerts are grouped and written (`canonical_ip()`): compressed IPv6, and an
+  IPv4-mapped IPv6 address (`::ffff:8.8.8.8`) as the plain IPv4. Before, the same host in two spellings became two
+  rows, and the validator (which compares one canonical form) did not see the duplicate.
+- **Timestamps with another offset are converted, not relabelled** (`parse_ts()`): `...T07:46:35+02:00` used to print as
+  `07:46:35 UTC`, two hours late (a future `ReportDate`, which the validator would then reject and stop the whole run; with a
+  negative offset the date would silently have gone into the past). cscli prints `Z` today, so this only guards against a
+  format change.
+- Tests: the canonical form (compressed, mapped, upper case, non-address), two spellings merged into one row, exclusions
+  still matching every spelling, offsets `+02:00` / `-05:00` converted and `Z` unchanged. Verified by mutation.
 
 ## 2026-10-01 - own-name, IP and e-mail checks also see percent-encoded text (3.6.26)
 

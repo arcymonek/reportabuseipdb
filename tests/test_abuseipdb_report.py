@@ -1451,6 +1451,61 @@ class Portability(unittest.TestCase):
         self.assertNotIn("ALL", err)
 
 
+class Normalisation(unittest.TestCase):
+    """One spelling of an address and one time zone in everything that is written out."""
+
+    def test_canonical_ip(self):
+        self.assertEqual(m.canonical_ip("8.8.8.8"), "8.8.8.8")
+        self.assertEqual(m.canonical_ip("::ffff:8.8.8.8"), "8.8.8.8")
+        self.assertEqual(m.canonical_ip("2001:4860:4860:0:0:0:0:8888"), "2001:4860:4860::8888")
+        self.assertEqual(m.canonical_ip("2001:4860:4860::8888"), "2001:4860:4860::8888")
+        self.assertEqual(m.canonical_ip("2001:DB8::A"), "2001:db8::a")
+        self.assertEqual(m.canonical_ip("not-an-ip"), "not-an-ip")              # left for the IP filter to reject
+
+    def test_one_host_in_two_spellings_is_one_row_with_the_plain_form(self):
+        t = NOW - timedelta(minutes=30)
+        a = alert("::ffff:8.8.8.8", "http-probing", t, events=http_events(2, prefix="/a"))
+        b = alert("8.8.8.8", "http-sensitive-files", t, events=http_events(2, prefix="/b"))
+        with contextlib.redirect_stderr(io.StringIO()):
+            rows = rows_for([a, b])
+        self.assertEqual([r[0] for r in rows], ["8.8.8.8"])
+        self.assertIn("http-probing, http-sensitive-files", rows[0][3])
+        buf = io.StringIO(newline="")
+        m.write_csv(buf, rows)
+        self.assertEqual(m.validate_csv_text(buf.getvalue())[0], [])
+
+    def test_ipv6_is_written_in_its_compressed_form(self):
+        a = alert("2001:4860:4860:0:0:0:0:8888", "http-probing", NOW - timedelta(minutes=30), events=http_events(2))
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(rows_for([a])[0][0], "2001:4860:4860::8888")
+
+    def test_exclusions_still_apply_to_every_spelling(self):
+        import ipaddress
+        a = alert("::ffff:8.8.8.8", "http-probing", NOW - timedelta(minutes=30), events=http_events(2))
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(rows_for([a], [ipaddress.ip_network("8.8.8.8")]), [])
+
+    def test_timestamps_with_an_offset_are_converted_to_utc(self):
+        t = NOW - timedelta(hours=1)
+        plus2 = t.astimezone(timezone(timedelta(hours=2))).strftime("%Y-%m-%dT%H:%M:%S+02:00")
+        minus5 = t.astimezone(timezone(timedelta(hours=-5))).strftime("%Y-%m-%dT%H:%M:%S-05:00")
+        for text in (plus2, minus5, iso(t)):
+            self.assertEqual(m.parse_ts(text), t, text)
+            self.assertEqual(m.parse_ts(text).utcoffset(), timedelta(0), text)
+        a = alert("8.8.8.8", "http-probing", t, events=http_events(2))
+        a["created_at"] = a["start_at"] = a["stop_at"] = plus2
+        with contextlib.redirect_stderr(io.StringIO()):
+            row = rows_for([a])[0]
+        self.assertEqual(row[2], t.strftime("%Y-%m-%dT%H:%M:%S+00:00"))        # not shifted by two hours
+        self.assertIn(f" at {iso(t)} (UTC)", row[3])
+
+    def test_z_timestamps_are_unchanged(self):
+        # what cscli really prints: the generated CSV must stay byte for byte the same
+        t = NOW - timedelta(hours=1)
+        self.assertEqual(m.parse_ts(iso(t)), t)
+        self.assertEqual(m.parse_ts("2026-08-27T07:06:43Z").isoformat(), "2026-08-27T07:06:43+00:00")
+
+
 class NullFields(unittest.TestCase):
     """JSON null (Python None) in fields the parser reads must not crash a run."""
 

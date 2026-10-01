@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.26 (`abuseipdb_report.py`)
+Wersja: 3.6.27 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,22 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-10-01 - jedna pisownia adresu i UTC w każdym znaczniku czasu (3.6.27)
+
+Znalezione audytem kodu z 2026-10-01. Higiena: nic w danych działającego serwera nie wywoływało żadnego z problemów (437
+prawdziwych alertów: każdy adres już kanoniczny, każdy znacznik `...Z`), więc wygenerowany CSV jest bajt w bajt taki sam
+jak w 3.6.26.
+
+- **Adresy są kanonizowane** przed grupowaniem alertów i zapisem (`canonical_ip()`): IPv6 w formie skompresowanej, a
+  adres IPv6 mapowany na IPv4 (`::ffff:8.8.8.8`) jako zwykły IPv4. Wcześniej ten sam host w dwóch zapisach dawał dwa
+  wiersze, a walidator (porównujący jedną formę kanoniczną) nie widział duplikatu.
+- **Znaczniki czasu z innym przesunięciem są przeliczane, nie tylko przemianowywane** (`parse_ts()`):
+  `...T07:46:35+02:00` drukowało się jako `07:46:35 UTC`, czyli dwie godziny za późno (data zgłoszenia z przyszłości,
+  którą walidator odrzuci i zatrzyma cały przebieg; przy ujemnym przesunięciu data po cichu trafiłaby w przeszłość).
+  cscli drukuje dziś `Z`, więc to tylko zabezpiecza przed zmianą formatu.
+- Testy: forma kanoniczna (skompresowana, mapowana, wielkie litery, nie-adres), dwa zapisy w jednym wierszu, wykluczenia
+  nadal pasujące do każdego zapisu, przesunięcia `+02:00` / `-05:00` przeliczane, a `Z` bez zmian. Sprawdzone mutacją.
 
 ## 2026-10-01 - kontrola własnych nazw, IP i e-maili widzi też tekst zakodowany procentowo (3.6.26)
 

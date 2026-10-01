@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-abuseipdb_report.py - v3.6.26
+abuseipdb_report.py - v3.6.27
 
 Generates a bulk CSV of AbuseIPDB reports from LOCALLY detected CrowdSec alerts.
 It sends NOTHING itself; sending is done by abuseipdb_send.sh (see README.md).
@@ -118,7 +118,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from urllib.parse import unquote
 
-SCRIPT_VERSION = "3.6.26"
+SCRIPT_VERSION = "3.6.27"
 
 # --- Hard limits from the AbuseIPDB documentation (bulk report) --------------
 MAX_COMMENT_BYTES = 1024      # "Truncated after 1,024 characters (bytes)"
@@ -797,14 +797,33 @@ def is_reportable_ip(ip_str: str, exclusions) -> tuple:
 
 
 def parse_ts(ts: str):
-    """Parses ISO8601 from CrowdSec ('2026-08-27T07:06:43Z') into an aware datetime."""
+    """Parses ISO8601 from CrowdSec ('2026-08-27T07:06:43Z') into an aware datetime in UTC.
+    A value with another offset ('+02:00') is converted, never just relabelled: the comment and
+    ReportDate print UTC, and a shifted time would be a false report date."""
     if not ts or not isinstance(ts, str):  # missing, or e.g. a number: unusable
         return None
     try:
         parsed = parse_iso_datetime(ts)
     except ValueError:
         return None
-    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def canonical_ip(ip_str: str) -> str:
+    """The one spelling of an address that goes into the CSV and is used to group alerts: compressed IPv6,
+    and an IPv4-mapped IPv6 address ('::ffff:8.8.8.8') as the plain IPv4 it stands for. Without this the
+    same host could appear twice ('8.8.8.8' and '::ffff:8.8.8.8') and the validator, which compares one
+    canonical form, would not see the duplicate. Text that is not an address is returned unchanged (the
+    IP filter rejects it)."""
+    try:
+        ip = ipaddress.ip_address(ip_str)
+    except ValueError:
+        return ip_str
+    if ip.version == 6 and ip.ipv4_mapped is not None:
+        ip = ip.ipv4_mapped
+    return str(ip)
 
 
 def extract_ip(alert: dict):
@@ -1050,6 +1069,7 @@ def build_rows(alerts, exclusions, after=None, before=None, own_addresses=()):
         if not ip:
             stats["no recognised IP (scope != Ip?)"] += 1
             continue
+        ip = canonical_ip(ip)
 
         ok, reason = is_reportable_ip(ip, exclusions)
         if not ok:
