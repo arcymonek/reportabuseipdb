@@ -93,6 +93,11 @@ prywatności). Nie używaj `--no-verify`, który wyłącza wszystkie kontrole.
 
 Workflow GitHub Actions uruchamia cały zestaw na Ubuntu dla każdego pull requesta; musi przejść przed scaleniem.
 
+## Kodeks postępowania
+
+Projekt stosuje [Contributor Covenant](CODE_OF_CONDUCT.pl.md). Biorąc udział w zgłoszeniach, dyskusjach i pull
+requestach, akceptujesz go.
+
 ## Licencja
 
 Wnosząc wkład, zgadzasz się, że jest on objęty [licencją MIT](LICENSE) tego projektu.

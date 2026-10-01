@@ -1,6 +1,6 @@
 **English** | [Polski](pl/DEVELOPMENT.md)
 
-Version: 3.6.30 (`abuseipdb_report.py`)
+Version: 3.6.31 (`abuseipdb_report.py`)
 
 # Development
 

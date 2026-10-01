@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.30 (`abuseipdb_report.py`)
+Wersja: 3.6.31 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,15 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-10-01 - kodeks postępowania i szablon pull requestu (3.6.31)
+
+Tylko pliki społeczności; program i wygenerowany CSV bez zmian (ruszył tylko numer wersji).
+
+- **`CODE_OF_CONDUCT.md`** (Contributor Covenant 2.1, CC BY 4.0, zgłoszenia na publiczny adres autora) wraz z
+  nieoficjalnym tłumaczeniem `CODE_OF_CONDUCT.pl.md`; linki z `README.pl.md` i `CONTRIBUTING.pl.md`.
+- **`.github/pull_request_template.md`:** lista kontrolna odpowiadająca `CONTRIBUTING.md` (testy, bezpieczniki, test
+  mutacyjny, tylko fikcyjne dane, dokumentacja po angielsku, bez podnoszenia wersji) i sekcja "What I did not verify".
 
 ## 2026-10-01 - poprawki po audycie dokumentacji (3.6.30)
 

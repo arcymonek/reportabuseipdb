@@ -1,6 +1,6 @@
 [English](../OPERATIONS.md) | **Polski**
 
-Wersja: 3.6.30 (`abuseipdb_report.py`)
+Wersja: 3.6.31 (`abuseipdb_report.py`)
 
 # Eksploatacja
 

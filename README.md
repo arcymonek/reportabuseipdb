@@ -1,6 +1,6 @@
 **English** | [Polski](README.pl.md)
 
-Version: 3.6.30 (`abuseipdb_report.py`)
+Version: 3.6.31 (`abuseipdb_report.py`)
 
 # reportabuseipdb
 
@@ -205,6 +205,7 @@ python3 -m unittest discover -v tests     # generator tests run anywhere; wrappe
 | [CHANGELOG.md](CHANGELOG.md) | version history |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | how to report a bug, propose a change and send a pull request |
 | [SECURITY.md](SECURITY.md) | how to report a vulnerability privately |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | how we treat each other (Contributor Covenant 2.1) |
 | [AGENTS.md](AGENTS.md) | rules for AI coding agents working on this repository (English only) |
 
 All documents exist in English and Polish (`*.pl.md`, `docs/pl/`), except `AGENTS.md` (English only).

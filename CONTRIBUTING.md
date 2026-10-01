@@ -91,6 +91,11 @@ included). Do not use `--no-verify`, which switches all checks off.
 
 The GitHub Actions workflow runs the whole suite on Ubuntu for every pull request; it has to pass before a merge.
 
+## Code of conduct
+
+This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). By taking part in issues, discussions and pull
+requests you agree to it.
+
 ## License
 
 By contributing you agree that your contribution is licensed under the [MIT License](LICENSE) of this project.

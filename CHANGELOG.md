@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.30 (`abuseipdb_report.py`)
+Version: 3.6.31 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,15 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-10-01 - code of conduct and pull request template (3.6.31)
+
+Community files only; the program and the generated CSV are untouched (only the version number moved).
+
+- **`CODE_OF_CONDUCT.md`** (Contributor Covenant 2.1, CC BY 4.0, reports to the author's public address) with an
+  unofficial Polish translation `CODE_OF_CONDUCT.pl.md`; linked from `README.md` and `CONTRIBUTING.md`.
+- **`.github/pull_request_template.md`:** a checklist that mirrors `CONTRIBUTING.md` (tests, safeguards, mutation check,
+  fake data only, English documentation, no version bump) and a "What I did not verify" section.
 
 ## 2026-10-01 - documentation audit fixes (3.6.30)
 
