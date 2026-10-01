@@ -1,6 +1,6 @@
 [English](../DEVELOPMENT.md) | **Polski**
 
-Wersja: 3.6.28 (`abuseipdb_report.py`)
+Wersja: 3.6.29 (`abuseipdb_report.py`)
 
 # Rozwój
 
@@ -84,6 +84,19 @@ python3 -m unittest -v tests/test_abuseipdb_report.py   # tylko generator, dzia�
   dodawane tylko, dopóki komentarz się mieści, więc przycinanie dziś niczego nie obcina).
 - Tłumaczenie lub refaktoryzacja musi zachować wygenerowany CSV bajt w bajt dla tego samego `--input-json`; porównaj
   stare i nowe wyjście na fikstury.
+
+## Przypięte akcje CI
+
+`.github/workflows/tests.yml` używa dwóch akcji, `actions/checkout` i `actions/setup-python`, każdej przypiętej do
+pełnego, 40-znakowego skrótu commita z tagiem w komentarzu na końcu linii (`@<sha>  # v7`). Tag to ruchoma etykieta,
+skrót nie, więc skompromitowane repozytorium akcji nie zmieni tego, co się uruchamia. Dependabota nie ma (jego pull
+requesty kolidowałyby ze scalaniem lokalnie przez `--ff-only`), więc sprawdzaj nowe wersje ręcznie mniej więcej raz na
+kwartał i gdy GitHub ostrzega o wycofanej:
+
+1. Znajdź commit, na który wskazuje nowy tag: `gh api repos/actions/checkout/git/ref/tags/<tag> --jq .object` (jeśli
+   typ to `tag`, a nie `commit`, przejdź jeszcze raz przez `.object.sha` w `git/tags/<sha>`).
+2. Podmień skrót i komentarz w workflow, zmianę zrób na gałęzi (ścieżka B) i przed scaleniem poczekaj na CI w pull
+   requeście.
 
 ## Wersjonowanie
 

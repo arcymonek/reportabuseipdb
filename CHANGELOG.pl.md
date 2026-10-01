@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.28 (`abuseipdb_report.py`)
+Wersja: 3.6.29 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,18 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-10-01 - akcje CI przypięte do skrótów commitów (3.6.29)
+
+Higiena przed upublicznieniem repozytorium; program się nie zmienia: `abuseipdb_report.py` i wygenerowany CSV bez zmian
+(ruszył tylko numer wersji).
+
+- **`actions/checkout` i `actions/setup-python` są przypięte do pełnego skrótu commita** w `.github/workflows/tests.yml`
+  (komentarz podaje tag, `v7`). Tag to ruchoma etykieta: kto kontroluje repozytorium akcji, mógłby wskazać nią inny
+  kod. Skrótu nie da się przestawić. Ryzyko było małe (`permissions: contents: read`, brak sekretów, tylko oficjalne
+  akcje), więc to rutynowa higiena łańcucha dostaw.
+- **Aktualizacja jest ręczna** i opisana w `docs/DEVELOPMENT.md` ("Przypięte akcje CI"); Dependabota nie ma, celowo (jego
+  pull requesty kolidowałyby ze scalaniem lokalnie przez `--ff-only`).
 
 ## 2026-10-01 - auto-zaufanie SSH obejmuje cały IPv6 /64 (3.6.28)
 

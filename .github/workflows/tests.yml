@@ -23,8 +23,11 @@ jobs:
         # The oldest supported Python (timestamp parsing differs before 3.11) and the newest.
         python: ["3.9", "3.x"]
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      # Third-party actions are pinned to a full commit SHA, not to a tag: a tag is a movable label, and
+      # whoever controls the action's repository could move it to other code. The comment names the tag
+      # the SHA was taken from. To update: see "Pinned CI actions" in docs/DEVELOPMENT.md.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7
         with:
           python-version: ${{ matrix.python }}
       - name: Tools

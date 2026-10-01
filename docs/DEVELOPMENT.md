@@ -1,6 +1,6 @@
 **English** | [Polski](pl/DEVELOPMENT.md)
 
-Version: 3.6.28 (`abuseipdb_report.py`)
+Version: 3.6.29 (`abuseipdb_report.py`)
 
 # Development
 
@@ -85,6 +85,19 @@ python3 -m unittest -v tests/test_abuseipdb_report.py   # generator only, runs o
   never cuts anything today).
 - A translation or refactor must keep the generated CSV byte-for-byte identical for the same `--input-json`; compare
   the old and new output on a fixture.
+
+## Pinned CI actions
+
+`.github/workflows/tests.yml` uses two actions, `actions/checkout` and `actions/setup-python`, each pinned to a full
+40-character commit SHA with the tag in a trailing comment (`@<sha>  # v7`). A tag is a movable label; a SHA is not, so
+a compromised action repository cannot change what runs. There is no Dependabot (its pull requests would clash with
+merging locally with `--ff-only`), so check for new versions by hand about once a quarter and when GitHub warns about a
+deprecated one:
+
+1. Find the commit a new tag points to: `gh api repos/actions/checkout/git/ref/tags/<tag> --jq .object` (if its type
+   is `tag` and not `commit`, follow `.object.sha` once more with `git/tags/<sha>`).
+2. Replace the SHA and the comment in the workflow, change the workflow on a branch (path B), and let the CI run on the
+   pull request before merging.
 
 ## Versioning
 

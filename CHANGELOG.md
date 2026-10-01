@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.28 (`abuseipdb_report.py`)
+Version: 3.6.29 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,18 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-10-01 - CI actions pinned to commit SHAs (3.6.29)
+
+Hygiene before the repository becomes public; no change to the program: `abuseipdb_report.py` and the generated CSV are
+untouched (only the version number moved).
+
+- **`actions/checkout` and `actions/setup-python` are pinned to a full commit SHA** in `.github/workflows/tests.yml`
+  (the comment names the tag, `v7`). A tag is a movable label: whoever controls the action's repository could point it
+  at other code. A SHA cannot be re-pointed. The risk here was small (`permissions: contents: read`, no secrets, only
+  official actions), so this is routine supply-chain hygiene.
+- **Updating is manual** and now documented in `docs/DEVELOPMENT.md` ("Pinned CI actions"); there is no Dependabot, on
+  purpose (its pull requests would clash with merging locally with `--ff-only`).
 
 ## 2026-10-01 - SSH auto-trust covers the whole IPv6 /64 (3.6.28)
 
