@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.31 (`abuseipdb_report.py`)
+Version: 3.6.32 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,16 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-10-01 - the hook enforces the code of conduct pair (3.6.32)
+
+Tooling only; the program and the generated CSV are untouched (only the version number moved).
+
+- **`tools/pre-commit`:** the EN/PL pairing rule now covers `CODE_OF_CONDUCT.md` and `CODE_OF_CONDUCT.pl.md`. Before, the
+  hook knew only the pairs listed in `pair_of()`, so one side could change without the other and nothing complained.
+- **Tests:** the pairing rule had no test at all. `tests/test_hooks.py` now checks every root pair (one side alone is
+  refused, both sides pass), a differing heading count, and that `EN_ONLY=1` skips only this rule. Verified by
+  mutation: without the fix the two `CODE_OF_CONDUCT` cases and the heading case were red, the other pairs green.
 
 ## 2026-10-01 - code of conduct and pull request template (3.6.31)
 

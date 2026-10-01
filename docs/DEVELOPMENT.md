@@ -1,6 +1,6 @@
 **English** | [Polski](pl/DEVELOPMENT.md)
 
-Version: 3.6.31 (`abuseipdb_report.py`)
+Version: 3.6.32 (`abuseipdb_report.py`)
 
 # Development
 
@@ -122,7 +122,8 @@ deprecated one:
 - The report templates (`TPL_*`) must stay English; they are published on AbuseIPDB.
 - README, every document in `docs/` and the changelog exist in English (default) and Polish. English is the source,
   Polish the translation. A change to one language is not complete until the other one is updated.
-- File pairs: `README.md` and `README.pl.md`, `CHANGELOG.md` and `CHANGELOG.pl.md`, `docs/X.md` and `docs/pl/X.md`.
+- File pairs: `README.md` and `README.pl.md`, `CHANGELOG.md` and `CHANGELOG.pl.md`, `CONTRIBUTING.md`, `SECURITY.md` and
+  `CODE_OF_CONDUCT.md` with their `.pl.md` twins, `docs/X.md` and `docs/pl/X.md`.
   Each file starts with a language switch line. The pre-commit hook refuses a commit that stages one side of a pair
   only, or where the number of headings differs.
 - `AGENTS.md` is the one exception: English only, no Polish twin, no version line, because coding agents read it and a

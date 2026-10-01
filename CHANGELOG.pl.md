@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.31 (`abuseipdb_report.py`)
+Wersja: 3.6.32 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,17 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-10-01 - hook pilnuje pary kodeksu postępowania (3.6.32)
+
+Tylko narzędzia; program i wygenerowany CSV bez zmian (ruszył tylko numer wersji).
+
+- **`tools/pre-commit`:** reguła parowania EN/PL obejmuje teraz `CODE_OF_CONDUCT.md` i `CODE_OF_CONDUCT.pl.md`. Wcześniej
+  hook znał tylko pary z listy w `pair_of()`, więc jedna strona mogła się zmienić bez drugiej i nic nie protestowało.
+- **Testy:** reguła parowania nie miała żadnego testu. `tests/test_hooks.py` sprawdza teraz każdą parę w katalogu
+  głównym (sama jedna strona jest odrzucana, obie strony przechodzą), różną liczbę nagłówków oraz to, że `EN_ONLY=1`
+  pomija tylko tę regułę. Sprawdzone mutacją: bez poprawki czerwone były oba przypadki `CODE_OF_CONDUCT` i test
+  nagłówków, a pozostałe pary zielone.
 
 ## 2026-10-01 - kodeks postępowania i szablon pull requestu (3.6.31)
 

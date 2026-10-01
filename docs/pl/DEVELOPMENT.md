@@ -1,6 +1,6 @@
 [English](../DEVELOPMENT.md) | **Polski**
 
-Wersja: 3.6.31 (`abuseipdb_report.py`)
+Wersja: 3.6.32 (`abuseipdb_report.py`)
 
 # Rozwój
 
@@ -122,7 +122,8 @@ kwartał i gdy GitHub ostrzega o wycofanej:
 - README, każdy dokument w `docs/` i changelog istnieją po angielsku (domyślnie) i po polsku. Angielski jest
   źródłem, polski tłumaczeniem. Zmiana w jednym języku nie jest skończona, dopóki drugi nie zostanie
   zaktualizowany.
-- Pary plików: `README.md` i `README.pl.md`, `CHANGELOG.md` i `CHANGELOG.pl.md`, `docs/X.md` i `docs/pl/X.md`.
+- Pary plików: `README.md` i `README.pl.md`, `CHANGELOG.md` i `CHANGELOG.pl.md`, `CONTRIBUTING.md`, `SECURITY.md` i
+  `CODE_OF_CONDUCT.md` z ich odpowiednikami `.pl.md`, `docs/X.md` i `docs/pl/X.md`.
   Każdy plik zaczyna się linią przełącznika języka. Hook pre-commit odmawia commita, który zawiera tylko jedną stronę
   pary albo w którym liczba nagłówków się różni.
 - `AGENTS.md` jest jedynym wyjątkiem: tylko po angielsku, bez polskiego odpowiednika i bez linii wersji, bo czytają go
