@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.21 (`abuseipdb_report.py`)
+Wersja: 3.6.22 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,12 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-10-01 - w README podane środowisko testowe (3.6.22)
+
+- `README.pl.md` (Wymagania): wprost mówi, że narzędzie testowano tylko na Debianie 12 i Ubuntu 24.04 z CrowdSecem
+  1.7 i 1.8 oraz nginx, że inne konfiguracje są nietestowane, a macOS, BSD, systemy bez systemd i CrowdSec w
+  kontenerze nie są wspierane bez dodatkowych kroków. Tylko dokumentacja, zachowanie bez zmian.
 
 ## 2026-09-30 - formularz pytań w Discussions (3.6.21)
 

@@ -1,6 +1,6 @@
 [English](README.md) | **Polski**
 
-Wersja: 3.6.21 (`abuseipdb_report.py`)
+Wersja: 3.6.22 (`abuseipdb_report.py`)
 
 # reportabuseipdb
 
@@ -90,6 +90,11 @@ rozbudowane testy i dokumentację; przed użyciem na żywo uruchom `--dry-run` i
 ## Wymagania
 
 - Linux z systemd, `bash`, `curl`, `jq`, `flock` (util-linux), GNU `date`, `journalctl` i `ip`.
+- Testowane tylko na Debianie 12 (produkcja) i Ubuntu 24.04 (CI), z CrowdSecem 1.7 i 1.8 oraz nginx jako reverse proxy.
+  Inne dystrybucje, serwery WWW i wersje CrowdSeca nie były testowane: uruchom `--dry-run`, przejrzyj CSV i licz się
+  z koniecznością dostosowania instalacji. macOS, BSD i systemy bez systemd nie są wspierane (wrapper wymaga GNU
+  `date` i `flock`), a `cscli` musi działać na tym samym hoście co skrypty (CrowdSec w kontenerze wymaga własnej
+  nakładki).
 - Python 3.9 lub nowszy (rozwijany na 3.11, testowany na 3.9 i 3.14), tylko biblioteka standardowa.
 - CrowdSec z `cscli`, wywoływanym jako `sudo -n cscli alerts list` przez użytkownika usługi (reguła sudo bez hasła);
   gdy skrypt działa jako root, `cscli` jest wywoływany bezpośrednio i `sudo` nie jest potrzebne.

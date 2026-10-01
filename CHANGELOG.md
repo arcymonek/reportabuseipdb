@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.21 (`abuseipdb_report.py`)
+Version: 3.6.22 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,12 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-10-01 - tested environment stated in the README (3.6.22)
+
+- `README.md` (Requirements): says plainly that the tool is tested only on Debian 12 and Ubuntu 24.04 with CrowdSec
+  1.7 and 1.8 and nginx, that other setups are untested, and that macOS, BSD, systems without systemd and CrowdSec
+  running in a container are not supported out of the box. Documentation only, no change in behaviour.
 
 ## 2026-09-30 - form for questions in Discussions (3.6.21)
 

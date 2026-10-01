@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-abuseipdb_report.py - v3.6.21
+abuseipdb_report.py - v3.6.22
 
 Generates a bulk CSV of AbuseIPDB reports from LOCALLY detected CrowdSec alerts.
 It sends NOTHING itself; sending is done by abuseipdb_send.sh (see README.md).
@@ -117,7 +117,7 @@ import traceback
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-SCRIPT_VERSION = "3.6.21"
+SCRIPT_VERSION = "3.6.22"
 
 # --- Hard limits from the AbuseIPDB documentation (bulk report) --------------
 MAX_COMMENT_BYTES = 1024      # "Truncated after 1,024 characters (bytes)"
