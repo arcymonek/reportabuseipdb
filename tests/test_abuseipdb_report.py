@@ -625,6 +625,104 @@ def to_text(rows, header=("IP", "Categories", "ReportDate", "Comment")):
     return buf.getvalue()
 
 
+class SshTrustIpv6(unittest.TestCase):
+    """An IPv6 login trusts its /64 (configurable), so the operator's rotating temporary addresses
+    cannot get the operator reported; IPv4 stays exact."""
+
+    LOGIN = "2001:4860:4860::8888"           # a global address, so the IP filter reaches the trust list
+
+    def reportable(self, ip, nets):
+        return m.is_reportable_ip(ip, nets)[0]
+
+    def test_neighbour_in_the_same_64_is_trusted_and_another_64_is_not(self):
+        nets = m.trusted_networks([self.LOGIN])
+        self.assertEqual([str(n) for n in nets], ["2001:4860:4860::/64"])
+        self.assertFalse(self.reportable("2001:4860:4860::1234", nets))          # same /64
+        self.assertFalse(self.reportable("2001:4860:4860:0:aaaa:bbbb:cccc:dddd", nets))
+        self.assertTrue(self.reportable("2001:4860:4861::8888", nets))           # next /64
+        self.assertTrue(self.reportable("2001:4860:4860:1::8888", nets))         # other /64, same /48
+
+    def test_prefix_128_restores_the_exact_address(self):
+        nets = m.trusted_networks([self.LOGIN], 128)
+        self.assertEqual([str(n) for n in nets], [self.LOGIN + "/128"])
+        self.assertFalse(self.reportable(self.LOGIN, nets))
+        self.assertTrue(self.reportable("2001:4860:4860::1234", nets))
+
+    def test_a_wider_prefix_is_applied_when_configured_inside_the_allowed_range(self):
+        nets = m.trusted_networks([self.LOGIN], 96)
+        self.assertEqual([str(n) for n in nets], ["2001:4860:4860::/96"])
+
+    def test_ipv4_is_always_exact(self):
+        for prefix in (64, 128):
+            nets = m.trusted_networks(["8.8.8.8"], prefix)
+            self.assertEqual([str(n) for n in nets], ["8.8.8.8/32"])
+            self.assertFalse(self.reportable("8.8.8.8", nets))
+            self.assertTrue(self.reportable("8.8.4.4", nets))
+
+    def test_addresses_of_one_network_collapse_to_one_entry(self):
+        nets = m.trusted_networks([self.LOGIN, "2001:4860:4860::1", "8.8.8.8"])
+        self.assertEqual([str(n) for n in nets], ["8.8.8.8/32", "2001:4860:4860::/64"])
+
+    def test_scope_id_in_a_log_line_does_not_break_the_widening(self):
+        nets = m.trusted_networks(["fe80::1%eth0"])
+        self.assertEqual([str(n) for n in nets], ["fe80::/64"])
+
+    def test_prefix_key_is_validated(self):
+        self.assertEqual(m.config_ssh_trust_prefix({}), 64)
+        self.assertEqual(m.config_ssh_trust_prefix({"SSH_TRUST_IPV6_PREFIX": ["64", "128"]}), 128)   # last wins
+        self.assertEqual(m.config_ssh_trust_prefix({"SSH_TRUST_IPV6_PREFIX": ["64"]}), 64)
+        for bad in ("63", "48", "0", "129", "", "64 ", "6 4", "abc", "-64", "64.0", "0064x", "1000"):
+            with self.assertRaises(m.ConfigError, msg=bad):
+                m.config_ssh_trust_prefix({"SSH_TRUST_IPV6_PREFIX": [bad]})
+
+    def test_unknown_spelling_of_the_key_is_still_a_config_error(self):
+        with tempfile.TemporaryDirectory() as d:
+            conf = os.path.join(d, "c.conf")
+            _write(conf, "OWN_NAME_MARKERS=example.org\nSSH_TRUST_IPV6_PREFIX=64\n")
+            self.assertEqual(m.load_config(conf)["SSH_TRUST_IPV6_PREFIX"], ["64"])
+            _write(conf, "OWN_NAME_MARKERS=example.org\nSSH_TRUST_IPV6_PREFIXX=64\n")
+            with self.assertRaises(m.ConfigError):
+                m.load_config(conf)
+
+    def test_ipv4_mapped_login_is_trusted_as_the_plain_ipv4(self):
+        # Without unmapping, "::ffff:8.8.8.8" was stored as an IPv6 address, which never matched the
+        # (already unmapped) alert address, so the login protected nothing; as a /64 it would be ::/64.
+        line = ("2026-09-14T10:00:00+0200 host sshd[1]: Accepted publickey for alice from ::ffff:8.8.8.8 "
+                "port 9 ssh2: ED25519 SHA256:abc")
+        self.assertEqual(list(m.parse_ssh_accepted(line, NOW)), ["8.8.8.8"])
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "trust.txt")
+            _write(p, "::ffff:8.8.4.4\t" + NOW.isoformat() + "\n")
+            self.assertEqual(list(m.load_trust_store(p, NOW)), ["8.8.4.4"])
+
+    def test_harvest_widens_journal_logins_and_reports_the_counts(self):
+        class R:  # stand-in for CompletedProcess
+            stdout = ("2026-09-14T10:00:00+0200 host sshd[1]: Accepted publickey for alice from "
+                      "2001:4860:4860::8888 port 9 ssh2: ED25519 SHA256:abc\n"
+                      "2026-09-14T11:00:00+0200 host sshd[1]: Accepted publickey for alice from "
+                      "2001:4860:4860::1234 port 9 ssh2: ED25519 SHA256:abc")
+            stderr, returncode = "", 0
+        with mock.patch.object(m.subprocess, "run", return_value=R()), \
+                contextlib.redirect_stderr(io.StringIO()) as err:
+            nets = m.harvest_ssh_trusted(store_path=None, persist=False)
+            exact = m.harvest_ssh_trusted(store_path=None, persist=False, ipv6_prefix=128)
+        self.assertEqual([str(n) for n in nets], ["2001:4860:4860::/64"])
+        self.assertEqual(len(exact), 2)
+        self.assertIn("2 addresses with a successful login", err.getvalue())
+        self.assertIn("1 networks will never be reported (IPv6 trusted as /64)", err.getvalue())
+
+    def test_the_remembered_list_keeps_single_addresses_and_widens_on_read(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "trust.txt")
+            m.save_trust_store(p, {self.LOGIN: NOW - timedelta(days=3)})
+            with mock.patch.object(m.subprocess, "run", side_effect=OSError("no journal")), \
+                    contextlib.redirect_stderr(io.StringIO()):
+                nets = m.harvest_ssh_trusted(store_path=p, persist=True)
+            self.assertEqual([str(n) for n in nets], ["2001:4860:4860::/64"])
+            self.assertIn(self.LOGIN, _read(p))
+            self.assertNotIn("/64", _read(p))
+
+
 class IsoParsing(unittest.TestCase):
     """Timestamps must parse the same on Python 3.9/3.10 (strict fromisoformat)
     and on 3.11+. normalize_iso() is tested as TEXT so a broken rewrite is caught
@@ -1215,6 +1313,42 @@ class EndToEnd(unittest.TestCase):
         self.assertIn("5.6.7.8", _read(trust))
         self.assertEqual(oct(os.stat(trust).st_mode & 0o777), "0o600")
         self.assertNotIn("5.6.7.8", _read(out))
+
+    def test_ipv6_trust_prefix_from_the_config_reaches_the_generator(self):
+        # An SSH login from one IPv6 address; the alerts come from a neighbour in the same /64, from
+        # another /64 and from an unrelated IPv4 address.
+        login = ("2026-09-14T10:00:00+0200 host sshd[1]: Accepted publickey for alice from "
+                 "2001:4860:4860::8888 port 9 ssh2: ED25519 SHA256:abc")
+        bindir = os.path.join(self.tmp.name, "bin6")
+        os.makedirs(bindir)
+        script = os.path.join(bindir, "journalctl")
+        _write(script, "#!/bin/sh\ncat <<'EOF'\n" + login + "\nEOF\n")
+        os.chmod(script, 0o755)
+        env = dict(os.environ, PATH=bindir + os.pathsep + os.environ.get("PATH", ""))
+        when = NOW - timedelta(minutes=30)
+        _dump([alert("2001:4860:4860::1234", "http-probing", when, events=http_events(3)),
+               alert("2001:4860:4861::1234", "http-probing", when, events=http_events(3)),
+               alert("8.8.8.8", "http-probing", when, events=http_events(3))], self.inp)
+        base = [sys.executable, str(SCRIPT), "--input-json", self.inp, "--exclude-file", os.devnull,
+                "--ssh-trust-file", os.path.join(self.tmp.name, "trust6.txt"), "--dry-run"]
+
+        def reported(extra_conf):
+            conf = os.path.join(self.tmp.name, "c6.conf")
+            _write(conf, "OWN_NAME_MARKERS=example.org\n" + extra_conf)
+            os.chmod(conf, 0o600)
+            r = subprocess.run(base + ["--config", conf], capture_output=True, text=True, env=env)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            return [row["IP"] for row in csv.DictReader(io.StringIO(r.stdout))]
+
+        self.assertEqual(reported(""), ["2001:4860:4861::1234", "8.8.8.8"])            # default /64
+        self.assertEqual(reported("SSH_TRUST_IPV6_PREFIX=64\n"), ["2001:4860:4861::1234", "8.8.8.8"])
+        self.assertEqual(reported("SSH_TRUST_IPV6_PREFIX=128\n"),                     # exact address only
+                         ["2001:4860:4860::1234", "2001:4860:4861::1234", "8.8.8.8"])
+        conf = os.path.join(self.tmp.name, "c6.conf")
+        _write(conf, "OWN_NAME_MARKERS=example.org\nSSH_TRUST_IPV6_PREFIX=48\n")
+        r = subprocess.run(base + ["--config", conf], capture_output=True, text=True, env=env)
+        self.assertEqual(r.returncode, 2)                                               # fail closed
+        self.assertIn("SSH_TRUST_IPV6_PREFIX", r.stderr)
 
     def test_hostile_paths_do_not_block_the_file_and_own_address_is_never_reported(self):
         """The original failure: one path with our own name killed the whole file."""

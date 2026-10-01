@@ -1,6 +1,6 @@
 **English** | [Polski](README.pl.md)
 
-Version: 3.6.27 (`abuseipdb_report.py`)
+Version: 3.6.28 (`abuseipdb_report.py`)
 
 # reportabuseipdb
 
@@ -53,7 +53,8 @@ watermark moves only after a successful upload; on any error the operator gets a
 - Unknown scenarios are never reported (only `crowdsecurity` scenarios that are in the category map or named after a CVE);
   a scenario of another author needs an explicit entry in `CATEGORY_MAP` under its full name.
 - Operator exclusion list (`EXCLUDE` in the config file, on by default) and **SSH auto-trust**: any address that logged in over SSH in the last
-  60 days is never reported (kept in a persistent store because the journal gets trimmed).
+  60 days is never reported (kept in a persistent store because the journal gets trimmed). An IPv6 login trusts its whole
+  /64 network, because an IPv6 machine rotates addresses inside it (`SSH_TRUST_IPV6_PREFIX`).
 - The server's own public addresses are always excluded.
 - The comment text is built only from English constants, is ASCII-only, never contains the reported IP, the
   server's hostname or its domain names (a second check against your `OWN_NAME_MARKERS`), and is capped at
@@ -78,6 +79,9 @@ Every report is published under your AbuseIPDB account, so check these points be
 - **Your traffic, your false alarms.** A scenario that fires on your own legitimate traffic (bulk uploads, WebDAV,
   monitoring) belongs in `EXTRA_EXCLUDE_SCENARIOS`. Run `--dry-run` for a few days and read the CSV before you let
   cron upload anything.
+- **IPv6 and a shared /64.** A successful SSH login from an IPv6 address trusts its whole /64 (your devices rotate
+  "temporary" addresses inside it), so other devices of your network are not reported either. On a hosting provider that shares
+  one /64 between customers, set `SSH_TRUST_IPV6_PREFIX=128` to trust the exact address only. IPv4 is always exact.
 - **Other web ports.** If your web server does not listen on 80 and 443, set `HTTP_PORTS`, or the reports state a
   wrong port.
 
@@ -160,6 +164,7 @@ switching a safeguard off (comments go on their own line):
 | `OWN_NAME_MARKERS` | comma-separated fragments (your own domains and host) that must never appear in a report comment; a live upload is refused while the list is empty or still holds the example values |
 | `EXCLUDE` | an IP or CIDR that is never reported; repeat the key for more entries (optional) |
 | `HTTP_PORTS` | the ports your web server listens on, stated in HTTP reports (optional, default `80/443`; e.g. `443` or `8080/8443`) |
+| `SSH_TRUST_IPV6_PREFIX` | prefix length (64-128, default `64`) of the network trusted around an IPv6 address with a successful SSH login; `128` trusts only the exact address (optional) |
 | `EXTRA_EXCLUDE_SCENARIOS` | comma-separated CrowdSec scenarios never reported, e.g. one that gave false alarms on your own traffic; a short name (`http-probing`) matches every author, a full name (`author/name`) only that author; it only adds to the built-in exclusions (optional) |
 
 Generated next to it: `~/.secrets/ssh_trusted_seen.txt` (IPs with a successful SSH login, entries expire after

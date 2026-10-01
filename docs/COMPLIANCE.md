@@ -1,6 +1,6 @@
 **English** | [Polski](pl/COMPLIANCE.md)
 
-Version: 3.6.27 (`abuseipdb_report.py`)
+Version: 3.6.28 (`abuseipdb_report.py`)
 
 # AbuseIPDB compliance
 
@@ -37,6 +37,12 @@ the FAQ and the category list). The policy text can change; re-check it before r
    `password`, `keyboard-interactive/<device>`, `hostbased`, `gssapi-*`; `Accepted none` (no authentication at all) is
    not trusted. A journal the user cannot fully read is reported loudly instead of silently shrinking the trust.
    Addresses are also kept in `~/.secrets/ssh_trusted_seen.txt` because the journal is trimmed.
+   An IPv6 login trusts its whole /64 network (config key `SSH_TRUST_IPV6_PREFIX`, 64 to 128, default 64), because an
+   IPv6 machine rotates "temporary" addresses inside its /64; a wider network than /64 cannot be configured, and 128
+   gives the exact-address behaviour for a /64 shared between customers. IPv4 is always trusted exactly, and an
+   IPv4-mapped address (`::ffff:a.b.c.d`) is treated as the plain IPv4. The remembered list keeps single addresses;
+   the widening happens when it is read. Other devices in the same /64 are therefore not reported either:
+   under-reporting, never a false report.
 6. The server's own public addresses (from `ip addr`) are always excluded.
 7. Unknown scenarios are never reported: only scenarios of the author `crowdsecurity` that are in `CATEGORY_MAP` or
    named after a real CVE id (`cve-YYYY-NNNN...`) qualify. A CVE id in the name of another author's scenario is not
@@ -105,5 +111,6 @@ CIDR ranges (the bulk CSV takes single addresses).
 | Categories | integers 1 to 23; multiple categories are quoted in the CSV |
 | Duplicates | same IP at most once per 15 minutes; same comment and categories within 24 h are merged |
 | Daily `bulk-report` requests | Standard 5, Basic 100, Premium 500 (API documentation); the free Webmaster and Supporter badges raise the Standard limit (20 seen on an account with both). This project uses one per day |
+| Address families | `IP` accepts IPv4 and IPv6 ("A valid IPv4 or IPv6 IP address", bulk-report form, checked 2026-10-01); the documentation says nothing about CIDR ranges or /64 handling, and this tool reports single addresses only |
 | Errors without `Accept: application/json` | returned as an HTML page, so the wrapper always sends the header |
 | Rejected rows | listed in `invalidReports` (for example "Invalid IP", "Duplicate IP", "Invalid Category") |

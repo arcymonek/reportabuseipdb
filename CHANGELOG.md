@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.27 (`abuseipdb_report.py`)
+Version: 3.6.28 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,32 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-10-01 - SSH auto-trust covers the whole IPv6 /64 (3.6.28)
+
+Found while preparing the repository for publication: a user who logs in over IPv6 has "temporary" addresses that
+change inside one /64 network, and the exact-address trust could not follow them, so the tool could report its
+operator's own machine. IPv4 is unchanged. The generated CSV is byte for byte identical to 3.6.27 for data without an
+IPv6 login (checked on synthetic alerts with IPv4 and IPv6 addresses).
+
+- **IPv6 logins are trusted as a network.** An address with a successful SSH login now excludes its whole /64 (before:
+  only the exact address). The new config key `SSH_TRUST_IPV6_PREFIX` (default `64`) sets the length: the allowed range
+  is 64 to 128, anything else stops the run (exit code 2). `128` restores the exact-address behaviour, for a hosting
+  provider that shares one /64 between customers. A network wider than /64 is deliberately impossible: it would trust
+  other people's networks. IPv4 is always trusted exactly.
+- **Trade-off:** other devices in the same /64 (family, guests) are not reported either, even if they attack. This is
+  under-reporting, never a false report, which is the safe direction for this tool.
+- **The remembered list is unchanged.** `ssh_trusted_seen.txt` still holds single addresses; the widening happens
+  when the list is read, so a changed `SSH_TRUST_IPV6_PREFIX` applies at once and nothing has to be migrated. The
+  server's own addresses stay exact. The startup line now says how many addresses became how many networks.
+- **IPv4-mapped logins fixed:** a login logged as `::ffff:8.8.8.8` is now stored as the plain IPv4 `8.8.8.8`. Before, it
+  was kept as an IPv6 address that never matched the (already unmapped) alert address, so it protected nothing, and
+  under a /64 rule it would have become `::/64`.
+- **Documentation:** `docs/COMPLIANCE.md` now states that the AbuseIPDB bulk format accepts IPv4 and IPv6 addresses
+  (source: the bulk-report form, checked 2026-10-01). The documentation says nothing about /64 handling on their side.
+- **Not verified:** no real IPv6 login exists in the author's data (31 logins in 60 days, all IPv4), so the behaviour was
+  tested only on synthetic journal lines and by mutation (each safeguard broken on purpose turned a test red), not on a
+  real IPv6 connection, and no IPv6 report has ever been uploaded by this tool.
 
 ## 2026-10-01 - one spelling of an address and UTC for every timestamp (3.6.27)
 

@@ -1,6 +1,6 @@
 [English](README.md) | **Polski**
 
-Wersja: 3.6.27 (`abuseipdb_report.py`)
+Wersja: 3.6.28 (`abuseipdb_report.py`)
 
 # reportabuseipdb
 
@@ -53,7 +53,8 @@ przesuwa się dopiero po udanej wysyłce, a przy każdym błędzie operator dost
 - Nieznane scenariusze nigdy nie są zgłaszane (tylko scenariusze `crowdsecurity` z mapy kategorii albo nazwane od CVE);
   scenariusz innego autora wymaga jawnego wpisu w `CATEGORY_MAP` pod pełną nazwą.
 - Lista wykluczeń operatora (`EXCLUDE` w pliku konfiguracji, domyślnie włączona) oraz **auto-zaufanie SSH**: każdy adres, z którego w ciągu ostatnich
-  60 dni udało się zalogować przez SSH, nigdy nie jest zgłaszany (trwała lista, bo journal bywa przycinany).
+  60 dni udało się zalogować przez SSH, nigdy nie jest zgłaszany (trwała lista, bo journal bywa przycinany). Logowanie z
+  IPv6 zaufa całej sieci /64, bo maszyna IPv6 zmienia adresy w jej obrębie (`SSH_TRUST_IPV6_PREFIX`).
 - Własne publiczne adresy serwera są zawsze wykluczone.
 - Treść komentarza składa się wyłącznie ze stałych angielskich, jest czystym ASCII, nigdy nie zawiera zgłaszanego
   IP, nazwy hosta serwera ani jego domen (drugie sprawdzenie względem twoich `OWN_NAME_MARKERS`) i ma najwyżej
@@ -78,6 +79,9 @@ Każde zgłoszenie jest publikowane z twojego konta AbuseIPDB, więc przed pierw
 - **Twój ruch, twoje fałszywe alarmy.** Scenariusz, który odpala na twoim legalnym ruchu (masowe uploady, WebDAV,
   monitoring), należy do `EXTRA_EXCLUDE_SCENARIOS`. Uruchamiaj `--dry-run` przez kilka dni i czytaj CSV, zanim
   pozwolisz cronowi cokolwiek wysłać.
+- **IPv6 i wspólny /64.** Udane logowanie SSH z adresu IPv6 zaufa całemu jego /64 (twoje urządzenia zmieniają "tymczasowe"
+  adresy w jego obrębie), więc inne urządzenia twojej sieci też nie będą zgłaszane. Przy hostingu, w którym jeden /64 dzieli
+  wielu klientów, ustaw `SSH_TRUST_IPV6_PREFIX=128`, żeby zaufać tylko dokładnemu adresowi. IPv4 jest zawsze dokładne.
 - **Inne porty WWW.** Jeśli serwer WWW nie słucha na 80 i 443, ustaw `HTTP_PORTS`, inaczej zgłoszenia podadzą zły port.
 
 ## Status
@@ -160,6 +164,7 @@ zatrzymują przebieg z błędem, zamiast po cichu wyłączyć bezpiecznik (komen
 | `OWN_NAME_MARKERS` | fragmenty rozdzielone przecinkami (własne domeny i host), których nigdy nie może zawierać komentarz zgłoszenia; przy pustej liście lub przy wartościach przykładowych wysyłka na żywo jest odmawiana |
 | `EXCLUDE` | IP lub CIDR, którego nigdy nie zgłaszać; klucz można powtarzać (opcjonalny) |
 | `HTTP_PORTS` | porty, na których słucha twój serwer WWW, podawane w zgłoszeniach HTTP (opcjonalny, domyślnie `80/443`; np. `443` lub `8080/8443`) |
+| `SSH_TRUST_IPV6_PREFIX` | długość prefiksu (64-128, domyślnie `64`) sieci zaufanej wokół adresu IPv6 z udanym logowaniem SSH; `128` ufa tylko dokładnemu adresowi (opcjonalnie) |
 | `EXTRA_EXCLUDE_SCENARIOS` | scenariusze CrowdSeca rozdzielone przecinkami, których nigdy nie zgłaszać, np. taki, który dawał fałszywe alarmy na twoim ruchu; krótka nazwa (`http-probing`) pasuje do każdego autora, pełna (`autor/nazwa`) tylko do tego autora; tylko dodaje do wbudowanych wykluczeń (opcjonalny) |
 
 Obok generowany jest `~/.secrets/ssh_trusted_seen.txt` (IP z udanym logowaniem SSH, wpisy wygasają po 60 dniach).

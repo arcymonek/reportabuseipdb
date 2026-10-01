@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-abuseipdb_report.py - v3.6.27
+abuseipdb_report.py - v3.6.28
 
 Generates a bulk CSV of AbuseIPDB reports from LOCALLY detected CrowdSec alerts.
 It sends NOTHING itself; sending is done by abuseipdb_send.sh (see README.md).
@@ -118,7 +118,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from urllib.parse import unquote
 
-SCRIPT_VERSION = "3.6.27"
+SCRIPT_VERSION = "3.6.28"
 
 # --- Hard limits from the AbuseIPDB documentation (bulk report) --------------
 MAX_COMMENT_BYTES = 1024      # "Truncated after 1,024 characters (bytes)"
@@ -151,6 +151,13 @@ DEFAULT_CONFIG_FILE = os.path.expanduser(
 # (added to the config entries, never instead of them) while migrating.
 DEFAULT_EXCLUDE_FILE = os.path.expanduser("~/.secrets/abuseipdb_exclude.txt")
 DEFAULT_SSH_TRUST_FILE = os.path.expanduser("~/.secrets/ssh_trusted_seen.txt")
+# An IPv6 home or mobile connection gets a whole /64 and its devices rotate "temporary" addresses
+# inside it, so trusting only the exact address of an SSH login would let the operator's own
+# machine be reported from its next address. 64 is the widest value allowed (a wider network would
+# trust other people's networks); 128 restores the exact-address behaviour, for a hosting
+# provider that shares one /64 between customers. IPv4 is always trusted exactly.
+DEFAULT_SSH_TRUST_IPV6_PREFIX = 64
+MIN_SSH_TRUST_IPV6_PREFIX = 64
 
 # Fragments that must NEVER appear in a comment (our domains/host). Checked by
 # validate_csv_text() as an independent control of the templates. Lower-case.
@@ -160,7 +167,7 @@ DEFAULT_SSH_TRUST_FILE = os.path.expanduser("~/.secrets/ssh_trusted_seen.txt")
 OWN_NAME_MARKERS = ()
 
 CONFIG_KEYS = ("ABUSEIPDB_API_KEY", "NTFY_TOPIC", "NTFY_URL", "OWN_NAME_MARKERS", "EXCLUDE",
-               "HTTP_PORTS", "EXTRA_EXCLUDE_SCENARIOS")
+               "HTTP_PORTS", "EXTRA_EXCLUDE_SCENARIOS", "SSH_TRUST_IPV6_PREFIX")
 _CONFIG_KEY = re.compile(r"^[A-Z][A-Z0-9_]*$")
 _INLINE_COMMENT = re.compile(r"\s#")
 
@@ -510,6 +517,21 @@ def config_http_ports(cfg):
     return ports
 
 
+def config_ssh_trust_prefix(cfg):
+    """SSH_TRUST_IPV6_PREFIX (the last value wins): the prefix length, 64-128, of the network that
+    is trusted around an IPv6 address with a successful SSH login. Anything else stops the run:
+    guessing a value could trust a network far wider than the operator's own."""
+    values = cfg.get("SSH_TRUST_IPV6_PREFIX", [])
+    if not values:
+        return DEFAULT_SSH_TRUST_IPV6_PREFIX
+    text = values[-1]
+    if not re.fullmatch(r"[0-9]{1,3}", text) or not MIN_SSH_TRUST_IPV6_PREFIX <= int(text) <= 128:
+        raise ConfigError(f"SSH_TRUST_IPV6_PREFIX {text!r} is invalid: a whole number from "
+                          f"{MIN_SSH_TRUST_IPV6_PREFIX} to 128 (64 trusts the whole /64 network, "
+                          f"128 only the exact address)")
+    return int(text)
+
+
 def config_extra_scenarios(cfg):
     """EXTRA_EXCLUDE_SCENARIOS values (comma-separated, may repeat) as a frozenset."""
     parts = ",".join(cfg.get("EXTRA_EXCLUDE_SCENARIOS", [])).split(",")
@@ -610,7 +632,7 @@ def parse_ssh_accepted(text: str, now=None) -> dict:
         if not m:
             continue
         try:
-            ip = str(ipaddress.ip_address(m.group(2)))
+            ip = canonical_ip(str(ipaddress.ip_address(m.group(2))))
         except ValueError:
             continue
         try:
@@ -639,7 +661,7 @@ def load_trust_store(path, now=None) -> dict:
                     continue
                 try:
                     ip_str, when_str = line.split("\t", 1)
-                    ip = str(ipaddress.ip_address(ip_str.strip()))
+                    ip = canonical_ip(str(ipaddress.ip_address(ip_str.strip())))
                     when = parse_iso_datetime(when_str.strip())
                     if when.tzinfo is None:
                         when = when.replace(tzinfo=timezone.utc)
@@ -678,8 +700,22 @@ def save_trust_store(path, store) -> bool:
         return False
 
 
+def trusted_networks(addresses, ipv6_prefix=DEFAULT_SSH_TRUST_IPV6_PREFIX):
+    """The networks to trust for the given logged-in addresses: an IPv4 address exactly, an IPv6
+    address as its /ipv6_prefix network (see DEFAULT_SSH_TRUST_IPV6_PREFIX). The remembered list
+    keeps single addresses; widening happens here, so a changed prefix applies at once."""
+    nets = set()
+    for ip in addresses:
+        addr = ipaddress.ip_address(ip)
+        if addr.version == 6 and ipv6_prefix < 128:
+            nets.add(ipaddress.ip_network(f"{addr}/{ipv6_prefix}", strict=False))
+        else:
+            nets.add(ipaddress.ip_network(addr))
+    return sorted(nets, key=lambda n: (n.version, n.network_address, n.prefixlen))
+
+
 def harvest_ssh_trusted(days: int = MAX_AGE_DAYS, store_path=DEFAULT_SSH_TRUST_FILE,
-                        persist: bool = True):
+                        persist: bool = True, ipv6_prefix: int = DEFAULT_SSH_TRUST_IPV6_PREFIX):
     """SAFEGUARD 5 - the most important automatic defence against reporting
     our own address.
 
@@ -733,15 +769,17 @@ def harvest_ssh_trusted(days: int = MAX_AGE_DAYS, store_path=DEFAULT_SSH_TRUST_F
     if persist and store_path and merged != stored:
         save_trust_store(store_path, merged)
 
+    nets = trusted_networks(merged, ipv6_prefix)
     if merged:
         print(f"[info] SSH auto-trust: {len(merged)} addresses with a successful login "
               f"(last {days} days; journal: {len(journal)}, remembered: {len(stored)}) "
-              f"- they will never be reported", file=sys.stderr)
+              f"- {len(nets)} networks will never be reported (IPv6 trusted as /{ipv6_prefix})",
+              file=sys.stderr)
     else:
         print("[warn] SSH auto-trust: NO successful login found. "
               "Check that the user may read journalctl (group 'adm'/'systemd-journal'), "
               "otherwise this safeguard does not protect.", file=sys.stderr)
-    return [ipaddress.ip_network(ip) for ip in sorted(merged)]
+    return nets
 
 
 def harvest_local_addresses():
@@ -1412,6 +1450,7 @@ def main():
         cfg_exclusions = config_exclusions(cfg, args.config)
         HTTP_LABEL = http_label(config_http_ports(cfg))
         EXTRA_EXCLUDE_SCENARIOS = config_extra_scenarios(cfg)
+        ssh_trust_prefix = config_ssh_trust_prefix(cfg)
     except ConfigError as exc:
         print(f"[ERROR] {exc}", file=sys.stderr)
         sys.exit(2)
@@ -1446,7 +1485,7 @@ def main():
             print("[WARNING] SSH auto-trust DISABLED by the --no-ssh-trust flag", file=sys.stderr)
         else:
             exclusions = exclusions + harvest_ssh_trusted(
-                store_path=args.ssh_trust_file, persist=not args.dry_run)
+                store_path=args.ssh_trust_file, persist=not args.dry_run, ipv6_prefix=ssh_trust_prefix)
 
         rows = enforce_size_limits(build_rows(alerts, exclusions, after, before, own_addresses))
     except ReportBuildError as exc:

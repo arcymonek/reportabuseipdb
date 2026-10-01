@@ -1,6 +1,6 @@
 [English](../COMPLIANCE.md) | **Polski**
 
-Wersja: 3.6.27 (`abuseipdb_report.py`)
+Wersja: 3.6.28 (`abuseipdb_report.py`)
 
 # Zgodność z AbuseIPDB
 
@@ -39,6 +39,12 @@ FAQ i lista kategorii). Treść polityki może się zmienić; przed poleganiem n
    uwierzytelnienia) nie jest zaufane. Journal, którego użytkownik nie może w całości czytać, jest zgłaszany głośno,
    zamiast po cichu zawężać zaufanie.
    Adresy są też trzymane w `~/.secrets/ssh_trusted_seen.txt`, bo journal jest przycinany.
+   Logowanie z IPv6 zaufa całej sieci /64 (klucz `SSH_TRUST_IPV6_PREFIX`, 64 do 128, domyślnie 64), bo maszyna IPv6 zmienia
+   "tymczasowe" adresy w obrębie swojego /64; sieci szerszej niż /64 nie da się ustawić, a 128 daje zaufanie do
+   dokładnego adresu dla /64 dzielonego między klientów. IPv4 jest zawsze zaufane dokładnie, a adres IPv4-mapped
+   (`::ffff:a.b.c.d`) jest traktowany jak zwykłe IPv4. Lista zapamiętanych trzyma pojedyncze adresy; poszerzenie
+   następuje przy jej odczycie. Inne urządzenia w tym samym /64 też nie są więc zgłaszane: niedoraportowanie, nigdy
+   fałszywe zgłoszenie.
 6. Własne publiczne adresy serwera (z `ip addr`) są zawsze wykluczone.
 7. Nieznane scenariusze nigdy nie są zgłaszane: kwalifikują się tylko scenariusze autora `crowdsecurity`, które są w
    `CATEGORY_MAP` albo nazwane od prawdziwego identyfikatora CVE (`cve-RRRR-NNNN...`). Identyfikator CVE w nazwie
@@ -107,5 +113,6 @@ CIDR (CSV przyjmuje pojedyncze adresy).
 | Kategorie | liczby całkowite 1 do 23; wiele kategorii jest w CSV w cudzysłowie |
 | Duplikaty | ten sam IP najwyżej raz na 15 minut; ten sam komentarz i kategorie w 24 h są scalane |
 | Dzienne zapytania `bulk-report` | Standard 5, Basic 100, Premium 500 (dokumentacja API); darmowe odznaki Webmaster i Supporter podnoszą limit Standard (20 widziane na koncie z obiema). Projekt używa jednego na dobę |
+| Rodziny adresów | `IP` przyjmuje IPv4 i IPv6 ("A valid IPv4 or IPv6 IP address", formularz bulk-report, sprawdzone 2026-10-01); dokumentacja nic nie mówi o zakresach CIDR ani o /64, a to narzędzie zgłasza tylko pojedyncze adresy |
 | Błędy bez `Accept: application/json` | zwracane jako strona HTML, więc wrapper zawsze wysyła ten nagłówek |
 | Odrzucone wiersze | wymienione w `invalidReports` (np. "Invalid IP", "Duplicate IP", "Invalid Category") |

@@ -53,6 +53,14 @@ OWN_NAME_MARKERS=your-domain.example,your-host.example
 # the report names a wrong port. Port numbers separated by '/'. Default: 80/443.
 #HTTP_PORTS=80/443
 
+# How wide a network is trusted around an IPv6 address with a successful SSH login (prefix
+# length, 64 to 128, default 64). An IPv6 machine rotates "temporary" addresses inside its
+# /64 network, so the whole /64 is trusted: other devices of that network are not reported
+# either. Set 128 to trust only the exact address, e.g. on a hosting provider that shares
+# one /64 between customers. A value below 64 is refused (it would trust other people's
+# networks). IPv4 logins are always trusted exactly.
+#SSH_TRUST_IPV6_PREFIX=64
+
 # CrowdSec scenarios that must NEVER be reported from this server, e.g. one that raised
 # false alarms on your own traffic. Comma-separated; a short name (http-probing) matches
 # every author, a full name (author/name) only that author. This only ADDS to the built-in
