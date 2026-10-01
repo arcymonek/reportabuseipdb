@@ -1,6 +1,6 @@
 [English](../OPERATIONS.md) | **Polski**
 
-Wersja: 3.6.29 (`abuseipdb_report.py`)
+Wersja: 3.6.30 (`abuseipdb_report.py`)
 
 # Eksploatacja
 
@@ -43,6 +43,21 @@ monitora.
 3. `crontab -l` pokazuje nową ścieżkę zarówno w poleceniu, jak i w przekierowaniu logu.
 4. Po pierwszym zaplanowanym przebiegu w `abuseipdb_cron.log`: `OK: sent N, saved N, rejected 0` i `watermark updated`.
 5. `cat .state/abuseipdb_last_ok` zawiera świeży epoch; twój zewnętrzny monitor, jeśli go masz, pokazuje OK.
+
+## Aktualizacja do nowej wersji
+
+Plik konfiguracji jest sprawdzany ściśle (nieznany lub zniekształcony klucz zatrzymuje przebieg), a nowe wersje
+czasem dodają klucze albo zaostrzają kontrolę, więc nie wystarczy zrobić pull i zostawić crona w spokoju.
+
+1. W katalogu instalacji: `git pull --ff-only`. Nie edytuj tam plików ręcznie, bo pull odmówi.
+2. Przeczytaj `CHANGELOG.md` od swojej starej wersji (pokazują ją `./abuseipdb_send.sh --version` i
+   `python3 abuseipdb_report.py --version`) do nowej. Szukaj nowych lub przemianowanych kluczy konfiguracji i zmian w
+   tym, co jest wykluczane.
+3. `./abuseipdb_send.sh --dry-run`: ma się skończyć bez błędu, a CSV ma wyglądać jak dotąd. Niczego nie wysyła.
+4. Po następnym zaplanowanym przebiegu sprawdź `abuseipdb_cron.log` (patrz "Lista kontrolna pierwszego przebiegu",
+   punkt 4).
+
+Jeśli coś pójdzie źle, wycofaj zmianę tak, jak opisuje "Sekrety i kopie zapasowe".
 
 ## Codzienne kontrole
 

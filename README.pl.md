@@ -1,6 +1,6 @@
 [English](README.md) | **Polski**
 
-Wersja: 3.6.29 (`abuseipdb_report.py`)
+Wersja: 3.6.30 (`abuseipdb_report.py`)
 
 # reportabuseipdb
 
@@ -17,7 +17,12 @@ Projekt to mała para narzędzi dla samodzielnie hostowanego serwera z Linuksem:
 
 > Projekt nieoficjalny, niezwiązany z AbuseIPDB ani CrowdSec i przez nie niepopierany.
 >
-> Wczesny etap, prace w toku: przed użyciem na żywo uruchom `--dry-run` i przejrzyj CSV.
+> Prace w toku, działa produkcyjnie na jednym samodzielnie hostowanym serwerze.
+> Wyniki możesz sprawdzić na moim [profilu AbuseIPDB](https://www.abuseipdb.com/user/339209).
+>
+> Napisane przez autora we współpracy z Claude Code (Anthropic).
+> Autor nie jest zawodowym programistą, dlatego projekt ma rozbudowane testy i dokumentację.
+> Przed użyciem na żywo uruchom `--dry-run` i przejrzyj CSV.
 
 ## Po co to jest
 
@@ -43,6 +48,23 @@ cron 05:30 -> abuseipdb_send.sh
 
 Okno czasowe to przedział `(znacznik, teraz]`, więc kolejne przebiegi nie nakładają się i nie mają luk. Znacznik
 przesuwa się dopiero po udanej wysyłce, a przy każdym błędzie operator dostaje alert ntfy.
+
+## Przykład zgłoszenia
+
+Jeden wiersz wysyłanego pliku CSV. Adres pochodzi z zakresu przeznaczonego na dokumentację, więc jest fikcyjny;
+prawdziwy przebieg zgłasza prawdziwych atakujących.
+
+```csv
+IP,Categories,ReportDate,Comment
+203.0.113.45,"14,15,21",2026-10-01T11:09:03+00:00,"Detected by CrowdSec IDS on a self-hosted server. Target: HTTP/HTTPS (ports 80/443). Triggered rules: http-probing, http-sensitive-files. 4 matching log events between 2026-10-01T11:08:42Z and 11:09:03Z (UTC). Sample requests: GET /.env -> 404; GET /wp-login.php -> 404; GET /.git/config -> 404; GET /admin/config.php -> 404"
+```
+
+- `Categories` są przypisane per scenariusz CrowdSeca (tu 14 = otwarte porty i podatne usługi, 15 = hacking,
+  21 = atak na aplikację webową).
+- `ReportDate` to czas ostatniej obserwacji, w UTC.
+- `Comment` jest zbudowany ze stałych angielskich zdań, więc nigdy nie zawiera nazwy twojego hosta, twoich domen ani
+  zgłaszanego adresu. Próbki żądań pochodzą od atakującego: próbka zawierająca taką nazwę jest pomijana, a wartości
+  parametrów wyglądających na dane uwierzytelniające są zastępowane przez `***`.
 
 ## Bezpieczniki (nigdy ich nie osłabiać)
 
@@ -83,13 +105,6 @@ Każde zgłoszenie jest publikowane z twojego konta AbuseIPDB, więc przed pierw
   adresy w jego obrębie), więc inne urządzenia twojej sieci też nie będą zgłaszane. Przy hostingu, w którym jeden /64 dzieli
   wielu klientów, ustaw `SSH_TRUST_IPV6_PREFIX=128`, żeby zaufać tylko dokładnemu adresowi. IPv4 jest zawsze dokładne.
 - **Inne porty WWW.** Jeśli serwer WWW nie słucha na 80 i 443, ustaw `HTTP_PORTS`, inaczej zgłoszenia podadzą zły port.
-
-## Status
-
-Wczesny etap, prace w toku. Działa produkcyjnie na jednym samodzielnie hostowanym serwerze.
-
-Napisane przez autora we współpracy z Claude Code (Anthropic). Autor nie jest zawodowym programistą, dlatego projekt ma
-rozbudowane testy i dokumentację; przed użyciem na żywo uruchom `--dry-run` i przejrzyj CSV.
 
 ## Wymagania
 

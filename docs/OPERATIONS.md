@@ -1,6 +1,6 @@
 **English** | [Polski](pl/OPERATIONS.md)
 
-Version: 3.6.29 (`abuseipdb_report.py`)
+Version: 3.6.30 (`abuseipdb_report.py`)
 
 # Operations
 
@@ -43,6 +43,19 @@ when `.state/abuseipdb_last_ok` is older than 36 h. The file name is a stable in
 4. After the first scheduled run, in `abuseipdb_cron.log`: `OK: sent N, saved N, rejected 0` and `watermark updated`.
 5. `cat .state/abuseipdb_last_ok` holds a recent epoch; your external monitor, if any, reports OK.
 
+## Updating to a new version
+
+The config file is checked strictly (an unknown or malformed key stops the run), and new versions sometimes add keys
+or tighten a check, so do not just pull and leave cron alone.
+
+1. In the install directory: `git pull --ff-only`. Do not edit files there by hand, or the pull will refuse.
+2. Read `CHANGELOG.md` from your old version (`./abuseipdb_send.sh --version`, `python3 abuseipdb_report.py --version`
+   show it) up to the new one. Look for new or renamed config keys and for changes in what is excluded.
+3. `./abuseipdb_send.sh --dry-run`: it must finish without an error and the CSV must look as before. It sends nothing.
+4. After the next scheduled run, check `abuseipdb_cron.log` (see "First-run checklist", step 4).
+
+If something goes wrong, roll back as described in "Secrets and backups".
+
 ## Daily checks
 
 ```bash
@@ -59,7 +72,7 @@ date -u -d @"$(cat .state/abuseipdb_last_ok)"
 | HTTP 401 or 403 | wrong or revoked API key; check `ABUSEIPDB_API_KEY` in `~/.secrets/abuseipdb.conf` (mode 600, at least 20 alphanumeric characters) |
 | `OWN_NAME_MARKERS is empty ... NOT sending` | the config file is missing, unreadable, or has no `OWN_NAME_MARKERS`; fix `~/.secrets/abuseipdb.conf` (see `abuseipdb.conf.example`) |
 | `OWN_NAME_MARKERS still holds the example values ... NOT sending` | `OWN_NAME_MARKERS` is still `your-domain.example,your-host.example` from the template; write your own domains and host name |
-| `config file ... is invalid`, `invalid EXCLUDE entry`, `OWN_NAME_MARKERS has ... invalid entries` | the config has a malformed line, an unknown key (a typo), a comment after a value an entry that is not an address, or a file that exists but cannot be read (permissions, not UTF-8); the generator stops with exit code 2 and the wrapper alerts; fix the named line (comments go on their own line) |
+| `config file ... is invalid`, `invalid EXCLUDE entry`, `OWN_NAME_MARKERS has ... invalid entries` | the config has a malformed line, an unknown key (a typo), a comment after a value, an entry that is not an address, or a file that exists but cannot be read (permissions, not UTF-8); the generator stops with exit code 2 and the wrapper alerts; fix the named line (comments go on their own line) |
 | `ABUSEIPDB_API_KEY is still the example value` | the key is still `YOUR_ABUSEIPDB_API_KEY` from the template; set your own key |
 | log shows `NTFY_TOPIC has invalid characters` or `NTFY_URL is not a plain http(s) URL` | a comment or a stray character after the value; a topic is letters, digits, `_` and `-` only |
 | log shows `NTFY_TOPIC is still the example value` | `NTFY_TOPIC` is still `your-private-ntfy-topic`; alerts are deliberately not sent to it, set your own private topic |

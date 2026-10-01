@@ -1,6 +1,6 @@
 **English** | [Polski](README.pl.md)
 
-Version: 3.6.29 (`abuseipdb_report.py`)
+Version: 3.6.30 (`abuseipdb_report.py`)
 
 # reportabuseipdb
 
@@ -17,7 +17,12 @@ The project is a small pair of tools for a self-hosted Linux server:
 
 > Unofficial project, not affiliated with or endorsed by AbuseIPDB or CrowdSec.
 >
-> Early stage, work in progress: run `--dry-run` and review the CSV before any live use.
+> Work in progress, running in production on a single self-hosted server.
+> You can check the results on my [AbuseIPDB profile](https://www.abuseipdb.com/user/339209).
+>
+> Written by the author in collaboration with Claude Code (Anthropic).
+> The author is not a professional programmer, which is why the project has extensive tests and documentation.
+> Before live use, run `--dry-run` and review the CSV.
 
 ## Why this exists
 
@@ -43,6 +48,23 @@ cron 05:30 -> abuseipdb_send.sh
 
 The time window is the interval `(watermark, now]`, so consecutive runs neither overlap nor leave gaps. The
 watermark moves only after a successful upload; on any error the operator gets an ntfy alert.
+
+## Example of a report
+
+One row of the CSV that is uploaded. The address comes from the documentation range, so it is fictional; a real run
+reports real attackers.
+
+```csv
+IP,Categories,ReportDate,Comment
+203.0.113.45,"14,15,21",2026-10-01T11:09:03+00:00,"Detected by CrowdSec IDS on a self-hosted server. Target: HTTP/HTTPS (ports 80/443). Triggered rules: http-probing, http-sensitive-files. 4 matching log events between 2026-10-01T11:08:42Z and 11:09:03Z (UTC). Sample requests: GET /.env -> 404; GET /wp-login.php -> 404; GET /.git/config -> 404; GET /admin/config.php -> 404"
+```
+
+- `Categories` are mapped per CrowdSec scenario (here 14 = open ports and vulnerable services, 15 = hacking,
+  21 = web application attack).
+- `ReportDate` is the time of the latest observation, in UTC.
+- The `Comment` is built from fixed English sentences, so it never contains your host name, your domain names or the
+  reported address. Sample requests come from the attacker: one that contains such a name is left out, and the values
+  of parameters that look like credentials are replaced by `***`.
 
 ## Safeguards (never weaken these)
 
@@ -84,13 +106,6 @@ Every report is published under your AbuseIPDB account, so check these points be
   one /64 between customers, set `SSH_TRUST_IPV6_PREFIX=128` to trust the exact address only. IPv4 is always exact.
 - **Other web ports.** If your web server does not listen on 80 and 443, set `HTTP_PORTS`, or the reports state a
   wrong port.
-
-## Status
-
-Early stage, work in progress. Running in production on a single self-hosted server.
-
-Written by the author in collaboration with Claude Code (Anthropic). The author is not a professional programmer,
-which is why the project has extensive tests and documentation; before live use, run `--dry-run` and review the CSV.
 
 ## Requirements
 

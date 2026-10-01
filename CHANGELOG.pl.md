@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.29 (`abuseipdb_report.py`)
+Wersja: 3.6.30 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,18 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-10-01 - poprawki po audycie dokumentacji (3.6.30)
+
+Tylko dokumentacja; program i wygenerowany CSV bez zmian (ruszył tylko numer wersji).
+
+- **README:** uwagi o statusie (prace w toku, link do profilu AbuseIPDB autora, napisane z Claude Code, najpierw
+  `--dry-run`) są teraz w jednym bloku pod opisem projektu; osobna sekcja "Status" zniknęła.
+- **`docs/pl/ARCHITECTURE.md`:** sekcja "Komentarz zgłoszenia" zawiera teraz ten sam przykładowy wiersz co README; tabela komponentów wymienia teraz `tools/commit-msg`, `tools/lib-privacy.sh` i workflow CI.
+- **`docs/pl/OPERATIONS.md`:** nowa sekcja "Aktualizacja do nowej wersji" (pull, przeczytanie changelogu pod kątem
+  nowych kluczy konfiguracji, `--dry-run`, sprawdzenie następnego przebiegu); literówka dotyczyła tylko wersji angielskiej.
+- **README:** nowa sekcja "Przykład zgłoszenia" z jednym wierszem CSV (fikcyjny adres, wygenerowany przez prawdziwy
+  program) i krótkim objaśnieniem kolumn.
 
 ## 2026-10-01 - akcje CI przypięte do skrótów commitów (3.6.29)
 

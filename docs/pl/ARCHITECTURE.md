@@ -1,6 +1,6 @@
 [English](../ARCHITECTURE.md) | **Polski**
 
-Wersja: 3.6.29 (`abuseipdb_report.py`)
+Wersja: 3.6.30 (`abuseipdb_report.py`)
 
 # Architektura
 
@@ -12,6 +12,9 @@ Wersja: 3.6.29 (`abuseipdb_report.py`)
 | `abuseipdb_send.sh` | Wrapper crona: wybór okna, wywołanie generatora, druga walidacja, wysyłka, kontrola odpowiedzi API, alerty, znacznik. |
 | `tests/` | Testy jednostkowe i end-to-end (Python `unittest`, atrapy `curl`, generatora i `ntfy`). |
 | `tools/pre-commit` | Hook repozytorium: kontrola składni, reguła parowania dokumentacji EN/PL, reguły wersji i skan prywatności. |
+| `tools/commit-msg` | Hook repozytorium: ten sam skan prywatności zastosowany do komunikatu commita, który też jest publikowany. |
+| `tools/lib-privacy.sh` | Reguły prywatności wspólne dla obu hooków (wczytywany, nie jest hookiem). |
+| `.github/workflows/tests.yml` | CI: uruchamia cały zestaw testów na Ubuntu z najstarszym i najnowszym wspieranym Pythonem przy każdym pushu na `main` i każdym pull requeście. |
 | `AGENTS.md` | Zasady dla agentów AI: bezpieczniki, czego nigdy nie robić, konwencje. Tylko po angielsku. |
 | zewnętrzny monitor (opcjonalny) | Poza tym repozytorium. Co godzinę sprawdza, czy znacznik nie jest starszy niż 36 h. |
 
@@ -88,6 +91,16 @@ publicznych serwera albo adres e-mail jest pomijana, także gdy jest zapisany z 
 scenariuszach). Tekst jest sprowadzany do ASCII, znaki sterujące są usuwane, a prefiksy formuł arkusza
 neutralizowane. Cudzysłów jest zapisywany jako `%22`, a komentarz nigdy nie kończy się backslashem, bo parser CSV
 AbuseIPDB traktuje backslash jako znak ucieczki; pozostałe backslashe zostają (są dowodem, np. `\x5Cthink`).
+
+Przykład jednego wiersza (fikcyjny adres z zakresu dokumentacyjnego; wygenerowany przez program z syntetycznych alertów):
+
+```csv
+IP,Categories,ReportDate,Comment
+203.0.113.45,"14,15,21",2026-10-01T11:09:03+00:00,"Detected by CrowdSec IDS on a self-hosted server. Target: HTTP/HTTPS (ports 80/443). Triggered rules: http-probing, http-sensitive-files. 4 matching log events between 2026-10-01T11:08:42Z and 11:09:03Z (UTC). Sample requests: GET /.env -> 404; GET /wp-login.php -> 404; GET /.git/config -> 404; GET /admin/config.php -> 404"
+```
+
+Zdania po kolei: źródło; protokół i porty celu (`HTTP_PORTS`); uruchomione scenariusze; liczba pasujących zdarzeń
+z zakresem czasu obserwacji; próbki żądań. Ten sam przykład jest w [README](../../README.pl.md).
 
 ## Powiązanie z zewnętrznymi monitorami
 
