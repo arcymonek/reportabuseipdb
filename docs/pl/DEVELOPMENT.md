@@ -1,6 +1,6 @@
 [English](../DEVELOPMENT.md) | **Polski**
 
-Wersja: 3.6.24 (`abuseipdb_report.py`)
+Wersja: 3.6.25 (`abuseipdb_report.py`)
 
 # Rozwój
 
@@ -10,7 +10,9 @@ Wersja: 3.6.24 (`abuseipdb_report.py`)
 abuseipdb_report.py     generator i walidator (Python, tylko biblioteka standardowa)
 abuseipdb_send.sh       wrapper crona (bash)
 tests/                  zestawy testów unittest
-tools/pre-commit        hook repozytorium (włączenie: git config core.hooksPath tools)
+tools/pre-commit        hook repozytorium dla plików (włączenie: git config core.hooksPath tools)
+tools/commit-msg        hook repozytorium dla komunikatu commita (ten sam skan prywatności)
+tools/lib-privacy.sh    reguły prywatności wspólne dla obu hooków (wczytywany, nie jest hookiem)
 AGENTS.md               zasady dla agentów AI (tylko po angielsku, bez polskiego odpowiednika)
 docs/, docs/pl/         dokumentacja (angielska, polska)
 README.md, README.pl.md, CHANGELOG.md, CHANGELOG.pl.md
@@ -159,7 +161,10 @@ wypychać gałęzie do tego repozytorium. Nic innego się nie zmienia: gałąź 
   linia zawierająca któryś z nich jest odrzucana (to trzyma twoje domeny i nazwę hosta poza repozytorium). Odrzuca też
   staged `abuseipdb.conf`, linię wyglądającą na prawdziwy klucz API (80 znaków szesnastkowych) oraz prawdziwe wartości w
   liniach `ABUSEIPDB_API_KEY=` / `NTFY_TOPIC=`. Dozwolone są tylko dane kontaktowe autora: adres e-mail, strona, imię i
-  nazwisko oraz adres projektu na GitHubie. Bez configu skan własnych nazw jest pomijany z komunikatem.
+  nazwisko oraz adres projektu na GitHubie. Domena jest dozwolona tylko samodzielnie: nazwa hosta pod nią (`host.<domena>`)
+  lub inna skrzynka w niej nadal jest odrzucana. Bez configu skan własnych nazw jest pomijany z komunikatem.
+- `tools/commit-msg` stosuje te same reguły do KOMUNIKATU commita (on też jest publiczny), pomijając własne linie
+  komentarza `#` gita; bez configu niczego nie skanuje. `tests/test_hooks.py` uruchamia oba hooki w tymczasowym repozytorium.
 
 ## Lista kontrolna przed publicznym repozytorium
 

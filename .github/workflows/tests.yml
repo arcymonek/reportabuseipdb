@@ -33,7 +33,8 @@ jobs:
       - name: Shell syntax
         run: |
           bash -n abuseipdb_send.sh
-          bash -n tools/pre-commit
-          shellcheck -S error abuseipdb_send.sh tools/pre-commit
+          bash -n tools/pre-commit tools/commit-msg tools/lib-privacy.sh
+          shellcheck -x -S error abuseipdb_send.sh tools/pre-commit tools/commit-msg
+          shellcheck -s bash -S error tools/lib-privacy.sh
       - name: Tests
         run: python -m unittest discover -v tests

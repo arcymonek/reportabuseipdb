@@ -1,0 +1,23 @@
+#!/bin/bash
+# commit-msg hook for reportabuseipdb: the privacy scan of tools/pre-commit looks only at the files, but
+# the commit message is published too (it goes to the public history). Same rules, same helper:
+# no own domain or host name (OWN_NAME_MARKERS of the local config), no real API key or ntfy topic.
+# Enabled together with the other hook by:  git config core.hooksPath tools
+# No local config (a contributor's clone) = nothing to scan against, silently fine.
+# Bypass only knowingly: git commit --no-verify
+# shellcheck source=lib-privacy.sh
+. "$(cd "$(dirname "$0")" && pwd)/lib-privacy.sh"
+msg="${1:?usage: commit-msg MESSAGE_FILE}"
+tmp="$(mktemp "${TMPDIR:-/tmp}/commit-msg.XXXXXX")"; scan="$(mktemp "${TMPDIR:-/tmp}/commit-msg.XXXXXX")"; markers="$(mktemp "${TMPDIR:-/tmp}/commit-msg.XXXXXX")"
+trap 'rm -f "$tmp" "$scan" "$markers"' EXIT
+fail=0
+grep -v '^#' "$msg" | privacy_strip > "$scan"      # lines starting with # are git's own comments
+if grep -nE '[0-9a-fA-F]{80}' "$scan" > "$tmp"; then
+    echo "PRIVACY: the commit message contains something that looks like a real API key:"; cut -c1-60 "$tmp"; fail=1
+fi
+privacy_markers "$markers"
+if [ -s "$markers" ] && grep -inF -f "$markers" "$scan" > "$tmp"; then
+    echo "PRIVACY: the commit message contains your own domain/host names (OWN_NAME_MARKERS in $privacy_conf):"
+    cut -c1-140 "$tmp"; fail=1
+fi
+[ "$fail" -eq 0 ] || { echo "Commit aborted. Fix the message or use: git commit --no-verify"; exit 1; }

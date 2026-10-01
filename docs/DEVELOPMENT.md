@@ -1,6 +1,6 @@
 **English** | [Polski](pl/DEVELOPMENT.md)
 
-Version: 3.6.24 (`abuseipdb_report.py`)
+Version: 3.6.25 (`abuseipdb_report.py`)
 
 # Development
 
@@ -10,7 +10,9 @@ Version: 3.6.24 (`abuseipdb_report.py`)
 abuseipdb_report.py     generator and validator (Python, standard library only)
 abuseipdb_send.sh       cron wrapper (bash)
 tests/                  unittest suites
-tools/pre-commit        repository hook (enable with: git config core.hooksPath tools)
+tools/pre-commit        repository hook for the files (enable with: git config core.hooksPath tools)
+tools/commit-msg        repository hook for the commit message (same privacy scan)
+tools/lib-privacy.sh    the privacy rules both hooks share (sourced, not a hook)
 AGENTS.md               rules for AI coding agents (English only, no Polish twin)
 docs/, docs/pl/         documentation (English, Polish)
 README.md, README.pl.md, CHANGELOG.md, CHANGELOG.pl.md
@@ -157,7 +159,10 @@ this repository. Nothing else changes: the branch is still merged only by the ma
   contains one of them is refused (this is what keeps your own domains and host name out of the repository). It also
   refuses a staged `abuseipdb.conf`, a line that looks like a real API key (80 hex characters) and real values on
   `ABUSEIPDB_API_KEY=` / `NTFY_TOPIC=` lines. Only the author's contact details are allowed: the contact e-mail address,
-  the website, the author name and the GitHub project URL. Without a config the own-name scan is skipped with a note.
+  the website, the author name and the GitHub project URL. The domain is allowed only on its own: a host name under it
+  (`host.<domain>`) or another mailbox at it is still refused. Without a config the own-name scan is skipped with a note.
+- `tools/commit-msg` applies the same rules to the commit MESSAGE (it is published too), ignoring git's own `#` comment
+  lines; without a config it scans nothing. `tests/test_hooks.py` runs both hooks in a throw-away repository.
 
 ## Release checklist for a public repository
 

@@ -4,10 +4,13 @@
 # Checks staged files: bash syntax + shellcheck for *.sh, Python syntax for *.py,
 # the EN/PL documentation pairing rule, the version rules and the privacy scan
 # (see docs/DEVELOPMENT.md).
+# The privacy rules live in tools/lib-privacy.sh (shared with tools/commit-msg, which scans the message).
 # Bypass only knowingly: git commit --no-verify
 # Contributors who write English only: EN_ONLY=1 git commit ... skips just the EN/PL pairing rule (the maintainer adds
 # the Polish translation); every other check, including the privacy scan, still runs.
 fail=0
+# shellcheck source=lib-privacy.sh
+. "$(cd "$(dirname "$0")" && pwd)/lib-privacy.sh"
 staged=()   # portable (no mapfile: macOS ships bash 3.2)
 while IFS= read -r -d '' path; do staged+=("$path"); done < <(git diff --cached --name-only --diff-filter=ACMR -z)
 mk() { mktemp "${TMPDIR:-/tmp}/pre-commit.XXXXXX"; }   # explicit template: works where the default temp dir is not writable
@@ -20,7 +23,9 @@ for f in "${staged[@]}"; do
             if ! git show ":$f" | bash -n 2> "$tmp"; then
                 echo "SYNTAX ERROR in $f:"; cat "$tmp"; fail=1; continue
             fi
-            if command -v shellcheck > /dev/null && ! git show ":$f" | shellcheck -S error -s bash - > "$tmp" 2>&1; then
+            if ! command -v shellcheck > /dev/null; then
+                echo "note: shellcheck is not installed, $f was only syntax-checked (CI runs shellcheck)"
+            elif ! git show ":$f" | shellcheck -S error -s bash - > "$tmp" 2>&1; then
                 echo "SHELLCHECK (error) in $f:"; cat "$tmp"; fail=1
             fi
             ;;
@@ -94,30 +99,21 @@ fi
 
 # Privacy scan. The lines being added must not reveal the operator's own domains or host
 # names (OWN_NAME_MARKERS of the local config, which is never in the repository), a real
-# API key, or a committed config file. Only these strings are allowed in the repository
-# (author contact details); they are removed before scanning. No config = scan skipped.
-conf="${ABUSEIPDB_CONFIG:-$HOME/.secrets/abuseipdb.conf}"
+# API key, or a committed config file. Only the author's contact details are allowed in the
+# repository; privacy_strip (tools/lib-privacy.sh) removes exactly those before scanning.
+# No config = scan skipped.
+conf="$privacy_conf"
 for f in "${staged[@]}"; do
     case "$(basename "$f")" in
         abuseipdb.conf) echo "PRIVACY: $f is the real config file (secrets and host names) - never commit it"; fail=1 ;;
     esac
 done
-# The allowed strings are assembled from pieces so that this file does not contain them itself
-# (it would trip its own scan). esc() makes a string safe inside a sed pattern.
-site="arkadiusz""polak.pl"
-allowed=("github@$site" "$site" "Arkadiusz"" Polak" "github.com/arcy""monek/")
-esc() { printf '%s' "$1" | sed 's/[][\.*^$/]/\\&/g'; }
-git diff --cached -U0 --no-color --diff-filter=ACMR | grep '^+' | grep -v '^+++ ' > "$scan"
-for a in "${allowed[@]}"; do
-    sed "s/$(esc "$a")//g" "$scan" > "$tmp" && cat "$tmp" > "$scan"
-done
+git diff --cached -U0 --no-color --diff-filter=ACMR | grep '^+' | grep -v '^+++ ' > "$tmp"
+privacy_strip < "$tmp" > "$scan"
 if grep -nE '[0-9a-fA-F]{80}|^\+(ABUSEIPDB_API_KEY|NTFY_TOPIC)=[^Yy]' "$scan" > "$tmp"; then
     echo "PRIVACY: an added line looks like a real API key or ntfy topic:"; cut -c1-60 "$tmp"; fail=1
 fi
-if [ -r "$conf" ]; then
-    sed -n 's/^[[:space:]]*OWN_NAME_MARKERS[[:space:]]*=//p' "$conf" | tr ',' '\n' | tr -d '\r' \
-        | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | grep -v '^$' > "$markers"
-fi
+privacy_markers "$markers"
 if [ -s "$markers" ]; then
     if grep -inF -f "$markers" "$scan" > "$tmp"; then
         echo "PRIVACY: added lines contain your own domain/host names (OWN_NAME_MARKERS in $conf):"

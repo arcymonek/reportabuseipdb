@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.24 (`abuseipdb_report.py`)
+Version: 3.6.25 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,30 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-10-01 - privacy hooks: no blanket allowance for the author's domain, commit messages scanned (3.6.25)
+
+Found by the code audit of 2026-10-01; confirmed by running the hook in a throw-away repository.
+
+- **Fixed a hole in `tools/pre-commit`.** The few strings allowed in the repository (the author's contact details) were
+  removed from the scan as plain substrings, so a host name UNDER the author's domain (`host.<domain>`) lost its domain,
+  left `host.` behind and passed the own-name scan even though the domain is one of the operator's own markers. The
+  domain is now removed only when it stands on its own (not after a character of a host name or an e-mail local part);
+  `github@<domain>`, the website, the author name and the GitHub profile path stay allowed, any other mailbox or host
+  at the domain is refused.
+- **New `tools/commit-msg` hook.** The pre-commit scan looks only at files, but the commit message goes into the public
+  history too. The new hook applies the same rules to the message (own names, a key-like string), ignores git's `#`
+  comment lines and, like the other hook, scans nothing without a local config. It is enabled by the same
+  `git config core.hooksPath tools`.
+- **`tools/lib-privacy.sh`**: the privacy rules (reading `OWN_NAME_MARKERS`, the allowed strings) now live in one file
+  that both hooks source, so they cannot drift apart.
+- `tools/pre-commit` prints a note when `shellcheck` is not installed instead of skipping the check silently (CI still
+  runs it).
+- **First tests for the hooks** (`tests/test_hooks.py`, 15 tests, each in a throw-away repository): clean change, own
+  names, the author's details allowed, hosts under the author's domain refused, real config file, key-like strings,
+  no config, only added lines scanned, the message hook, and both hooks running as real git hooks. Verified by mutation:
+  the old substring behaviour and each removed check turns a test red.
+- CI: `bash -n` and `shellcheck` now cover the new hook files as well.
 
 ## 2026-10-01 - fail closed on a bad config, alert on a degraded safeguard, wider fetch (3.6.24)
 

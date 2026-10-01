@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.24 (`abuseipdb_report.py`)
+Wersja: 3.6.25 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,29 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-10-01 - hooki prywatności: koniec ogólnej zgody na domenę autora, skan komunikatów commitów (3.6.25)
+
+Znalezione audytem kodu z 2026-10-01; potwierdzone uruchomieniem hooka w tymczasowym repozytorium.
+
+- **Naprawiona dziura w `tools/pre-commit`.** Kilka ciągów dozwolonych w repozytorium (dane kontaktowe autora) było
+  usuwanych ze skanu jako zwykłe podciągi, więc nazwa hosta POD domeną autora (`host.<domena>`) traciła domenę,
+  zostawało `host.` i przechodziła skan własnych nazw, choć domena jest jednym z własnych znaczników operatora. Teraz
+  domena jest usuwana tylko wtedy, gdy stoi samodzielnie (nie po znaku nazwy hosta ani lokalnej części adresu e-mail);
+  `github@<domena>`, strona, imię i nazwisko autora oraz ścieżka profilu GitHuba pozostają dozwolone, każda inna
+  skrzynka lub host w tej domenie jest odrzucany.
+- **Nowy hook `tools/commit-msg`.** Skan pre-commit patrzy tylko na pliki, a komunikat commita też trafia do publicznej
+  historii. Nowy hook stosuje te same reguły do komunikatu (własne nazwy, ciąg podobny do klucza), pomija linie
+  komentarza `#` gita i, tak jak drugi hook, bez lokalnego configu niczego nie skanuje. Włącza się tym samym
+  `git config core.hooksPath tools`.
+- **`tools/lib-privacy.sh`**: reguły prywatności (czytanie `OWN_NAME_MARKERS`, dozwolone ciągi) są teraz w jednym pliku,
+  który wczytują oba hooki, więc nie mogą się rozjechać.
+- `tools/pre-commit` wypisuje notkę, gdy nie ma `shellcheck`, zamiast pomijać sprawdzenie po cichu (CI nadal je robi).
+- **Pierwsze testy hooków** (`tests/test_hooks.py`, 15 testów, każdy w tymczasowym repozytorium): zmiana bez zastrzeżeń,
+  własne nazwy, dozwolone dane autora, hosty pod domeną autora odrzucane, prawdziwy plik konfiguracji, ciągi podobne do
+  klucza, brak configu, skan tylko dodanych linii, hook komunikatu oraz oba hooki uruchamiane jako prawdziwe hooki
+  gita. Sprawdzone mutacją: dawne zachowanie z podciągiem i każde usunięte sprawdzenie robi czerwony test.
+- CI: `bash -n` i `shellcheck` obejmują teraz także nowe pliki hooków.
 
 ## 2026-10-01 - błędna konfiguracja zatrzymuje przebieg, alert przy osłabionym zabezpieczeniu, szersze pobieranie (3.6.24)
 
