@@ -66,8 +66,8 @@ GitHub Actions workflow does this for every pull request.
   `docs/X.md` and `docs/pl/X.md`). English is the source. As a contributor you write and update **English only**; the
   maintainer adds the Polish translation. Do not create or edit Polish files yourself. This file (`AGENTS.md`) has no
   Polish twin.
-- Do not raise the version. Describe your change under "Unreleased" in `CHANGELOG.md`; the maintainer raises the
-  version and translates when merging.
+- Do not raise the version. Describe your change under "Unreleased" in `CHANGELOG.md`; the maintainer decides
+  whether the version rises (it does when the program changes) and translates when merging.
 - One topic per pull request. Explain in plain language what changed and why: the reviewer may not read every line, so
   the description and the tests must carry the argument. State what you did not verify.
 - Work on a branch (`git switch -c fix-short-description`) and never commit directly to `main`; do not merge. Outside

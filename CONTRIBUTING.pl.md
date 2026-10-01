@@ -54,8 +54,8 @@ bezpośrednio do tego repozytorium; pull request i scalenie przez opiekuna pozos
 - Dokumentacja istnieje po angielsku i po polsku (`README.md` i `README.pl.md`, `docs/X.md` i `docs/pl/X.md` itd.).
   Wystarczy, że napiszesz plik angielski; nie musisz znać polskiego. Polskie tłumaczenie dodaje opiekun projektu przed
   scaleniem, więc prosimy, żeby nie tłumaczyć maszynowo na własną rękę.
-- Nie podnoś wersji. Opisz zmianę w sekcji "Unreleased" w `CHANGELOG.md`; opiekun podnosi wersję i uzupełnia
-  `CHANGELOG.pl.md` przy scalaniu.
+- Nie podnoś wersji. Opisz zmianę w sekcji "Unreleased" w `CHANGELOG.md`; opiekun decyduje, czy wersja rośnie
+  (rośnie, gdy zmienia się program), i uzupełnia `CHANGELOG.pl.md` przy scalaniu.
 - Testy używają wyłącznie sztucznych danych: adresów zarezerwowanych (`203.0.113.0/24`, `198.51.100.0/24`,
   `2001:db8::/32`) albo znanych publicznych resolverów jako zastępczych atakujących, nazw `example.org` / `.example` /
   `.test`, sztucznych kluczy i tematów. Nigdy prawdziwego klucza API, nigdy prawdziwej wysyłki do AbuseIPDB, nigdy

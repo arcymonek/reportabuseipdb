@@ -35,7 +35,8 @@ a safeguard would say something different, use a branch.
 
 **Path A, documentation straight to `main`**
 
-1. Edit, keep the English and Polish files in step, raise the version and complete both changelogs (see Versioning).
+1. Edit, keep the English and Polish files in step, and complete both changelogs if the change belongs there (see
+   Versioning). A documentation change does not raise the version.
 2. Commit with an English message and run the pre-commit hook (it runs by itself on `git commit`).
 3. `git push origin main`, then (after the deployment check below, if the server needs the change) `git push github main`.
 
@@ -45,8 +46,8 @@ a safeguard would say something different, use a branch.
    one topic per branch.
 2. Edit and test locally (`python3 -m unittest discover -v tests`). Commit as you go with English messages. These work
    commits do not touch the version.
-3. The last commit of the branch raises the version (once, see Versioning) and completes the documentation and both
-   changelogs.
+3. The last commit of the branch completes the documentation and both changelogs. If the change touches the program, it
+   also raises the version, once (see Versioning); a change to tooling only adds a line under "Development" instead.
 4. `git push github fix-short-description`. Branches go only to `github`, where the CI runs; the private `origin`
    receives `main` only. Open a pull request from the branch to `main` (a draft is fine): the `tests` workflow runs for
    every pull request.
@@ -102,19 +103,29 @@ deprecated one:
 ## Versioning
 
 - Format `X.Y.Z`. The project version is the version of `abuseipdb_report.py` (`SCRIPT_VERSION` and the docstring
-  header). Every change that reaches `main` (a direct push or a merged branch) raises `Z` by 1 (3.6.1, 3.6.2, ...). After `Z` reaches 99 the next
-  version raises `Y` by 1 and resets `Z` to 0 (3.6.99 is followed by 3.7.0). A major change (`X`) is a deliberate,
-  manual decision.
+  header). It answers one question for the person who runs the tool: "did the program change?" So it rises when the
+  **program** changes, and only then:
+  - `Z` by 1 for a fix or any change in behaviour of `abuseipdb_report.py` or `abuseipdb_send.sh` (a new check, a changed
+    message, alert, exit code or validation), or in the meaning of a line of `abuseipdb.conf.example`;
+  - `Y` by 1 (and `Z` back to 0) for a new function or a new config key; after `Z` reaches 99 the next version also
+    raises `Y` (3.6.99 is followed by 3.7.0);
+  - `X` is a deliberate, manual decision.
+- Changes to `tools/` (hooks), `tests/`, `.github/` (CI, forms), `docs/`, the README, `CONTRIBUTING.md`, `AGENTS.md` and
+  other templates do **not** raise the version. Those that matter to maintainers and contributors (a new or fixed hook
+  rule, a CI change, a new document) get one dated line under "Development" in both changelogs; a typo does not need
+  a line.
 - `abuseipdb_send.sh` has its own `SCRIPT_VERSION` and follows the same rule whenever the wrapper changes (update the
   test that asserts its version string too).
-- A branch carries exactly one version change, in its last commit. Two bumps on one branch would raise the version by
+- A branch carries at most one version change, in its last commit. Two bumps on one branch would raise the version by
   two steps once merged, and the hook only compares each commit with the one before it.
-- In the same commit update: the version in the script, the `Version:` line at the top of `README.md` and of every
-  document in `docs/`, the `Wersja:` line in every Polish counterpart, and both changelogs.
-- The pre-commit hook enforces this: the documents must show the same version as `SCRIPT_VERSION`, and a commit that
-  changes the version must raise it by exactly one step. A commit that leaves the version alone passes the hook, so
-  contributors never have to touch it: they describe their change under "Unreleased" in `CHANGELOG.md`, and the
-  maintainer raises the version and completes `CHANGELOG.pl.md` when merging. `tests/test_versioning.py` checks the consistency as well.
+- In the commit that raises the version update: the version in the script, the `Version:` line at the top of
+  `README.md` and of every document in `docs/`, the `Wersja:` line in every Polish counterpart, and both changelogs
+  (a new `## X.Y.Z - date` entry; `tests/test_versioning.py` looks for that heading).
+- The pre-commit hook enforces what can be checked: the documents must show the same version as `SCRIPT_VERSION`, and a
+  commit that changes the version must raise it by exactly one step. A commit that leaves the version alone passes the
+  hook, so contributors never have to touch it: they describe their change under "Unreleased" in `CHANGELOG.md`, and the
+  maintainer decides whether it raises the version, completes `CHANGELOG.pl.md` and moves the note when merging.
+  `tests/test_versioning.py` checks the consistency as well.
 
 ## Language rules
 
@@ -145,8 +156,9 @@ merged with the GitHub button (the private repository would fall behind).
 3. Add the Polish translation of every changed English document in a follow-up commit on `pr-N` (English stays the
    source; the contributor is not asked to translate). Read the translation once: it is the maintainer's check that the
    change was understood.
-4. Raise the version (see Versioning) and fill in both changelogs, moving the contributor's "Unreleased" note into the
-   new entry and crediting them there.
+4. Raise the version if the change touches the program (see Versioning) and fill in both changelogs, moving the
+   contributor's "Unreleased" note into the new entry (or a line under "Development" for tooling only) and crediting
+   them there.
 5. Merge on your machine: `git switch main`, `git merge --ff-only pr-N` (or `git rebase main` on `pr-N` first if `main`
    moved). Push to the private remote first, deploy and check on the server, and only then push to the public one. The
    pull request is marked as merged or closed by GitHub afterwards. Delete `pr-N`.

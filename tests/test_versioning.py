@@ -29,10 +29,13 @@ class Versioning(unittest.TestCase):
             self.assertIsNotNone(m, f"{rel}: missing '{label}: X.Y.Z (`abuseipdb_report.py`)' line")
             self.assertEqual(m.group(1), version, rel)
 
-    def test_changelogs_mention_the_current_version(self):
+    def test_changelogs_have_an_entry_for_the_current_version(self):
+        # The entry is a heading "## X.Y.Z - date". A change that does not touch the program (documentation, hooks,
+        # tests, CI) does not raise the version, so the newest entry may be older than the newest commit.
         version, _ = script_version()
         for rel in ("CHANGELOG.md", "CHANGELOG.pl.md"):
-            self.assertIn(f"({version})", (ROOT / rel).read_text(encoding="utf-8"), rel)
+            text = (ROOT / rel).read_text(encoding="utf-8")
+            self.assertRegex(text, rf"(?m)^## {re.escape(version)} - \d{{4}}-\d{{2}}-\d{{2}}$", rel)
 
 
 if __name__ == "__main__":

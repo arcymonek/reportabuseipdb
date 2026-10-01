@@ -35,8 +35,8 @@ co innego, użyj gałęzi.
 
 **Ścieżka A, dokumentacja wprost na `main`**
 
-1. Edytuj, utrzymuj zgodność plików angielskich i polskich, podnieś wersję i uzupełnij oba changelogi (patrz
-   Wersjonowanie).
+1. Edytuj, utrzymuj zgodność plików angielskich i polskich i uzupełnij oba changelogi, jeśli zmiana tam należy (patrz
+   Wersjonowanie). Zmiana dokumentacji nie podnosi wersji.
 2. Zrób commit z komunikatem po angielsku; hook pre-commit uruchamia się sam przy `git commit`.
 3. `git push origin main`, potem (po sprawdzeniu wdrożenia niżej, jeśli serwer potrzebuje tej zmiany) `git push github main`.
 
@@ -46,7 +46,8 @@ co innego, użyj gałęzi.
    temat na gałąź.
 2. Edytuj i testuj lokalnie (`python3 -m unittest discover -v tests`). Rób commity po drodze, z komunikatami po angielsku.
    Te robocze commity nie ruszają wersji.
-3. Ostatni commit gałęzi podnosi wersję (jeden raz, patrz Wersjonowanie) i uzupełnia dokumentację oraz oba changelogi.
+3. Ostatni commit gałęzi uzupełnia dokumentację i oba changelogi. Jeśli zmiana dotyka programu, podnosi też wersję, raz
+   (patrz Wersjonowanie); zmiana samych narzędzi dodaje zamiast tego linię w sekcji "Development".
 4. `git push github fix-krotki-opis`. Gałęzie idą wyłącznie na `github`, gdzie działa CI; prywatny `origin` dostaje
    tylko `main`. Otwórz pull request z gałęzi do `main` (może być szkicem): workflow `tests` uruchamia się dla każdego
    pull requesta.
@@ -100,19 +101,30 @@ kwartał i gdy GitHub ostrzega o wycofanej:
 
 ## Wersjonowanie
 
-- Format `X.Y.Z`. Wersją projektu jest wersja `abuseipdb_report.py` (`SCRIPT_VERSION` i nagłówek docstringu). Każda
-  zmiana, która trafia na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1 (3.6.1, 3.6.2, ...). Gdy `Z` dojdzie do 99, następna wersja podnosi
-  `Y` o 1 i zeruje `Z` (po 3.6.99 następna to 3.7.0). Duża zmiana (`X`) to świadoma, ręczna decyzja.
+- Format `X.Y.Z`. Wersją projektu jest wersja `abuseipdb_report.py` (`SCRIPT_VERSION` i nagłówek docstringu). Odpowiada
+  osobie uruchamiającej narzędzie na jedno pytanie: "czy program się zmienił?". Dlatego rośnie, gdy zmienia się
+  **program**, i tylko wtedy:
+  - `Z` o 1 przy poprawce albo każdej zmianie zachowania `abuseipdb_report.py` lub `abuseipdb_send.sh` (nowa kontrola,
+    zmieniony komunikat, alert, kod wyjścia lub walidacja) albo znaczenia linii w `abuseipdb.conf.example`;
+  - `Y` o 1 (a `Z` wraca do 0) przy nowej funkcji lub nowym kluczu konfiguracji; gdy `Z` dojdzie do 99, następna
+    wersja też podnosi `Y` (po 3.6.99 następna to 3.7.0);
+  - `X` to świadoma, ręczna decyzja.
+- Zmiany w `tools/` (hooki), `tests/`, `.github/` (CI, formularze), `docs/`, README, `CONTRIBUTING.md`, `AGENTS.md` i
+  innych szablonach **nie** podnoszą wersji. Te, które są ważne dla opiekuna i kontrybutorów (nowa lub poprawiona
+  reguła hooka, zmiana CI, nowy dokument), dostają jedną linię z datą w sekcji "Development" w obu changelogach;
+  literówka nie potrzebuje wpisu.
 - `abuseipdb_send.sh` ma własny `SCRIPT_VERSION` i podlega tej samej regule, gdy wrapper się zmienia (zaktualizuj też
   test sprawdzający jego napis wersji).
-- Gałąź niesie dokładnie jedną zmianę wersji, w ostatnim commicie. Dwa podniesienia na jednej gałęzi dałyby po scaleniu
+- Gałąź niesie najwyżej jedną zmianę wersji, w ostatnim commicie. Dwa podniesienia na jednej gałęzi dałyby po scaleniu
   wzrost o dwa kroki, a hook porównuje tylko każdy commit z poprzednim.
-- W tym samym commicie zaktualizuj: wersję w skrypcie, linię `Version:` na początku `README.md` i każdego dokumentu w
-  `docs/`, linię `Wersja:` w każdym polskim odpowiedniku oraz oba changelogi.
-- Wymusza to hook pre-commit: dokumenty muszą pokazywać tę samą wersję co `SCRIPT_VERSION`, a commit, który zmienia
-  wersję, musi ją podnieść dokładnie o jeden krok. Commit, który wersji nie rusza, przechodzi przez hook, więc
-  kontrybutorzy nigdy nie muszą jej zmieniać: opisują zmianę w sekcji "Unreleased" w `CHANGELOG.md`, a opiekun
-  podnosi wersję i uzupełnia `CHANGELOG.pl.md` przy scalaniu. Spójność sprawdza też `tests/test_versioning.py`.
+- W commicie, który podnosi wersję, zaktualizuj: wersję w skrypcie, linię `Version:` na początku `README.md` i każdego
+  dokumentu w `docs/`, linię `Wersja:` w każdym polskim odpowiedniku oraz oba changelogi (nowy wpis
+  `## X.Y.Z - data`; `tests/test_versioning.py` szuka tego nagłówka).
+- Hook pre-commit wymusza to, co da się sprawdzić: dokumenty muszą pokazywać tę samą wersję co `SCRIPT_VERSION`, a
+  commit, który zmienia wersję, musi ją podnieść dokładnie o jeden krok. Commit, który wersji nie rusza, przechodzi
+  przez hook, więc kontrybutorzy nigdy nie muszą jej zmieniać: opisują zmianę w sekcji "Unreleased" w `CHANGELOG.md`,
+  a opiekun decyduje, czy podnosi wersję, uzupełnia `CHANGELOG.pl.md` i przenosi notatkę przy scalaniu. Spójność
+  sprawdza też `tests/test_versioning.py`.
 
 ## Zasady językowe
 
@@ -146,8 +158,9 @@ Repozytorium na komputerze opiekuna jest źródłem prawdy, więc pull requesta 
 3. Dodaj polskie tłumaczenie każdego zmienionego angielskiego dokumentu w osobnym commicie na `pr-N` (źródłem
    pozostaje angielski; kontrybutor nie musi tłumaczyć). Przeczytaj tłumaczenie raz: to kontrola opiekuna, że zmiana
    została zrozumiana.
-4. Podnieś wersję (patrz Wersjonowanie) i uzupełnij oba changelogi, przenosząc notatkę kontrybutora z "Unreleased" do
-   nowego wpisu i wymieniając go tam.
+4. Podnieś wersję, jeśli zmiana dotyka programu (patrz Wersjonowanie), i uzupełnij oba changelogi, przenosząc notatkę
+   kontrybutora z "Unreleased" do nowego wpisu (albo linii w sekcji "Development" dla samych narzędzi) i wymieniając go
+   tam.
 5. Scal na swoim komputerze: `git switch main`, `git merge --ff-only pr-N` (albo najpierw `git rebase main` na `pr-N`,
    jeśli `main` się przesunął). Wypchnij najpierw do prywatnego remote'a, wdróż i sprawdź na serwerze, dopiero potem do
    publicznego. GitHub oznaczy pull request jako scalony lub zamknięty. Usuń `pr-N`.

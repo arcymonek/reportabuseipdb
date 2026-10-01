@@ -54,8 +54,8 @@ repository directly; the pull request and the maintainer's merge stay the same.
 - Documentation exists in English and Polish (`README.md` and `README.pl.md`, `docs/X.md` and `docs/pl/X.md`, and so
   on). You only need to write the English file; you do not have to know Polish. The maintainer adds the Polish
   translation before merging, so please do not machine-translate it yourself.
-- Do not raise the version. Describe your change under "Unreleased" in `CHANGELOG.md`; the maintainer raises the
-  version and updates `CHANGELOG.pl.md` when merging.
+- Do not raise the version. Describe your change under "Unreleased" in `CHANGELOG.md`; the maintainer decides
+  whether the version rises (it does when the program changes) and updates `CHANGELOG.pl.md` when merging.
 - Tests use only fake data: reserved addresses (`203.0.113.0/24`, `198.51.100.0/24`, `2001:db8::/32`) or well-known
   public resolvers as attacker stand-ins, `example.org` / `.example` / `.test` names, fake keys and topics. Never a real
   API key, never a real upload to AbuseIPDB, never your own host names or addresses.
