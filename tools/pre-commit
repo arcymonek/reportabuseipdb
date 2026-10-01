@@ -37,11 +37,11 @@ for f in "${staged[@]}"; do
     esac
 done
 
-# EN/PL pairs: X.md <-> X.pl.md in the root (README, CHANGELOG, CONTRIBUTING, SECURITY), docs/X.md <-> docs/pl/X.md
+# EN/PL pairs: X.md <-> X.pl.md in the root (README, CHANGELOG, CONTRIBUTING, SECURITY, CODE_OF_CONDUCT), docs/X.md <-> docs/pl/X.md
 pair_of() {
     case "$1" in
-        README.md|CHANGELOG.md|CONTRIBUTING.md|SECURITY.md) echo "${1%.md}.pl.md" ;;
-        README.pl.md|CHANGELOG.pl.md|CONTRIBUTING.pl.md|SECURITY.pl.md) echo "${1%.pl.md}.md" ;;
+        README.md|CHANGELOG.md|CONTRIBUTING.md|SECURITY.md|CODE_OF_CONDUCT.md) echo "${1%.md}.pl.md" ;;
+        README.pl.md|CHANGELOG.pl.md|CONTRIBUTING.pl.md|SECURITY.pl.md|CODE_OF_CONDUCT.pl.md) echo "${1%.pl.md}.md" ;;
         docs/pl/*.md) echo "docs/${1#docs/pl/}" ;;
         docs/*.md) echo "docs/pl/${1#docs/}" ;;
     esac

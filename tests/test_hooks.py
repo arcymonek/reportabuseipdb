@@ -23,7 +23,8 @@ PROFILE = "github.com/arcy" + "monek/"          # the author's GitHub profile pa
 NAME = "Arkadiusz" + " Polak"                   # the author's name (allowed)
 HAVE_TOOLS = bool(shutil.which("git") and shutil.which("bash"))
 FILES = ["abuseipdb_report.py", "abuseipdb_send.sh", "README.md", "README.pl.md", "CHANGELOG.md",
-         "CHANGELOG.pl.md", "CONTRIBUTING.md", "CONTRIBUTING.pl.md", "SECURITY.md", "SECURITY.pl.md"]
+         "CHANGELOG.pl.md", "CONTRIBUTING.md", "CONTRIBUTING.pl.md", "SECURITY.md", "SECURITY.pl.md",
+         "CODE_OF_CONDUCT.md", "CODE_OF_CONDUCT.pl.md"]
 
 
 @unittest.skipUnless(HAVE_TOOLS, "requires git and bash")
@@ -172,6 +173,54 @@ class CommitMsg(HookBase):
         good = subprocess.run(["git", "commit", "-q", "-m", "Add notes"], cwd=self.repo,
                               env=self.env, capture_output=True, text=True)
         self.assertEqual(good.returncode, 0, good.stdout + good.stderr)
+
+
+class Pairing(HookBase):
+    """The EN/PL pairing rule: a change to one side of a pair must be staged together with the other side.
+
+    The rule only knows the pairs listed in pair_of(). A document missing from that list (CODE_OF_CONDUCT was, until
+    now) could drift away from its translation without the hook noticing, so every root pair is tested here.
+    """
+    PAIRS = [("README.md", "README.pl.md"), ("CHANGELOG.md", "CHANGELOG.pl.md"),
+             ("CONTRIBUTING.md", "CONTRIBUTING.pl.md"), ("SECURITY.md", "SECURITY.pl.md"),
+             ("CODE_OF_CONDUCT.md", "CODE_OF_CONDUCT.pl.md")]
+
+    def touch(self, name, extra="\nA harmless extra sentence.\n"):
+        with open(self.repo / name, "a") as f:
+            f.write(extra)
+        self.git("add", name)
+
+    def test_one_side_alone_is_refused_for_every_pair(self):
+        for en, pl in self.PAIRS:
+            for changed, other in ((en, pl), (pl, en)):
+                with self.subTest(changed=changed):
+                    self.git("reset", "-q")
+                    self.touch(changed)
+                    r = self.run_hook("pre-commit")
+                    self.assertEqual(r.returncode, 1, r.out)
+                    self.assertIn("EN/PL MISMATCH", r.out)
+                    self.assertIn(other, r.out)
+
+    def test_both_sides_together_pass_for_every_pair(self):
+        for en, pl in self.PAIRS:
+            with self.subTest(pair=en):
+                self.git("reset", "-q")
+                self.touch(en)
+                self.touch(pl)
+                r = self.run_hook("pre-commit")
+                self.assertEqual(r.returncode, 0, r.out)
+
+    def test_a_different_number_of_headings_is_refused(self):
+        self.touch("CODE_OF_CONDUCT.md", "\n## One more heading\n")
+        self.touch("CODE_OF_CONDUCT.pl.md")
+        r = self.run_hook("pre-commit")
+        self.assertEqual(r.returncode, 1, r.out)
+        self.assertIn("HEADING COUNT DIFFERS", r.out)
+
+    def test_contributor_mode_skips_only_the_pairing_rule(self):
+        self.touch("CODE_OF_CONDUCT.md")
+        r = self.run_hook("pre-commit", env=dict(self.env, EN_ONLY="1"))
+        self.assertEqual(r.returncode, 0, r.out)
 
 
 if __name__ == "__main__":
