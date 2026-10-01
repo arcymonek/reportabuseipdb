@@ -1,6 +1,6 @@
 **English** | [Polski](pl/ARCHITECTURE.md)
 
-Version: 3.6.23 (`abuseipdb_report.py`)
+Version: 3.6.24 (`abuseipdb_report.py`)
 
 # Architecture
 
@@ -59,10 +59,10 @@ Version: 3.6.23 (`abuseipdb_report.py`)
 | Program | Code | Meaning |
 |---|---|---|
 | `abuseipdb_report.py` | 0 | file written (or dry-run / validation succeeded) |
-| | 1 | no qualifying reports; nothing written |
+| | 1 | no qualifying reports; nothing written (it prints `No qualifying reports`; the wrapper accepts code 1 only together with that line, because a crash before `main()`, e.g. a syntax error, also exits with 1) |
 | | 2 | error (bad arguments, cscli failure, validation failed, unreadable or unexpected input, any unexpected internal crash); previous file untouched |
 | `abuseipdb_send.sh` | 0 | success, skipped by a guard, or nothing to send |
-| | 1 | failure; the watermark is unchanged, the next run catches up |
+| | 1 | failure (including generator code 1 without its message); the watermark is unchanged, the next run catches up |
 | | 2 | unknown argument |
 
 ## Error handling

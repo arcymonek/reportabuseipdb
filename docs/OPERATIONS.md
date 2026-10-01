@@ -1,6 +1,6 @@
 **English** | [Polski](pl/OPERATIONS.md)
 
-Version: 3.6.23 (`abuseipdb_report.py`)
+Version: 3.6.24 (`abuseipdb_report.py`)
 
 # Operations
 
@@ -29,6 +29,7 @@ when `.state/abuseipdb_last_ok` is older than 36 h. The file name is a stable in
 | `abuseipdb: gap in reports` | last success older than 48 h; the window was cut to 48 h | find why runs failed; older alerts are lost |
 | `abuseipdb: rejected reports` | AbuseIPDB rejected some rows | see `rejected:` lines in the log; the watermark advanced |
 | `abuseipdb: data cut off` | a limit cut data off (the `--limit` of alerts read from `cscli`, or the 10,000-row / 8 MB limit of the CSV); the window was closed anyway, so the cut-off alerts are not reported | raise the alert limit with `ALERT_LIMIT` in the crontab line (`30 5 * * * ALERT_LIMIT=20000 /path/to/abuseipdb_send.sh >> ...`; default 5,000) or investigate the burst of alerts; the log line starts with `[TRUNCATED]` |
+| `abuseipdb: safeguard not working` | the generator printed a line starting with `[SAFEGUARD-OFF]`: the journal cannot be read (SSH auto-trust incomplete), there is no `ip` program (the server's own public addresses are unknown) or the trusted-IP list cannot be read or saved; the run continued with the other safeguards | read the quoted reason: add the service user to `systemd-journal` or `adm`, install `iproute2`, fix the permissions of `~/.secrets`; until then list your own addresses as `EXCLUDE` |
 | `abuseipdb: count mismatch` | saved + rejected differs from sent | inspect the API answer in the log |
 | a warning from your external monitor | no successful run for over 36 h, or the script or watermark is missing or invalid | check `crontab -l`, `systemctl status cron`, the log |
 
@@ -58,7 +59,7 @@ date -u -d @"$(cat .state/abuseipdb_last_ok)"
 | HTTP 401 or 403 | wrong or revoked API key; check `ABUSEIPDB_API_KEY` in `~/.secrets/abuseipdb.conf` (mode 600, at least 20 alphanumeric characters) |
 | `OWN_NAME_MARKERS is empty ... NOT sending` | the config file is missing, unreadable, or has no `OWN_NAME_MARKERS`; fix `~/.secrets/abuseipdb.conf` (see `abuseipdb.conf.example`) |
 | `OWN_NAME_MARKERS still holds the example values ... NOT sending` | `OWN_NAME_MARKERS` is still `your-domain.example,your-host.example` from the template; write your own domains and host name |
-| `config file ... is invalid`, `invalid EXCLUDE entry`, `OWN_NAME_MARKERS has ... invalid entries` | the config has a malformed line, an unknown key (a typo), a comment after a value or an entry that is not an address; the generator stops with exit code 2 and the wrapper alerts; fix the named line (comments go on their own line) |
+| `config file ... is invalid`, `invalid EXCLUDE entry`, `OWN_NAME_MARKERS has ... invalid entries` | the config has a malformed line, an unknown key (a typo), a comment after a value an entry that is not an address, or a file that exists but cannot be read (permissions, not UTF-8); the generator stops with exit code 2 and the wrapper alerts; fix the named line (comments go on their own line) |
 | `ABUSEIPDB_API_KEY is still the example value` | the key is still `YOUR_ABUSEIPDB_API_KEY` from the template; set your own key |
 | log shows `NTFY_TOPIC has invalid characters` or `NTFY_URL is not a plain http(s) URL` | a comment or a stray character after the value; a topic is letters, digits, `_` and `-` only |
 | log shows `NTFY_TOPIC is still the example value` | `NTFY_TOPIC` is still `your-private-ntfy-topic`; alerts are deliberately not sent to it, set your own private topic |

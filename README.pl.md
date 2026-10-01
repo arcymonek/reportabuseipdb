@@ -1,6 +1,6 @@
 [English](README.md) | **Polski**
 
-Wersja: 3.6.23 (`abuseipdb_report.py`)
+Wersja: 3.6.24 (`abuseipdb_report.py`)
 
 # reportabuseipdb
 

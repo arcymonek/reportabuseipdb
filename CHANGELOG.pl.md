@@ -1,6 +1,6 @@
 [English](CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.23 (`abuseipdb_report.py`)
+Wersja: 3.6.24 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -13,6 +13,35 @@ na `main` (bezpośredni push albo scalona gałąź), podnosi `Z` o 1; gdy `Z` do
 ## Niewydane
 
 - Na razie nic.
+
+## 2026-10-01 - błędna konfiguracja zatrzymuje przebieg, alert przy osłabionym zabezpieczeniu, szersze pobieranie (3.6.24)
+
+Znalezione audytem kodu z 2026-10-01 i sprawdzone na działającym serwerze. Wrapper `abuseipdb_send.sh` ma wersję 1.1.7.
+
+- **Konfiguracja, której nie da się odczytać, zatrzymuje przebieg** (`abuseipdb_report.py`). Dotąd plik konfiguracji,
+  który istniał, ale nie dało się go użyć (złe uprawnienia, bajty niebędące UTF-8, np. komentarz wpisany w starym
+  kodowaniu), dawał tylko ostrzeżenie, a przebieg szedł dalej BEZ kontroli nazw własnych i bez wszystkich wpisów
+  `EXCLUDE`. Wrapper tego nie zauważał, bo czyta znaczniki przez `sed`. Teraz to `ConfigError` (kod wyjścia 2) w każdym
+  trybie, tak jak literówka w kluczu. To samo dla przestarzałego pliku wykluczeń. Brak pliku to nadal tylko informacja.
+- **Kod wyjścia 1 jest honorowany tylko razem ze swoim komunikatem** (`abuseipdb_send.sh`). Kod 1 znaczy "nie ma
+  czego zgłaszać", ale awaria przed `main()` (błąd składni, brak modułu) też kończy się kodem 1, a wrapper po cichu
+  zamknąłby okno. Wrapper wymaga teraz linii `No qualifying reports` (stała generatora), a kod 1 bez niej uznaje za
+  awarię: znacznik stoi i leci alert.
+- **Nowy alert ntfy "safeguard not working"** (`abuseipdb_send.sh`). Generator oznacza `[SAFEGUARD-OFF]` każdą linię,
+  która mówi, że zabezpieczenie nie działa, choć przebieg trwa dalej: nie da się czytać journala (auto-zaufanie SSH
+  niepełne), brak programu `ip` (nieznane własne adresy serwera), listy zaufanych IP nie da się odczytać lub zapisać.
+  Wcześniej były to linie w logu, którego nikt nie czyta. Przebieg nadal trwa z pozostałymi zabezpieczeniami.
+- **Pobieranie sięga 1 godzinę przed okno** (`abuseipdb_send.sh`). `cscli --since` filtruje po POCZĄTKU alertu, a okno
+  po czasie jego utworzenia, więc wolny kubełek utworzony w oknie mógł zginąć na granicy (zmierzone na działającym
+  serwerze: do ok. 2 minut między początkiem a utworzeniem, 3 z 441 alertów powyżej 30 s). `--after`/`--before` nadal
+  wyznaczają okno dokładnie; zapas (`SINCE_MARGIN_S`, domyślnie 3600) tylko zapobiega utracie.
+- **Alerty ntfy nie niosą już ścieżki instalacji ani katalogu domowego** (`abuseipdb_send.sh`): wiadomość idzie przez
+  publiczny serwer ntfy, więc `<dir>` i `~` je zastępują; lokalny log zachowuje pełny tekst.
+- `--limit` musi być liczbą całkowitą 1 lub większą (`0` powodowało, że "limit osiągnięty" było zawsze prawdą i szedł
+  fałszywy alert `[TRUNCATED]`).
+- Testy: zastąpiono test utrwalający dawne "ostrzeż i idź dalej"; nowe testy dla konfiguracji nie-UTF-8 w każdym trybie,
+  znacznika każdego osłabionego zabezpieczenia, kodu 1 z komunikatem i bez, zasięgu 1 godziny oraz treści alertu.
+  Sprawdzone mutacją: zepsucie każdej z tych zmian robi czerwony test.
 
 ## 2026-10-01 - testy wbudowanego wykluczenia scenariusza i dwóch limitów (3.6.23)
 

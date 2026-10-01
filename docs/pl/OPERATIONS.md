@@ -1,6 +1,6 @@
 [English](../OPERATIONS.md) | **Polski**
 
-Wersja: 3.6.23 (`abuseipdb_report.py`)
+Wersja: 3.6.24 (`abuseipdb_report.py`)
 
 # Eksploatacja
 
@@ -30,6 +30,7 @@ monitora.
 | `abuseipdb: gap in reports` | ostatni sukces starszy niż 48 h; okno ucięto do 48 h | ustal, czemu przebiegi zawodziły; starsze alerty przepadły |
 | `abuseipdb: rejected reports` | AbuseIPDB odrzuciło część wierszy | zobacz linie `rejected:` w logu; znacznik się przesunął |
 | `abuseipdb: data cut off` | limit uciął dane (`--limit` alertów czytanych z `cscli` albo limit 10 000 wierszy / 8 MB pliku CSV); okno i tak zamknięto, więc ucięte alerty nie zostaną zgłoszone | zwiększ limit alertów przez `ALERT_LIMIT` w linii crontaba (`30 5 * * * ALERT_LIMIT=20000 /sciezka/do/abuseipdb_send.sh >> ...`; domyślnie 5 000) albo zbadaj falę alertów; linia w logu zaczyna się od `[TRUNCATED]` |
+| `abuseipdb: safeguard not working` | generator wypisał linię zaczynającą się od `[SAFEGUARD-OFF]`: nie da się czytać journala (auto-zaufanie SSH niepełne), brak programu `ip` (nieznane własne publiczne adresy serwera) albo listy zaufanych IP nie da się odczytać lub zapisać; przebieg trwał dalej z pozostałymi zabezpieczeniami | przeczytaj podany powód: dodaj użytkownika usługi do `systemd-journal` lub `adm`, zainstaluj `iproute2`, popraw uprawnienia `~/.secrets`; do tego czasu wpisz własne adresy jako `EXCLUDE` |
 | `abuseipdb: count mismatch` | zapisane + odrzucone różni się od wysłanych | sprawdź odpowiedź API w logu |
 | ostrzeżenie z twojego zewnętrznego monitora | brak udanego przebiegu od ponad 36 h albo brak/uszkodzenie skryptu lub znacznika | sprawdź `crontab -l`, `systemctl status cron`, log |
 
@@ -59,7 +60,7 @@ date -u -d @"$(cat .state/abuseipdb_last_ok)"
 | HTTP 401 lub 403 | zły lub cofnięty klucz API; sprawdź `ABUSEIPDB_API_KEY` w `~/.secrets/abuseipdb.conf` (tryb 600, co najmniej 20 znaków alfanumerycznych) |
 | `OWN_NAME_MARKERS is empty ... NOT sending` | plik konfiguracji nie istnieje, jest nieczytelny albo nie ma `OWN_NAME_MARKERS`; popraw `~/.secrets/abuseipdb.conf` (wzór: `abuseipdb.conf.example`) |
 | `OWN_NAME_MARKERS still holds the example values ... NOT sending` | `OWN_NAME_MARKERS` to nadal `your-domain.example,your-host.example` z szablonu; wpisz własne domeny i nazwę hosta |
-| `config file ... is invalid`, `invalid EXCLUDE entry`, `OWN_NAME_MARKERS has ... invalid entries` | config ma zniekształconą linię, nieznany klucz (literówkę), komentarz po wartości albo wpis, który nie jest adresem; generator kończy się kodem 2, a wrapper wysyła alert; popraw wskazaną linię (komentarze tylko w osobnych liniach) |
+| `config file ... is invalid`, `invalid EXCLUDE entry`, `OWN_NAME_MARKERS has ... invalid entries` | config ma zniekształconą linię, nieznany klucz (literówkę), komentarz po wartości albo wpis, który nie jest adresem, albo plik istnieje, ale nie da się go przeczytać (uprawnienia, kodowanie inne niż UTF-8); generator kończy się kodem 2, a wrapper wysyła alert; popraw wskazaną linię (komentarze tylko w osobnych liniach) |
 | `ABUSEIPDB_API_KEY is still the example value` | klucz to nadal `YOUR_ABUSEIPDB_API_KEY` z szablonu; ustaw własny klucz |
 | w logu `NTFY_TOPIC has invalid characters` lub `NTFY_URL is not a plain http(s) URL` | komentarz lub zbędny znak po wartości; temat to tylko litery, cyfry, `_` i `-` |
 | w logu `NTFY_TOPIC is still the example value` | `NTFY_TOPIC` to nadal `your-private-ntfy-topic`; alerty celowo tam nie idą, ustaw własny prywatny temat |

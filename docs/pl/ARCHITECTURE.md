@@ -1,6 +1,6 @@
 [English](../ARCHITECTURE.md) | **Polski**
 
-Wersja: 3.6.23 (`abuseipdb_report.py`)
+Wersja: 3.6.24 (`abuseipdb_report.py`)
 
 # Architektura
 
@@ -59,10 +59,10 @@ Wersja: 3.6.23 (`abuseipdb_report.py`)
 | Program | Kod | Znaczenie |
 |---|---|---|
 | `abuseipdb_report.py` | 0 | plik zapisany (albo dry-run / walidacja zakończona sukcesem) |
-| | 1 | brak kwalifikujących się zgłoszeń; nic nie zapisano |
+| | 1 | brak kwalifikujących się zgłoszeń; nic nie zapisano (wypisuje `No qualifying reports`; wrapper przyjmuje kod 1 tylko razem z tą linią, bo awaria przed `main()`, np. błąd składni, też kończy się kodem 1) |
 | | 2 | błąd (złe argumenty, awaria cscli, nieudana walidacja, nieczytelne lub nieoczekiwane dane wejściowe, każda nieoczekiwana awaria wewnętrzna); poprzedni plik nienaruszony |
 | `abuseipdb_send.sh` | 0 | sukces, pominięcie przez blokadę albo brak czego wysyłać |
-| | 1 | awaria; znacznik bez zmian, następny przebieg nadrobi |
+| | 1 | awaria (także kod 1 generatora bez jego komunikatu); znacznik bez zmian, następny przebieg nadrobi |
 | | 2 | nieznany argument |
 
 ## Obsługa błędów

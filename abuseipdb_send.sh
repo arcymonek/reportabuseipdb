@@ -1,6 +1,6 @@
 #!/bin/bash
 # ====================================================
-#     ABUSEIPDB SEND - v1.1.6 (cron: 05:30)
+#     ABUSEIPDB SEND - v1.1.7 (cron: 05:30)
 # ====================================================
 # Generates the CSV (abuseipdb_report.py), validates it and sends it to AbuseIPDB
 # (the bulk-report endpoint). Replaces the long `python3 ... && curl -s ...` line
@@ -26,7 +26,12 @@
 #     merges reports with an identical comment and categories within 24 h.
 #   * ntfy alert on: generator/validation/upload error, 429, rejected reports
 #     (invalidReports), a mismatched saved count, a gap > 48 h, data CUT OFF by a limit
-#     (the generator marks such lines with [TRUNCATED]; the watermark still moves).
+#     (the generator marks such lines with [TRUNCATED]; the watermark still moves) and a safeguard
+#     that is NOT working although the run continues (marked [SAFEGUARD-OFF], e.g. the journal cannot
+#     be read, so SSH auto-trust is missing).
+#   * generator exit code 1 means "nothing to report" only together with the generator's line
+#     "No qualifying reports"; code 1 without it (a crash before main(), e.g. a syntax error) is a
+#     failure: the watermark stays and the operator is alerted.
 #   * the old reports.csv is deleted before generating - a stale file must never
 #     be sent.
 #
@@ -38,7 +43,7 @@
 # Deprecated fallback while migrating: ~/.secrets/abuseipdb_api_key and ~/.secrets/ntfy_topic.
 # Log: stdout (cron appends to abuseipdb_cron.log).
 
-SCRIPT_VERSION="1.1.6"
+SCRIPT_VERSION="1.1.7"
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export LC_ALL=C
 set -u
@@ -91,6 +96,11 @@ DEFAULT_WINDOW_H="${DEFAULT_WINDOW_H:-24}"   # window on the first run (no water
 MAX_LOOKBACK_H="${MAX_LOOKBACK_H:-48}"       # furthest back after an outage
 MIN_INTERVAL_H="${MIN_INTERVAL_H:-20}"       # guard against more frequent reporting
 ALERT_LIMIT="${ALERT_LIMIT:-}"               # passed as --limit when set (default: the generator's 5000)
+# cscli --since filters on the START of an alert, while the generator cuts the window by the alert's
+# creation time. A slow bucket can start long before it is created (measured: up to ~2 minutes), so the
+# fetch reaches back this much further than the window; the generator's --after/--before keep the
+# window exact, the margin only stops such alerts from being lost at the boundary.
+SINCE_MARGIN_S="${SINCE_MARGIN_S:-3600}"
 RETRIES="${RETRIES:-3}"
 RETRY_SLEEP="${RETRY_SLEEP:-60}"             # seconds * attempt number
 
@@ -138,6 +148,10 @@ resolve_topic() {
 # --- ntfy: notify TITLE PRIORITY(1-5) TAGS BODY. Titles are ASCII (HTTP header). ---
 notify() {
     local title=$1 prio=$2 tags=$3 msg=$4 topic err
+    # The alert travels through the public ntfy server: do not send the install path or the user name.
+    # The full text stays in the local log.
+    msg="${msg//"$SCRIPT_DIR"/<dir>}"
+    msg="${msg//"$HOME"/\~}"
     if [ "$DRY" -eq 1 ]; then
         printf '[DRY-RUN ntfy p=%s] %s | %s\n' "$prio" "$title" "$msg"
         return 0
@@ -256,7 +270,7 @@ log "window: ($AFTER_ISO, $NOW_ISO] = $(human_age "$AGE")"
 # --- Generating the CSV ---
 [ "$DRY" -eq 1 ] || rm -f "$CSV"    # a stale file must not be sent (dry-run touches nothing)
 new_tmp GEN_OUT
-PYARGS=(--config "$CONFIG_FILE" --since "$((AGE + 30))s" --after "$AFTER_ISO" --before "$NOW_ISO")
+PYARGS=(--config "$CONFIG_FILE" --since "$((AGE + SINCE_MARGIN_S))s" --after "$AFTER_ISO" --before "$NOW_ISO")
 # ALERT_LIMIT raises the number of alerts read from cscli after a "data cut off" alert; set it in
 # the crontab line, e.g.  30 5 * * * ALERT_LIMIT=20000 /path/abuseipdb_send.sh >> ...
 if [ -n "$ALERT_LIMIT" ]; then
@@ -281,9 +295,20 @@ if [ -n "$TRUNCATED" ]; then
     notify "abuseipdb: data cut off" 3 warning "$TRUNCATED(the window is closed; the cut-off alerts will not be reported)"
 fi
 
+# A safeguard that is not working (but does not stop the run) is marked [SAFEGUARD-OFF] by the generator.
+# Quiet in the log only would let the operator report their own address without ever knowing.
+SAFEGUARD_OFF="$(grep '^\[SAFEGUARD-OFF]' "$GEN_OUT" | cut -c1-300 | head -n 3 | tr '\n' ' ')"
+if [ -n "$SAFEGUARD_OFF" ]; then
+    notify "abuseipdb: safeguard not working" 4 warning "$SAFEGUARD_OFF(the run continues with the other safeguards; fix this before the next run)"
+fi
+
 case "$GEN_RC" in
     0) ;;
     1)
+        # Code 1 is "nothing to report" ONLY with the generator's own message; an interpreter failure before
+        # main() (syntax error, missing module) also exits with 1 and must not close the window silently.
+        grep -q '^No qualifying reports' "$GEN_OUT" \
+            || fail "generator exited with code 1 without its 'No qualifying reports' message (crashed before it could report?)"
         log "no qualifying reports in the window - nothing to send"
         set_watermark "$NOW"
         exit 0

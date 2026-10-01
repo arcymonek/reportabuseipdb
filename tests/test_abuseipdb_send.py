@@ -36,7 +36,9 @@ rc = int(os.environ.get("FAKE_RC", "0"))
 if os.environ.get("FAKE_STDERR"):
     print(os.environ["FAKE_STDERR"], file=sys.stderr)
 if rc == 1:
-    print("No qualifying reports", file=sys.stderr); sys.exit(1)
+    if not os.environ.get("FAKE_QUIET1"):          # a crash before main() exits 1 WITHOUT the message
+        print("No qualifying reports - not writing a CSV.", file=sys.stderr)
+    sys.exit(1)
 if rc != 0:
     print("[ERROR] generator failure", file=sys.stderr); sys.exit(rc)
 n = int(os.environ.get("FAKE_ROWS", "3"))
@@ -213,7 +215,8 @@ class Happy(SendBase):
         self.assertEqual(g[g.index("--after") + 1], self.iso(wm))
         self.assertGreaterEqual(self.wm(), r.t0)
         since = int(g[g.index("--since") + 1].rstrip("s"))
-        self.assertAlmostEqual(since, 25 * 3600 + 30, delta=3)
+        # window + 1 h: cscli --since filters by the alert's START, the window by its creation time
+        self.assertAlmostEqual(since, 25 * 3600 + 3600, delta=3)
 
     def test_watermark_is_window_end_not_completion_time(self):
         """Watermark = the window end (--before), not the completion time: otherwise
@@ -224,6 +227,14 @@ class Happy(SendBase):
         before = int(datetime.fromisoformat(g[g.index("--before") + 1].replace("Z", "+00:00")).timestamp())
         self.assertEqual(self.wm(), before)
         self.assertGreaterEqual(int(time.time()) - self.wm(), 2)     # the run lasted >= 2 s
+
+    def test_fetch_reaches_one_hour_before_the_window(self):
+        self.run_sh()
+        g = self.gen_calls()[0]
+        since = int(g[g.index("--since") + 1].rstrip("s"))
+        after = datetime.fromisoformat(g[g.index("--after") + 1].replace("Z", "+00:00")).timestamp()
+        before = datetime.fromisoformat(g[g.index("--before") + 1].replace("Z", "+00:00")).timestamp()
+        self.assertAlmostEqual(since, (before - after) + 3600, delta=3)
 
     def test_watermark_is_window_end_also_when_nothing_to_send(self):
         r = self.run_sh(FAKE_RC="1")
@@ -307,6 +318,25 @@ class Generator(SendBase):
         self.assertFalse((self.T / "reports.csv").exists())              # the stale file does not stay
         self.assertEqual(self.curl_calls(), [])
         self.assertGreaterEqual(self.wm(), r.t0)
+
+    def test_exit_1_without_the_generators_message_is_a_failure(self):
+        """Code 1 is also what a syntax error or a missing module gives: it must not close the window."""
+        old = int(time.time()) - 30 * 3600
+        self.set_wm(old)
+        r = self.run_sh(FAKE_RC="1", FAKE_QUIET1="1")
+        self.assertEqual(r.returncode, 1, r.stdout)
+        self.assertEqual(self.wm(), old)                                 # the window is left to catch up on
+        self.assertEqual(self.curl_calls(), [])
+        self.assertEqual(len(self.ntfy()), 1)
+        self.assertIn("without its 'No qualifying reports' message", r.stdout)
+
+    def test_exit_1_with_the_message_still_closes_the_window(self):
+        old = int(time.time()) - 30 * 3600
+        self.set_wm(old)
+        r = self.run_sh(FAKE_RC="1")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertGreater(self.wm(), old)
+        self.assertEqual(self.ntfy(), [])
 
     def test_generator_error_alerts_and_keeps_watermark(self):
         old = int(time.time()) - 30 * 3600
@@ -616,7 +646,7 @@ class Misc(SendBase):
     def test_args(self):
         self.assertEqual(self.run_sh("--bogus").returncode, 2)
         v = self.run_sh("--version")
-        self.assertEqual((v.returncode, v.stdout.strip()), (0, "abuseipdb_send.sh v1.1.6"))
+        self.assertEqual((v.returncode, v.stdout.strip()), (0, "abuseipdb_send.sh v1.1.7"))
         self.assertEqual(self.run_sh("--help").returncode, 0)
 
     def test_log_trim_is_in_place_and_keeps_appending(self):
@@ -691,6 +721,57 @@ class Truncation(SendBase):
         self.assertEqual(r.returncode, 0, r.stdout)
         self.assertIn("[DRY-RUN ntfy p=3] abuseipdb: data cut off", r.stdout)
         self.assertEqual(self.ntfy(), [])
+
+
+class SafeguardOff(SendBase):
+    """The generator marks a safeguard that is not working with [SAFEGUARD-OFF]; the wrapper must alert."""
+    MARK = "[SAFEGUARD-OFF] journalctl returned code 1 (Hint: no permission) - new SSH logins may be MISSING"
+
+    def test_marker_sends_an_alert_but_the_run_completes(self):
+        r = self.run_sh(FAKE_STDERR=self.MARK)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertEqual(len(self.curl_calls()), 1)                      # the other safeguards still hold: upload goes on
+        sent = self.ntfy()
+        self.assertEqual([n["title"] for n in sent], ["abuseipdb: safeguard not working"])
+        self.assertIn("journalctl returned code 1", sent[0]["msg"])
+        self.assertGreaterEqual(self.wm(), r.t0)
+
+    def test_marker_alert_also_when_there_is_nothing_to_send(self):
+        r = self.run_sh(FAKE_RC="1", FAKE_STDERR=self.MARK)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertEqual(len(self.ntfy()), 1)
+
+    def test_marker_must_start_the_line(self):
+        r = self.run_sh(FAKE_STDERR="note: [SAFEGUARD-OFF] in the middle of a line")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertEqual(self.ntfy(), [])
+
+    def test_dry_run_prints_the_alert_instead_of_sending(self):
+        r = self.run_sh("--dry-run", FAKE_STDERR=self.MARK)
+        self.assertIn("[DRY-RUN ntfy p=4] abuseipdb: safeguard not working", r.stdout)
+        self.assertEqual(self.ntfy(), [])
+
+
+class AlertText(SendBase):
+    def test_install_path_and_home_never_go_to_ntfy(self):
+        """The alert passes through a public ntfy server; the full paths stay in the local log."""
+        r = self.run_sh(PY_SCRIPT=str(self.T / "missing.py"))
+        self.assertEqual(r.returncode, 1)
+        msg = self.ntfy()[0]["msg"]
+        self.assertNotIn(str(self.T), msg)
+        self.assertIn("<dir>/missing.py", msg)
+        self.assertIn(str(self.T), r.stdout)                             # the local log keeps the real path
+
+    def test_home_directory_is_shortened(self):
+        # a home outside the script directory (the usual layout is the other way round: script under home)
+        with tempfile.TemporaryDirectory() as other_home:
+            cfg = Path(other_home) / "abuseipdb.conf"
+            cfg.write_text("OWN_NAME_MARKERS=example.org\n")             # no API key in it
+            r = self.run_sh(HOME=other_home, ABUSEIPDB_CONFIG=str(cfg), ABUSEIPDB_KEY_FILE="")
+            self.assertEqual(r.returncode, 1, r.stdout)
+            msg = self.ntfy()[0]["msg"]
+            self.assertNotIn(other_home, msg)
+            self.assertIn("~/abuseipdb.conf", msg)
 
 
 class UploadArgs(SendBase):

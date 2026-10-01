@@ -556,6 +556,35 @@ class SshTrust(unittest.TestCase):
         self.assertIn("journalctl returned code 1 (Hint: You are currently not seeing", err)
         self.assertIn("'systemd-journal'", err)
         self.assertIn("returned code 7 (no message)", self.harvest_with(7, "")[1])
+        self.assertTrue(err.startswith(m.SAFEGUARD_OFF_MARKER), err)   # the wrapper alerts on this line start
+
+    def test_every_degraded_safeguard_is_marked_for_the_wrapper(self):
+        marker = m.SAFEGUARD_OFF_MARKER
+        # the journal cannot be run at all
+        with tempfile.TemporaryDirectory() as d, \
+                mock.patch.object(m.subprocess, "run", side_effect=OSError("journalctl missing")), \
+                contextlib.redirect_stderr(io.StringIO()) as err:
+            m.harvest_ssh_trusted(store_path=os.path.join(d, "t.txt"), persist=False)
+        self.assertIn(f"{marker} could not read the SSH logs", err.getvalue())
+        # the remembered list cannot be read (a directory in its place)
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(io.StringIO()) as err:
+            self.assertEqual(m.load_trust_store(d, NOW), {})
+        self.assertTrue(err.getvalue().startswith(f"{marker} cannot read"), err.getvalue())
+        # the remembered list cannot be saved
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            self.assertFalse(m.save_trust_store("/nonexistent/dir/x.txt", {"1.2.3.4": NOW}))
+        self.assertTrue(err.getvalue().startswith(f"{marker} could not save"), err.getvalue())
+        # no `ip` program, or `ip` fails: the own public addresses are unknown
+        with mock.patch.object(m.shutil, "which", return_value=None), \
+                mock.patch.object(m.os.path, "exists", return_value=False), \
+                contextlib.redirect_stderr(io.StringIO()) as err:
+            self.assertEqual(m.harvest_local_addresses(), [])
+        self.assertTrue(err.getvalue().startswith(f"{marker} no `ip` program"), err.getvalue())
+        with mock.patch.object(m.shutil, "which", return_value="/usr/sbin/ip"), \
+                mock.patch.object(m.subprocess, "run", side_effect=OSError("boom")), \
+                contextlib.redirect_stderr(io.StringIO()) as err:
+            self.assertEqual(m.harvest_local_addresses(), [])
+        self.assertTrue(err.getvalue().startswith(f"{marker} `ip addr` failed"), err.getvalue())
 
     def test_journal_without_matches_is_not_a_problem(self):
         _, err = self.harvest_with(1, "", "-- No entries --\n")     # exit code 1, empty stderr: nothing found
@@ -909,13 +938,39 @@ class ConfigFile(unittest.TestCase):
         self.assertIn("does not exist", err)
         self.assertEqual(m.load_config(""), {})
 
-    def test_unreadable_file_warns_loudly(self):
+    def test_unreadable_file_fails_closed(self):
+        # A file that EXISTS but cannot be used must stop the run: carrying on without it would silently
+        # drop the own-name check and every EXCLUDE entry.
         self.write("OWN_NAME_MARKERS=example.org\n")
         with mock.patch("builtins.open", side_effect=PermissionError):
-            err = io.StringIO()
-            with contextlib.redirect_stderr(err):
-                self.assertEqual(m.load_config(self.conf), {})
-        self.assertIn("NOT active", err.getvalue())
+            with self.assertRaises(m.ConfigError) as cm:
+                m.load_config(self.conf)
+        self.assertIn("PermissionError", str(cm.exception))
+
+    def test_config_that_is_not_utf8_fails_closed_in_every_mode(self):
+        # A comment typed in a legacy code page (here Latin-1 / Windows-1250 bytes) is enough.
+        with open(self.conf, "wb") as f:
+            f.write(b"OWN_NAME_MARKERS=example.org\nEXCLUDE=8.8.8.8\n# z\xb3o\xbf\n")
+        os.chmod(self.conf, 0o600)
+        with self.assertRaises(m.ConfigError) as cm:
+            m.load_config(self.conf)
+        self.assertIn("UnicodeDecodeError", str(cm.exception))
+        csv_path = os.path.join(self.tmp.name, "reports.csv")
+        _write(csv_path, to_text([good_row()]), newline="")
+        for args in (["--validate", csv_path],
+                     ["--input-json", self.alerts_file(), "--no-ssh-trust", "--exclude-file", os.devnull,
+                      "--dry-run"]):
+            r = self.run_script("--config", self.conf, *args)
+            self.assertEqual(r.returncode, 2, (args, r.stderr))
+            self.assertIn("cannot read config file", r.stderr)
+            self.assertEqual(r.stdout, "")
+
+    def test_unreadable_legacy_exclusion_file_fails_closed(self):
+        legacy = os.path.join(self.tmp.name, "exclude.txt")
+        with open(legacy, "wb") as f:
+            f.write(b"203.0.113.7\n\xff\xfe\n")
+        with self.assertRaises(m.ConfigError):
+            m.load_exclusions(legacy)
 
     def test_world_readable_config_warns(self):
         self.write("OWN_NAME_MARKERS=example.org\n", mode=0o644)
@@ -1161,6 +1216,13 @@ class EndToEnd(unittest.TestCase):
         swapped = self.run_script(*self.common, "--after", iso(NOW), "--before", after)
         self.assertEqual(swapped.returncode, 2)
 
+    def test_limit_must_be_a_positive_whole_number(self):
+        for bad in ("0", "-5", "abc", "1.5"):
+            r = self.run_script(*self.common, "--limit", bad, "--dry-run")
+            self.assertEqual(r.returncode, 2, (bad, r.stderr))
+            self.assertIn("--limit", r.stderr)
+        self.assertEqual(m.positive_int("5000"), 5000)
+
     def test_no_rows_exits_1_and_keeps_old_file(self):
         out = os.path.join(self.tmp.name, "reports.csv")
         _write(out, "PREVIOUS")
@@ -1170,6 +1232,9 @@ class EndToEnd(unittest.TestCase):
                             "--exclude-file", os.devnull, "--out", out)
         self.assertEqual(r.returncode, 1)
         self.assertEqual(_read(out), "PREVIOUS")
+        # the wrapper accepts code 1 only together with this exact line (see A3 of the 2026-10-01 audit)
+        self.assertIn(m.NO_REPORTS_MESSAGE, r.stderr.splitlines())
+        self.assertTrue(m.NO_REPORTS_MESSAGE.startswith("No qualifying reports"))
 
     def test_generator_error_keeps_old_csv(self):
         """If the generator ever produced a bad file, the previous reports.csv stays."""

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-abuseipdb_report.py - v3.6.23
+abuseipdb_report.py - v3.6.24
 
 Generates a bulk CSV of AbuseIPDB reports from LOCALLY detected CrowdSec alerts.
 It sends NOTHING itself; sending is done by abuseipdb_send.sh (see README.md).
@@ -117,7 +117,7 @@ import traceback
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-SCRIPT_VERSION = "3.6.23"
+SCRIPT_VERSION = "3.6.24"
 
 # --- Hard limits from the AbuseIPDB documentation (bulk report) --------------
 MAX_COMMENT_BYTES = 1024      # "Truncated after 1,024 characters (bytes)"
@@ -128,6 +128,15 @@ MAX_AGE_DAYS = 60             # "Timestamps MUST NOT be older than two months"
 # interface: abuseipdb_send.sh greps for it and sends an ntfy alert (the watermark
 # still moves, so the cut-off alerts would otherwise be lost without anyone noticing).
 TRUNCATED_MARKER = "[TRUNCATED]"
+# Same idea for a safeguard that is NOT working although the run goes on (the journal cannot be
+# read, so SSH auto-trust is missing; no `ip` program, so the own addresses are unknown; the trusted-IP
+# list cannot be saved). abuseipdb_send.sh greps for it and sends an ntfy alert: a line in a log nobody
+# reads is not enough for a safeguard that protects against reporting your own address.
+SAFEGUARD_OFF_MARKER = "[SAFEGUARD-OFF]"
+# The message of exit code 1. abuseipdb_send.sh treats code 1 as "nothing to report" ONLY when this
+# line is present, because an interpreter failure outside main() (a syntax error, a missing module)
+# also ends with code 1 and must not be mistaken for an empty day. Interface: do not reword.
+NO_REPORTS_MESSAGE = "No qualifying reports - not writing a CSV."
 MAX_CATEGORY_ID = 23          # https://www.abuseipdb.com/categories (1..23)
 
 # Default paths - deliberately OUTSIDE the script directory (i.e. outside the
@@ -409,8 +418,8 @@ def load_config(path):
     executed. Returns {KEY: [values in file order]}; a missing file gives {}.
     The secrets in it (API key, ntfy topic) are not used by the generator and
     are never printed.
-    A malformed line, an unknown key or a comment after a value raises ConfigError:
-    each of them could quietly disable a safeguard (see ConfigError)."""
+    A malformed line, an unknown key, a comment after a value or a file that exists but cannot be
+    read raises ConfigError: each of them could quietly disable a safeguard (see ConfigError)."""
     cfg = {}
     if not path:
         return cfg
@@ -423,9 +432,10 @@ def load_config(path):
               f"config exclusions are NOT active)", file=sys.stderr)
         return cfg
     except (PermissionError, UnicodeDecodeError, OSError) as exc:
-        print(f"[warn] cannot read config file {path} ({type(exc).__name__}) - "
-              f"own-name markers and config exclusions are NOT active!", file=sys.stderr)
-        return cfg
+        # Fail closed. The file EXISTS but cannot be used (wrong permissions, not UTF-8, ...): going on
+        # without it would silently switch off the own-name check and every EXCLUDE entry.
+        raise ConfigError(f"cannot read config file {path} ({type(exc).__name__}) - "
+                          f"fix the file or its permissions (it must be UTF-8 text)")
     if mode & 0o077:
         print(f"[warn] config file {path} is accessible to other users "
               f"(mode {mode & 0o777:o}); it holds secrets - chmod 600", file=sys.stderr)
@@ -533,8 +543,9 @@ def load_exclusions(path):
     except FileNotFoundError:
         print(f"[info] exclusion file {path} does not exist (normal if you never created it)",
               file=sys.stderr)
-    except PermissionError:
-        print(f"[warn] no permission to read {path} - exclusions are NOT active!", file=sys.stderr)
+    except (PermissionError, UnicodeDecodeError) as exc:
+        # Fail closed, as for the config file: an exclusion list that cannot be read is not "no list".
+        raise ConfigError(f"cannot read the exclusion file {path} ({type(exc).__name__})")
     if nets:
         print(f"[info] loaded {len(nets)} exclusion entries from {path}", file=sys.stderr)
     return nets
@@ -638,7 +649,7 @@ def load_trust_store(path, now=None) -> dict:
     except FileNotFoundError:
         pass
     except OSError as exc:
-        print(f"[warn] cannot read {path} ({exc}) - remembered trusted IPs are "
+        print(f"{SAFEGUARD_OFF_MARKER} cannot read {path} ({exc}) - remembered trusted IPs are "
               f"INACTIVE", file=sys.stderr)
     return store
 
@@ -657,7 +668,7 @@ def save_trust_store(path, store) -> bool:
         os.replace(tmp, path)
         return True
     except OSError as exc:
-        print(f"[warn] could not save {path} ({exc}) - trusted IPs will not "
+        print(f"{SAFEGUARD_OFF_MARKER} could not save {path} ({exc}) - trusted IPs will not "
               f"survive journal rotation", file=sys.stderr)
         try:
             os.remove(tmp)
@@ -705,11 +716,11 @@ def harvest_ssh_trusted(days: int = MAX_AGE_DAYS, store_path=DEFAULT_SSH_TRUST_F
         problem = (res.stderr or "").strip()
         if problem or res.returncode not in (0, 1):
             first = problem.splitlines()[0][:160] if problem else "no message"
-            print(f"[warn] journalctl returned code {res.returncode} ({first}) - new SSH logins may "
-                  f"be MISSING from the auto-trust; the user needs the group 'adm' or "
+            print(f"{SAFEGUARD_OFF_MARKER} journalctl returned code {res.returncode} ({first}) - new SSH "
+                  f"logins may be MISSING from the auto-trust; the user needs the group 'adm' or "
                   f"'systemd-journal'", file=sys.stderr)
     except (OSError, subprocess.SubprocessError) as exc:
-        print(f"[warn] could not read the SSH logs ({exc}) - "
+        print(f"{SAFEGUARD_OFF_MARKER} could not read the SSH logs ({exc}) - "
               f"using the remembered list only", file=sys.stderr)
 
     stored = load_trust_store(store_path, now)
@@ -735,15 +746,19 @@ def harvest_ssh_trusted(days: int = MAX_AGE_DAYS, store_path=DEFAULT_SSH_TRUST_F
 def harvest_local_addresses():
     """SAFEGUARD 6 - the server's own PUBLIC addresses (from `ip addr`).
     Traffic from our own IP (e.g. hairpin through the reverse proxy) must never
-    end up in a report. No `ip` program (e.g. macOS) = empty list, no error."""
+    end up in a report. No `ip` program (e.g. macOS) = empty list and a [SAFEGUARD-OFF] line, no error."""
     ip_bin = shutil.which("ip") or next(
         (p for p in ("/usr/sbin/ip", "/sbin/ip", "/usr/bin/ip") if os.path.exists(p)), None)
     if not ip_bin:
+        print(f"{SAFEGUARD_OFF_MARKER} no `ip` program found - the server's own public addresses are "
+              f"NOT excluded (list them as EXCLUDE entries, or install iproute2)", file=sys.stderr)
         return []
     try:
         out = subprocess.run([ip_bin, "-o", "addr", "show"], capture_output=True,
                              text=True, timeout=10).stdout
-    except (OSError, subprocess.SubprocessError):
+    except (OSError, subprocess.SubprocessError) as exc:
+        print(f"{SAFEGUARD_OFF_MARKER} `ip addr` failed ({type(exc).__name__}) - the server's own "
+              f"public addresses are NOT excluded (list them as EXCLUDE entries)", file=sys.stderr)
         return []
     nets = []
     for m in re.finditer(r"\binet6?\s+([0-9a-fA-F:.]+)/\d+", out):
@@ -1283,6 +1298,18 @@ def report_validation(errors, warnings) -> None:
         print(f"[VALIDATION-ERROR] {e}", file=sys.stderr)
 
 
+def positive_int(text: str) -> int:
+    """argparse type for --limit: 0 would make "limit reached" always true (a false [TRUNCATED]
+    alert) and a negative number means nothing to cscli."""
+    try:
+        value = int(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{text!r} is not a whole number")
+    if value < 1:
+        raise argparse.ArgumentTypeError("must be 1 or more")
+    return value
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -1295,8 +1322,8 @@ def main():
                              "together with --before gives disjoint windows")
     parser.add_argument("--before", metavar="ISO",
                         help="drop alerts with created_at > ISO 8601 (the window is (after, before])")
-    parser.add_argument("--limit", type=int, default=5000,
-                        help="cscli alert limit (default 5000)")
+    parser.add_argument("--limit", type=positive_int, default=5000,
+                        help="cscli alert limit, a whole number >= 1 (default 5000)")
     parser.add_argument("--out", default="reports.csv", help="output CSV path")
     parser.add_argument("--config", default=DEFAULT_CONFIG_FILE, metavar="FILE",
                         help=f"config file with OWN_NAME_MARKERS and EXCLUDE entries, see "
@@ -1389,7 +1416,7 @@ def main():
     if not rows:
         # A non-zero exit code breaks an `&&` chain in cron, so nothing gets
         # sent for a file that contains only the header.
-        print("No qualifying reports - not writing a CSV.", file=sys.stderr)
+        print(NO_REPORTS_MESSAGE, file=sys.stderr)
         sys.exit(1)
 
     if args.dry_run:

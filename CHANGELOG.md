@@ -1,6 +1,6 @@
 **English** | [Polski](CHANGELOG.pl.md)
 
-Version: 3.6.23 (`abuseipdb_report.py`)
+Version: 3.6.24 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -13,6 +13,34 @@ reaches `main` (a direct push or a merged branch) raises `Z` by 1; after `Z` rea
 ## Unreleased
 
 - Nothing yet.
+
+## 2026-10-01 - fail closed on a bad config, alert on a degraded safeguard, wider fetch (3.6.24)
+
+Found by the code audit of 2026-10-01 and checked against the live server. The wrapper `abuseipdb_send.sh` is now 1.1.7.
+
+- **Config that cannot be read now stops the run** (`abuseipdb_report.py`). Before, a config file that existed but could not
+  be used (wrong permissions, bytes that are not UTF-8, for example a comment typed in a legacy code page) only produced
+  a warning, and the run went on WITHOUT the own-name check and without every `EXCLUDE` entry. The wrapper did not notice,
+  because it reads the markers with `sed`. Now this is a `ConfigError` (exit code 2) in every mode, like a typo in a key.
+  The same for the deprecated exclusion file. A missing file is still only an info line.
+- **Exit code 1 is trusted only together with its message** (`abuseipdb_send.sh`). Code 1 means "nothing to report",
+  but a crash before `main()` (a syntax error, a missing module) also exits with 1, and the wrapper would have closed
+  the window silently. The wrapper now requires the line `No qualifying reports` (a constant of the generator) and treats
+  code 1 without it as a failure: the watermark stays and an alert is sent.
+- **New ntfy alert "safeguard not working"** (`abuseipdb_send.sh`). The generator marks every line that says a
+  safeguard is not working while the run goes on with `[SAFEGUARD-OFF]`: the journal cannot be read (SSH auto-trust
+  incomplete), no `ip` program (the server's own addresses unknown), the trusted-IP list cannot be read or saved. Before,
+  these were lines in a log that nobody reads. The run still continues with the other safeguards.
+- **The fetch reaches 1 hour before the window** (`abuseipdb_send.sh`). `cscli --since` filters by the START of an alert,
+  the window by its creation time, so a slow bucket created inside the window could be lost at the boundary (measured on
+  the live server: up to about 2 minutes between start and creation, 3 of 441 alerts above 30 s). `--after`/`--before`
+  still make the window exact; the margin (`SINCE_MARGIN_S`, default 3600) only stops the loss.
+- **ntfy alerts no longer carry the install path or the home directory** (`abuseipdb_send.sh`): the message goes through
+  the public ntfy server, so `<dir>` and `~` replace them; the local log keeps the full text.
+- `--limit` must be a whole number of 1 or more (`0` made "limit reached" always true and sent a false `[TRUNCATED]` alert).
+- Tests: the test that kept the old "warn and go on" behaviour is replaced; new tests for the non-UTF-8 config in every
+  mode, the marker of each degraded safeguard, exit code 1 with and without its message, the 1 hour reach, and the
+  alert text. Checked by mutation: breaking each of these changes turns a test red.
 
 ## 2026-10-01 - tests for the built-in scenario exclusion and for two limits (3.6.23)
 
