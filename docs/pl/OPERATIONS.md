@@ -1,6 +1,6 @@
 [English](../OPERATIONS.md) | **Polski**
 
-Wersja: 3.6.32 (`abuseipdb_report.py`)
+Wersja: 3.6.33 (`abuseipdb_report.py`)
 
 # Eksploatacja
 
@@ -88,6 +88,8 @@ date -u -d @"$(cat .state/abuseipdb_last_ok)"
 | `watermark from the future` | rozjazd zegara; sprawdź `timedatectl`, potem świadomie popraw lub usuń znacznik |
 | `journalctl returned code ... new SSH logins may be MISSING from the auto-trust` | użytkownik usługi nie czyta całego journala (albo `journalctl` nie ma `--grep`); dodaj go do grupy `adm` lub `systemd-journal` (`sudo usermod -aG systemd-journal <user>`, potem zaloguj się ponownie) i sprawdź `journalctl -u ssh --grep Accepted` |
 | `ALERT_LIMIT must be a whole number` | popraw wartość `ALERT_LIMIT=` w linii crontaba (od 1 do 9 999 999) |
+| w logu `unknown scenario <autor/nazwa> - not reported` | kolekcja CrowdSeca, którą zainstalowano (albo scenariusz innego autora), nie ma znanej kategorii, więc jego alerty są celowo pomijane. To normalne po `cscli collections install`. Zgłoś nazwę scenariusza w issue; nie edytuj `CATEGORY_MAP` na serwerze, bo to psuje `git pull --ff-only` |
+| adresy z subskrybowanej blocklisty nie są zgłaszane | tak ma być: wpisy z blocklist (`kind` `capi`, scenariusz `update : +N/-M IPs`) to cudze obserwacje, a do AbuseIPDB trafiają tylko ataki, które ten serwer sam zobaczył |
 | zgłoszono własny, udokumentowany IP | dopisz go jako linię `EXCLUDE=` w `~/.secrets/abuseipdb.conf` i zbadaj, czemu auto-zaufanie SSH go nie złapało |
 
 ## Sekrety i kopie zapasowe

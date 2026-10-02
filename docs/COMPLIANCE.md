@@ -1,6 +1,6 @@
 **English** | [Polski](pl/COMPLIANCE.md)
 
-Version: 3.6.32 (`abuseipdb_report.py`)
+Version: 3.6.33 (`abuseipdb_report.py`)
 
 # AbuseIPDB compliance
 
@@ -16,7 +16,7 @@ the FAQ and the category list). The policy text can change; re-check it before r
 | Keep comments short; no e-mail or IP address in the comment (FAQ) | Comment never contains the reported IP, the host name or our domains; the validator enforces it (our names come from `OWN_NAME_MARKERS` in the config; a live upload is refused while the list is empty or still holds the example values). A hostile sample request that contains such a name is omitted from the comment instead of failing the file. |
 | Report an IP about once a day for continuous abuse (FAQ) | One run per day, one row per IP, 20 h guard in the wrapper. |
 | No spoofable sources such as SYN/UDP floods; TCP only after a completed three-way handshake, UDP never (policy) | Only application-log scenarios (HTTP, SSH): the request or login attempt reached the application, so the TCP handshake was complete. |
-| Do not report based on someone else's confidence score (policy) | Source is local alerts only (`kind == "crowdsec"`); community blocklist bans are ignored. |
+| Do not report based on someone else's confidence score (policy) | Source is local alerts only (`kind == "crowdsec"`). Blocklist entries (community blocklist, lists subscribed in the CrowdSec console) arrive as alerts with `kind` `capi` and are ignored: another party observed them, not this server. |
 | False reports risk account suspension | Seven independent safeguards, see below. |
 
 ## Safeguards against reporting our own or an innocent address
@@ -93,7 +93,8 @@ CIDR ranges (the bulk CSV takes single addresses).
 
 - Categories are mapped per scenario in `CATEGORY_MAP`; never assign a category stronger than what the log shows.
 - A scenario that is not in the map is skipped and listed on stderr (`unknown scenario ... - not reported`); there is
-  no default category. The one exception is a `crowdsecurity` scenario named after a CVE id, which gets 15,21 (hacking + web
+  no default category. Operators ask for a new scenario by opening an issue; the maintainer checks what it detects
+  first. The one exception is a `crowdsecurity` scenario named after a CVE id, which gets 15,21 (hacking + web
   application attack), because an exploit attempt is what such a scenario detects.
 - `http-open-proxy` uses 14 (port scan / vulnerable services). Category 9 would claim that the reported host itself
   is an open proxy, while the attacker only tried to use ours.

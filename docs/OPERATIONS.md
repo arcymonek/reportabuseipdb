@@ -1,6 +1,6 @@
 **English** | [Polski](pl/OPERATIONS.md)
 
-Version: 3.6.32 (`abuseipdb_report.py`)
+Version: 3.6.33 (`abuseipdb_report.py`)
 
 # Operations
 
@@ -85,6 +85,8 @@ date -u -d @"$(cat .state/abuseipdb_last_ok)"
 | `watermark from the future` | clock skew; check `timedatectl`, then fix or remove the watermark deliberately |
 | `journalctl returned code ... new SSH logins may be MISSING from the auto-trust` | the service user cannot read the whole journal (or `journalctl` has no `--grep`); add the user to the group `adm` or `systemd-journal` (`sudo usermod -aG systemd-journal <user>`, then log in again) and check `journalctl -u ssh --grep Accepted` |
 | `ALERT_LIMIT must be a whole number` | fix the `ALERT_LIMIT=` value in the crontab line (1 to 9,999,999) |
+| log shows `unknown scenario <author/name> - not reported` | a CrowdSec collection you installed (or a scenario from another author) has no known category, so its alerts are skipped on purpose. This is normal after `cscli collections install`. Open an issue with the scenario name; do not edit `CATEGORY_MAP` on the server, because that breaks `git pull --ff-only` |
+| addresses from a blocklist you subscribed to are not reported | by design: blocklist entries (`kind` `capi`, scenario `update : +N/-M IPs`) are other parties' observations, and only attacks this server saw itself are reported to AbuseIPDB |
 | a documented own IP was reported | add it as an `EXCLUDE=` line in `~/.secrets/abuseipdb.conf` and investigate why SSH auto-trust missed it |
 
 ## Secrets and backups

@@ -1,6 +1,6 @@
 [English](README.md) | **Polski**
 
-Wersja: 3.6.32 (`abuseipdb_report.py`)
+Wersja: 3.6.33 (`abuseipdb_report.py`)
 
 # reportabuseipdb
 
@@ -162,12 +162,15 @@ python3 abuseipdb_report.py --help
 
 ## Bezpieczniki
 
-- Tylko alerty wykryte przez ten serwer (`kind == "crowdsec"`); bany z listy społeczności nigdy nie są zgłaszane.
+- Tylko alerty wykryte przez ten serwer (`kind == "crowdsec"`). Adresy pochodzące z blocklist (lista społeczności albo
+  dowolna lista subskrybowana w konsoli CrowdSeca) to cudze obserwacje i nigdy nie są zgłaszane.
 - Zgłoszenia starsze niż 60 dni są odrzucane w każdym wierszu.
 - Adresy prywatne, zarezerwowane, CGNAT i inne nieglobalne nigdy nie są zgłaszane.
 - Scenariusze o historii fałszywych alarmów są wykluczone; scenariusze będące tylko słabym sygnałem nie wystarczą same.
 - Nieznane scenariusze nigdy nie są zgłaszane (tylko scenariusze `crowdsecurity` z mapy kategorii albo nazwane od CVE);
-  scenariusz innego autora wymaga jawnego wpisu w `CATEGORY_MAP` pod pełną nazwą.
+  scenariusz innego autora wymaga jawnego wpisu w `CATEGORY_MAP` pod pełną nazwą. Scenariusz dodany z nową kolekcją
+  CrowdSeca jest pomijany i wypisany w logu (`unknown scenario ...`); zgłoś jego nazwę w issue, a opiekun sprawdzi, co
+  wykrywa, zanim go doda.
 - Lista wykluczeń operatora (`EXCLUDE` w pliku konfiguracji, domyślnie włączona) oraz **auto-zaufanie SSH**: każdy adres, z którego w ciągu ostatnich
   60 dni udało się zalogować przez SSH, nigdy nie jest zgłaszany (trwała lista, bo journal bywa przycinany). Logowanie z
   IPv6 zaufa całej sieci /64, bo maszyna IPv6 zmienia adresy w jej obrębie (`SSH_TRUST_IPV6_PREFIX`).

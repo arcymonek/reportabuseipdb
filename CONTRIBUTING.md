@@ -25,7 +25,8 @@ reviewed with that in mind.
 
 A new CrowdSec scenario in `CATEGORY_MAP` needs the weakest category set that the log really supports and a test; see
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). If you only want to stop reporting a scenario on your own server, use
-`EXTRA_EXCLUDE_SCENARIOS` in your config instead.
+`EXTRA_EXCLUDE_SCENARIOS` in your config instead. If you want a scenario from a new CrowdSec collection to be reported,
+open an issue with its full name (`author/name`) and what it detects, instead of editing the code on your server.
 
 ## How to send a change
 

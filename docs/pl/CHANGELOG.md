@@ -1,6 +1,6 @@
 [English](../../CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.32 (`abuseipdb_report.py`)
+Wersja: 3.6.33 (`abuseipdb_report.py`)
 
 # Historia zmian
 
@@ -21,6 +21,7 @@ są ważne dla opiekuna i kontrybutorów, są wypisane w sekcji "Development" z 
 
 Hooki, testy, CI i pliki GitHuba. Bez numeru wersji: te zmiany nie wpływają na to, co działa na twoim serwerze.
 
+- 2026-10-02 - Test potwierdza, że alerty z blocklist społeczności (`kind` `capi`) nigdy nie są zgłaszane.
 - 2026-10-01 - Polskie wersje `CHANGELOG`, `CONTRIBUTING`, `SECURITY` i `CODE_OF_CONDUCT` przeniesione z katalogu głównego
   do `docs/pl/` (jako `docs/pl/X.md`); `README.pl.md` zostaje w katalogu głównym. Hook pre-commit i testy uwzględniają
   nowe pary.
@@ -36,6 +37,15 @@ Hooki, testy, CI i pliki GitHuba. Bez numeru wersji: te zmiany nie wpływają na
   `EN_ONLY=1` pozwala commitować kontrybutorom piszącym tylko po angielsku.
 - 2026-09-29 - `CONTRIBUTING.md`, `SECURITY.md`, workflow CI (Python 3.9 i najnowszy Python, `shellcheck`).
 - 2026-09-28 - Hook pre-commit: kontrola składni, reguła parowania EN/PL, reguły wersji i skan prywatności.
+
+## 3.6.33 - 2026-10-02
+
+### Zmieniono
+
+- Linia w logu o scenariuszu CrowdSeca bez znanej kategorii (`unknown scenario ... - not reported`) prosi teraz o
+  otwarcie issue z nazwą scenariusza, zamiast sugerować edycję `CATEGORY_MAP` na twoim serwerze. Edycja śledzonego kodu
+  psuje `git pull --ff-only`, a opiekun sprawdza, co scenariusz wykrywa, zanim trafi do publicznej bazy. Generowane CSV
+  się nie zmienia. Przy aktualizacji nie trzeba nic robić.
 
 ## 3.6.32 - 2026-10-01
 

@@ -25,7 +25,9 @@ przeglądany.
 
 Nowy scenariusz CrowdSeca w `CATEGORY_MAP` wymaga najsłabszego zestawu kategorii, który log naprawdę uzasadnia, oraz
 testu; patrz [docs/pl/DEVELOPMENT.md](DEVELOPMENT.md). Jeśli chcesz tylko przestać zgłaszać scenariusz na
-własnym serwerze, użyj `EXTRA_EXCLUDE_SCENARIOS` w swoim configu.
+własnym serwerze, użyj `EXTRA_EXCLUDE_SCENARIOS` w swoim configu. Jeśli chcesz, żeby scenariusz z nowej kolekcji
+CrowdSeca był zgłaszany, otwórz issue z jego pełną nazwą (`autor/nazwa`) i opisem, co wykrywa, zamiast edytować kod
+na swoim serwerze.
 
 ## Jak wysłać zmianę
 

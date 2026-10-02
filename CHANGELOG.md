@@ -1,6 +1,6 @@
 **English** | [Polski](docs/pl/CHANGELOG.md)
 
-Version: 3.6.32 (`abuseipdb_report.py`)
+Version: 3.6.33 (`abuseipdb_report.py`)
 
 # Changelog
 
@@ -21,6 +21,7 @@ its own version (currently 1.1.7) and follows the same rule.
 
 Hooks, tests, CI and GitHub files. Not versioned: these changes do not affect what runs on your server.
 
+- 2026-10-02 - A test pins that community blocklist alerts (`kind` `capi`) are never reported.
 - 2026-10-01 - The Polish versions of `CHANGELOG`, `CONTRIBUTING`, `SECURITY` and `CODE_OF_CONDUCT` moved from the root to
   `docs/pl/` (as `docs/pl/X.md`); `README.pl.md` stays in the root. The pre-commit hook and the tests follow the new pairs.
 - 2026-10-01 - The pre-commit hook enforces the EN/PL pair of `CODE_OF_CONDUCT.md`; the pairing rule now has tests.
@@ -34,6 +35,15 @@ Hooks, tests, CI and GitHub files. Not versioned: these changes do not affect wh
   `EN_ONLY=1` lets contributors who write English only commit.
 - 2026-09-29 - `CONTRIBUTING.md`, `SECURITY.md`, a CI workflow (Python 3.9 and the newest Python, `shellcheck`).
 - 2026-09-28 - The pre-commit hook: syntax checks, the EN/PL pairing rule, version rules and a privacy scan.
+
+## 3.6.33 - 2026-10-02
+
+### Changed
+
+- The log line for a CrowdSec scenario that has no known category (`unknown scenario ... - not reported`) now asks you to
+  open an issue with the scenario name instead of suggesting that you edit `CATEGORY_MAP` on your server. Editing
+  tracked code breaks `git pull --ff-only`, and the maintainer checks what a scenario detects before it is published.
+  The generated CSV is unchanged. No action needed when updating.
 
 ## 3.6.32 - 2026-10-01
 

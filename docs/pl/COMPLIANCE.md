@@ -1,6 +1,6 @@
 [English](../COMPLIANCE.md) | **Polski**
 
-Wersja: 3.6.32 (`abuseipdb_report.py`)
+Wersja: 3.6.33 (`abuseipdb_report.py`)
 
 # Zgodność z AbuseIPDB
 
@@ -16,7 +16,7 @@ FAQ i lista kategorii). Treść polityki może się zmienić; przed poleganiem n
 | Krótki komentarz; bez e-maila i adresu IP w komentarzu (FAQ) | Komentarz nigdy nie zawiera zgłaszanego IP, nazwy hosta ani naszych domen; wymusza to walidator (nasze nazwy pochodzą z `OWN_NAME_MARKERS` w configu; przy pustej liście lub przy wartościach przykładowych wysyłka na żywo jest odmawiana). Wroga próbka żądania zawierająca taką nazwę jest pomijana w komentarzu, zamiast psuć plik. |
 | Przy ciągłym nadużyciu zgłaszać IP mniej więcej raz na dobę (FAQ) | Jeden przebieg na dobę, jeden wiersz na IP, blokada 20 h we wrapperze. |
 | Bez źródeł, które łatwo sfałszować, jak floody SYN/UDP; TCP tylko po pełnym three-way handshake, UDP nigdy (polityka) | Tylko scenariusze z logów aplikacyjnych (HTTP, SSH): żądanie lub próba logowania dotarły do aplikacji, więc handshake TCP był pełny. |
-| Bez zgłaszania na podstawie cudzego wskaźnika pewności (polityka) | Źródłem są tylko lokalne alerty (`kind == "crowdsec"`); bany z listy społeczności są ignorowane. |
+| Bez zgłaszania na podstawie cudzego wskaźnika pewności (polityka) | Źródłem są tylko lokalne alerty (`kind == "crowdsec"`). Wpisy z blocklist (lista społeczności, listy subskrybowane w konsoli CrowdSeca) przychodzą jako alerty z `kind` równym `capi` i są ignorowane: obserwował je ktoś inny, nie ten serwer. |
 | Fałszywe zgłoszenia grożą zawieszeniem konta | Siedem niezależnych bezpieczników, patrz niżej. |
 
 ## Bezpieczniki przed zgłoszeniem własnego lub niewinnego adresu
@@ -95,8 +95,9 @@ CIDR (CSV przyjmuje pojedyncze adresy).
 
 - Kategorie są przypisane per scenariusz w `CATEGORY_MAP`; nigdy nie nadawać kategorii mocniejszej, niż widać w logu.
 - Scenariusz spoza mapy jest pomijany i wypisywany na stderr (`unknown scenario ... - not reported`); nie ma kategorii
-  domyślnej. Jedyny wyjątek to scenariusz `crowdsecurity` nazwany od identyfikatora CVE, który dostaje 15,21 (hacking +
-  atak na aplikację webową), bo próba exploita jest tym, co taki scenariusz wykrywa.
+  domyślnej. O nowy scenariusz operator prosi zgłoszeniem (issue); opiekun najpierw sprawdza, co on wykrywa.
+  Jedyny wyjątek to scenariusz `crowdsecurity` nazwany od identyfikatora CVE, który dostaje 15,21 (hacking + atak na
+  aplikację webową), bo próba exploita jest tym, co taki scenariusz wykrywa.
 - `http-open-proxy` używa 14 (skanowanie portów / podatne usługi). Kategoria 9 twierdziłaby, że zgłaszany host sam
   jest otwartym proxy, a atakujący tylko próbował użyć naszego.
 - Kategoria 4 (DDoS) nie jest używana: przekroczenie limitu żądań to nie atak wolumetryczny.

@@ -1,6 +1,6 @@
 **English** | [Polski](README.pl.md)
 
-Version: 3.6.32 (`abuseipdb_report.py`)
+Version: 3.6.33 (`abuseipdb_report.py`)
 
 # reportabuseipdb
 
@@ -161,12 +161,15 @@ python3 abuseipdb_report.py --help
 
 ## Safeguards
 
-- Only alerts detected by this server (`kind == "crowdsec"`); community blocklist bans are never reported.
+- Only alerts detected by this server (`kind == "crowdsec"`). Addresses that arrive from blocklists (the community
+  blocklist or any list you subscribe to in the CrowdSec console) are other people's observations and are never reported.
 - Reports older than 60 days are dropped on every row.
 - Private, reserved, CGNAT and other non-global addresses are never reported.
 - Scenarios with a history of false alarms are excluded; scenarios that are only a weak signal do not qualify alone.
 - Unknown scenarios are never reported (only `crowdsecurity` scenarios that are in the category map or named after a CVE);
-  a scenario of another author needs an explicit entry in `CATEGORY_MAP` under its full name.
+  a scenario of another author needs an explicit entry in `CATEGORY_MAP` under its full name. A scenario you add with a
+  new CrowdSec collection is skipped and listed in the log (`unknown scenario ...`); open an issue with its name and the
+  maintainer will check what it detects before adding it.
 - Operator exclusion list (`EXCLUDE` in the config file, on by default) and **SSH auto-trust**: any address that logged in over SSH in the last
   60 days is never reported (kept in a persistent store because the journal gets trimmed). An IPv6 login trusts its whole
   /64 network, because an IPv6 machine rotates addresses inside it (`SSH_TRUST_IPV6_PREFIX`).

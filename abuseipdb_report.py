@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-abuseipdb_report.py - v3.6.32
+abuseipdb_report.py - v3.6.33
 
 Generates a bulk CSV of AbuseIPDB reports from LOCALLY detected CrowdSec alerts.
 It sends NOTHING itself; sending is done by abuseipdb_send.sh (see README.md).
@@ -118,7 +118,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from urllib.parse import unquote
 
-SCRIPT_VERSION = "3.6.32"
+SCRIPT_VERSION = "3.6.33"
 
 # --- Hard limits from the AbuseIPDB documentation (bulk report) --------------
 MAX_COMMENT_BYTES = 1024      # "Truncated after 1,024 characters (bytes)"
@@ -1099,8 +1099,10 @@ def build_rows(alerts, exclusions, after=None, before=None, own_addresses=()):
             continue
         categories = category_for(raw_scenario)
         if categories is None:
-            stats[f"unknown scenario {raw_scenario} - not reported (to report it, add its full "
-                  f"name 'author/name' to CATEGORY_MAP)"] += 1
+            # No "edit CATEGORY_MAP" advice here: editing tracked code breaks `git pull --ff-only`, and
+            # only the maintainer can check what a scenario really detects before it is published.
+            stats[f"unknown scenario {raw_scenario} - not reported (no category is known for it; "
+                  f"open an issue in the project repository with this name, do not guess a category)"] += 1
             continue
 
         ip = extract_ip(a)

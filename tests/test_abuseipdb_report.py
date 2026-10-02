@@ -251,8 +251,10 @@ class UnknownScenarios(unittest.TestCase):
             rows = rows_for([known, other])
         self.assertEqual([r[0] for r in rows], ["8.8.8.8"])
         self.assertIn("unknown scenario crowdsecurity/postfix-spam - not reported", err.getvalue())
-        self.assertIn("CATEGORY_MAP", err.getvalue())
-        self.assertIn("author/name", err.getvalue())
+        self.assertIn("open an issue", err.getvalue())
+        self.assertIn("do not guess a category", err.getvalue())
+        # The hint must not send operators to edit tracked code: that breaks `git pull --ff-only`.
+        self.assertNotIn("CATEGORY_MAP", err.getvalue())
 
     def test_known_and_unknown_scenarios_on_one_ip_report_only_the_known(self):
         t = NOW - timedelta(minutes=30)
@@ -411,6 +413,18 @@ class Filters(unittest.TestCase):
                   alert("9.9.9.9", "http-probing", NOW - timedelta(hours=1), events=http_events(2), kind="capi"),
                   alert("1.1.1.1", "http-probing", NOW - timedelta(hours=1), events=http_events(2), simulated=True)]
         self.assertEqual(rows_for(alerts), [])
+
+    def test_community_blocklist_alert_is_never_reported(self):
+        # Shape of a real blocklist alert (cscli alerts list --origin CAPI): a batch of thousands of
+        # addresses published by someone else, not an attack seen by this server.
+        t = NOW - timedelta(minutes=30)
+        blocklist = {"kind": "capi", "simulated": False, "scenario": "update : +15000/-3 IPs",
+                     "created_at": iso(t), "start_at": iso(t), "stop_at": iso(t),
+                     "source": {"scope": "crowdsecurity/community-blocklist", "value": ""},
+                     "events": [], "events_count": 0}
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            self.assertEqual(rows_for([blocklist]), [])
+        self.assertIn(m.SKIP_NOT_LOCAL, err.getvalue())
 
     def test_builtin_exclusion_works_on_its_own_not_only_as_an_unknown_scenario(self):
         # http-crawl-non_statics is not in CATEGORY_MAP, so the "unknown scenario" rule would drop it
