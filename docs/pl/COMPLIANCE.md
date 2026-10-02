@@ -1,7 +1,5 @@
 [English](../COMPLIANCE.md) | **Polski**
 
-Wersja: 3.6.33 (`abuseipdb_report.py`)
-
 # Zgodność z AbuseIPDB
 
 Zweryfikowane 2026-09-29 na surowej dokumentacji AbuseIPDB (API v2, formularz `bulk-report`, polityka zgłaszania,

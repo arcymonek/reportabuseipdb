@@ -1,7 +1,5 @@
 [English](../DEVELOPMENT.md) | **Polski**
 
-Wersja: 3.6.33 (`abuseipdb_report.py`)
-
 # Rozwój
 
 ## Układ repozytorium
@@ -101,30 +99,49 @@ kwartał i gdy GitHub ostrzega o wycofanej:
 
 ## Wersjonowanie
 
-- Format `X.Y.Z`. Wersją projektu jest wersja `abuseipdb_report.py` (`SCRIPT_VERSION` i nagłówek docstringu). Odpowiada
-  osobie uruchamiającej narzędzie na jedno pytanie: "czy program się zmienił?". Dlatego rośnie, gdy zmienia się
-  **program**, i tylko wtedy:
+- Projekt ma **jedną wersję** `X.Y.Z`: `SCRIPT_VERSION` w `abuseipdb_report.py`, powtórzoną w `abuseipdb_send.sh` (hook i
+  `tests/test_versioning.py` pilnują, żeby obie były równe). Odpowiada osobie uruchamiającej narzędzie na jedno pytanie:
+  "czy program się zmienił?". Dlatego rośnie, gdy zmienia się **program**, i tylko wtedy:
   - `Z` o 1 przy poprawce albo każdej zmianie zachowania `abuseipdb_report.py` lub `abuseipdb_send.sh` (nowa kontrola,
-    zmieniony komunikat, alert, kod wyjścia lub walidacja) albo znaczenia linii w `abuseipdb.conf.example`;
-  - `Y` o 1 (a `Z` wraca do 0) przy nowej funkcji lub nowym kluczu konfiguracji; gdy `Z` dojdzie do 99, następna
-    wersja też podnosi `Y` (po 3.6.99 następna to 3.7.0);
-  - `X` to świadoma, ręczna decyzja.
+    zmieniony komunikat, alert, kod wyjścia lub walidacja) albo znaczenia linii w `abuseipdb.conf.example`. `Z` nie ma
+    górnej granicy (po 3.6.99 jest 3.6.100);
+  - `Y` o 1 (a `Z` wraca do 0) przy nowej funkcji lub nowym kluczu konfiguracji;
+  - `X` o 1 (a `Y`, `Z` wracają do 0) to świadoma, ręczna decyzja, przy zmianie łamiącej istniejące instalacje.
 - Zmiany w `tools/` (hooki), `tests/`, `.github/` (CI, formularze), `docs/`, README, `CONTRIBUTING.md`, `AGENTS.md` i
-  innych szablonach **nie** podnoszą wersji. Te, które są ważne dla opiekuna i kontrybutorów (nowa lub poprawiona
-  reguła hooka, zmiana CI, nowy dokument), dostają jedną linię z datą w sekcji "Development" w obu changelogach;
-  literówka nie potrzebuje wpisu.
-- `abuseipdb_send.sh` ma własny `SCRIPT_VERSION` i podlega tej samej regule, gdy wrapper się zmienia (zaktualizuj też
-  test sprawdzający jego napis wersji).
+  innych szablonach **nie** podnoszą wersji, podobnie jak zmiana dotykająca wyłącznie komentarzy w skryptach. Te, które
+  są ważne dla opiekuna i kontrybutorów (nowa lub poprawiona reguła hooka, zmiana CI, nowy dokument), dostają jedną linię
+  z datą w sekcji "Development" w obu changelogach; literówka nie potrzebuje wpisu.
+- **Gdzie wersja jest zapisana, i nigdzie indziej:** `SCRIPT_VERSION` w dwóch skryptach oraz nagłówki
+  `## X.Y.Z - data` w `CHANGELOG.md` i `docs/pl/CHANGELOG.md`. Dokumenty nie mają linii "Wersja:" (była głównym źródłem
+  zapomnianych edycji), a komentarze nagłówkowe skryptów nie powtarzają numeru. `tests/test_versioning.py` zawodzi, gdy
+  linia "Version:" lub "Wersja:" wróci.
 - Gałąź niesie najwyżej jedną zmianę wersji, w ostatnim commicie. Dwa podniesienia na jednej gałęzi dałyby po scaleniu
   wzrost o dwa kroki, a hook porównuje tylko każdy commit z poprzednim.
-- W commicie, który podnosi wersję, zaktualizuj: wersję w skrypcie, linię `Version:` na początku `README.md` i każdego
-  dokumentu w `docs/`, linię `Wersja:` w każdym polskim odpowiedniku oraz oba changelogi (nowy wpis
-  `## X.Y.Z - data`; `tests/test_versioning.py` szuka tego nagłówka).
-- Hook pre-commit wymusza to, co da się sprawdzić: dokumenty muszą pokazywać tę samą wersję co `SCRIPT_VERSION`, a
-  commit, który zmienia wersję, musi ją podnieść dokładnie o jeden krok. Commit, który wersji nie rusza, przechodzi
-  przez hook, więc kontrybutorzy nigdy nie muszą jej zmieniać: opisują zmianę w sekcji "Unreleased" w `CHANGELOG.md`,
-  a opiekun decyduje, czy podnosi wersję, uzupełnia `docs/pl/CHANGELOG.md` i przenosi notatkę przy scalaniu. Spójność
-  sprawdza też `tests/test_versioning.py`.
+- W commicie, który podnosi wersję, zaktualizuj: `SCRIPT_VERSION` w obu skryptach oraz nowy wpis `## X.Y.Z - data` w
+  obu changelogach (`tests/test_versioning.py` szuka tego nagłówka). Opiekun podaje proponowany numer i powód przed
+  commitem.
+- Hook pre-commit wymusza to, co da się sprawdzić: commit, który zmienia wersję, musi zrobić dokładnie jeden dozwolony
+  krok (`Z+1`, `Y+1` przy `Z=0` albo `X+1` przy `Y=Z=0`), a wrapper musi mieć tę samą wersję co generator. Commit, który
+  wersji nie rusza, przechodzi przez hook, więc kontrybutorzy nigdy nie muszą jej zmieniać: opisują zmianę w sekcji
+  "Unreleased" w `CHANGELOG.md`, a opiekun decyduje, czy podnosi wersję, uzupełnia `docs/pl/CHANGELOG.md` i przenosi
+  notatkę przy scalaniu.
+
+### Tagi i Releases
+
+Numer wersji i wydanie to dwie różne rzeczy. Każda zmiana programu podnosi numer, więc `main` przechodzi przez wiele
+wersji; **wydaniem** (release) zostają tylko te, które wybierze opiekun.
+
+- Wydanie to tag git `vX.Y.Z` na commicie, który jest już scalony, wdrożony i sprawdzony na serwerze, oraz utworzony z
+  niego GitHub Release. Oznacza wersję, na którą warto wskazać operatorom. Decyzja należy do opiekuna; nic nie jest
+  tagowane automatycznie.
+- Utwórz tag adnotowany (`git tag -a vX.Y.Z -m "Release X.Y.Z"`) i wypchnij go po nazwie do każdego remote'a osobno:
+  `git push origin vX.Y.Z`, potem `git push github vX.Y.Z`. Nigdy `git push --tags`: opublikowałoby wszystkie lokalne tagi.
+- Wypchnięcie tagu na GitHub uruchamia `.github/workflows/release.yml`. Sprawdza, czy tag równa się `SCRIPT_VERSION` i czy
+  changelog ma wpis dla tej wersji (inaczej zatrzymuje się i niczego nie tworzy), buduje notatki przez
+  `tools/release_notes.sh` i tworzy Release. Notatki zawierają każdy wpis changeloga nowszy niż poprzedni tag, bo między
+  dwoma wydaniami numer rośnie wiele razy, a operator aktualizujący potrzebuje wszystkich tych notatek.
+- Błędne wydanie naprawia się, usuwając Release i tag (`git push github --delete vX.Y.Z`, `git tag -d vX.Y.Z`) i tagując
+  właściwy commit. Usunięcie opublikowanego tagu to świadoma czynność: najpierw zapytaj.
 
 ## Zasady językowe
 
@@ -138,7 +155,7 @@ kwartał i gdy GitHub ostrzega o wycofanej:
   katalogu głównym lub w `docs/`) i `docs/pl/X.md`.
   Każdy plik zaczyna się linią przełącznika języka. Hook pre-commit odmawia commita, który zawiera tylko jedną stronę
   pary albo w którym liczba nagłówków się różni.
-- `AGENTS.md` jest jedynym wyjątkiem: tylko po angielsku, bez polskiego odpowiednika i bez linii wersji, bo czytają go
+- `AGENTS.md` jest jedynym wyjątkiem: tylko po angielsku, bez polskiego odpowiednika, bo czytają go
   agenci, a czytelnik nie wybiera języka. Aktualizuj go razem z tymi zasadami, gdy się zmieniają.
 - Kontrybutorzy piszą tylko po angielsku (patrz [CONTRIBUTING.md](CONTRIBUTING.md)). Commitują z
   `EN_ONLY=1`, co sprawia, że hook pomija wyłącznie regułę parowania. Polską stronę dodaje opiekun (patrz następna
@@ -205,5 +222,7 @@ wypychać gałęzie do tego repozytorium. Nic innego się nie zmienia: gałąź 
   scaleniem. Ruleset nie jest dostępny dla prywatnego repozytorium na darmowym koncie (GitHub odpowiada HTTP 403), więc
   utwórz go zaraz po upublicznieniu repozytorium.
 - Zachowaj uwagę "nieoficjalny, niezwiązany" w obu README.
+- Otaguj pierwsze publiczne wydanie (patrz "Tagi i Releases" w Wersjonowaniu). Workflow wydania nie da się wypróbować przed
+  pierwszym tagiem, więc uruchom go raz, gdy repozytorium jest jeszcze prywatne (i usuń potem ten testowy tag i Release).
 - Sprawdź, że żaden dokument nie zawiera prawdziwej nazwy hosta, domeny, adresu ani tematu ntfy (skan prywatności robi
   to przy każdym commicie, jeśli twój config zawiera twoje nazwy).

@@ -1,0 +1,55 @@
+# Creates a GitHub Release when the maintainer pushes a version tag (vX.Y.Z). The tag is created by hand, after the
+# version is merged, deployed and checked on the server (see "Tags and Releases" in docs/DEVELOPMENT.md); nothing is
+# tagged automatically, and this workflow never commits or pushes anything.
+# It refuses to create a Release when the tag does not match the code: a tag put on the wrong commit stops here.
+name: release
+
+on:
+  push:
+    tags: ['v[0-9]*']
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    # Same pinned runner as tests.yml (see the comment there).
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write   # only this job may create a Release
+    steps:
+      # Pinned to a full commit SHA like in tests.yml (see "Pinned CI actions" in docs/DEVELOPMENT.md).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          fetch-depth: 0   # the notes need the previous tag, so every tag must be present
+      - name: Check that the tag matches the code and the changelog
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          code="$(sed -n 's/^SCRIPT_VERSION = "\(.*\)"/\1/p' abuseipdb_report.py)"
+          wrapper="$(sed -n 's/^SCRIPT_VERSION="\(.*\)"/\1/p' abuseipdb_send.sh)"
+          if [ "$version" != "$code" ] || [ "$version" != "$wrapper" ]; then
+            echo "Tag $TAG, but abuseipdb_report.py is '$code' and abuseipdb_send.sh is '$wrapper'. Nothing was released."
+            exit 1
+          fi
+          for log in CHANGELOG.md docs/pl/CHANGELOG.md; do
+            grep -q "^## $version - " "$log" || { echo "$log has no entry for $version. Nothing was released."; exit 1; }
+          done
+      - name: Build the release notes
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          # The highest OTHER version tag is the previous release; none means this is the first one.
+          previous="$(git tag --list 'v[0-9]*' --sort=-v:refname | grep -vxF "$TAG" | head -1 || true)"
+          tools/release_notes.sh "${TAG#v}" "${previous#v}" > notes.md
+          cat notes.md
+      - name: Create the Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          # A tag with a suffix (for example v3.7.0-rc1) is a pre-release.
+          flags=()
+          case "$TAG" in *-*) flags+=(--prerelease) ;; esac
+          gh release create "$TAG" --title "$TAG" --notes-file notes.md --verify-tag "${flags[@]}"

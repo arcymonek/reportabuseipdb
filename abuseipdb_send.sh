@@ -1,6 +1,6 @@
 #!/bin/bash
 # ====================================================
-#     ABUSEIPDB SEND - v1.1.7 (cron: 05:30)
+#     ABUSEIPDB SEND (cron: 05:30)
 # ====================================================
 # Generates the CSV (abuseipdb_report.py), validates it and sends it to AbuseIPDB
 # (the bulk-report endpoint). Replaces the long `python3 ... && curl -s ...` line
@@ -43,7 +43,8 @@
 # Deprecated fallback while migrating: ~/.secrets/abuseipdb_api_key and ~/.secrets/ntfy_topic.
 # Log: stdout (cron appends to abuseipdb_cron.log).
 
-SCRIPT_VERSION="1.1.7"
+# One version for the whole project: keep it equal to SCRIPT_VERSION in abuseipdb_report.py (the pre-commit hook checks).
+SCRIPT_VERSION="3.6.33"
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export LC_ALL=C
 set -u

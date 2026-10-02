@@ -1,7 +1,5 @@
 **English** | [Polski](pl/OPERATIONS.md)
 
-Version: 3.6.33 (`abuseipdb_report.py`)
-
 # Operations
 
 ## Scheduling

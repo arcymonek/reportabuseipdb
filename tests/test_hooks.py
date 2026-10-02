@@ -11,6 +11,7 @@ host.example); the author's domain, which the repository may contain, is assembl
 that this file does not trip the very scan it tests.
 """
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -125,6 +126,59 @@ class PreCommit(HookBase):
         self.stage("chat.example.org\nand a clean new line\n")
         r = self.run_hook("pre-commit")
         self.assertEqual(r.returncode, 0, r.out)
+
+
+class VersionRules(HookBase):
+    """The version rules of tools/pre-commit: one project version, one allowed step per commit, Z without a limit."""
+
+    def set_versions(self, report, wrapper=None, commit=False):
+        wrapper = wrapper or report
+        for name, pattern, new in (("abuseipdb_report.py", r'^SCRIPT_VERSION = ".*"$', f'SCRIPT_VERSION = "{report}"'),
+                                   ("abuseipdb_send.sh", r'^SCRIPT_VERSION=".*"$', f'SCRIPT_VERSION="{wrapper}"')):
+            text = (self.repo / name).read_text()
+            text, n = re.subn(pattern, new, text, flags=re.M)
+            self.assertEqual(n, 1, name)
+            (self.repo / name).write_text(text)
+        self.git("add", "abuseipdb_report.py", "abuseipdb_send.sh")
+        if commit:
+            self.git("-c", "core.hooksPath=/nonexistent", "commit", "-q", "--allow-empty", "-m", f"version {report}")
+
+    def check(self, old, new, wrapper=None):
+        self.set_versions(old, commit=True)
+        self.set_versions(new, wrapper)
+        return self.run_hook("pre-commit")
+
+    def test_allowed_steps_pass(self):
+        # Z+1, Z without an upper limit, Y+1 with Z=0 and X+1 with Y=Z=0
+        for old, new in (("3.6.33", "3.6.34"), ("3.6.99", "3.6.100"), ("3.6.100", "3.6.101"),
+                         ("3.6.33", "3.7.0"), ("3.6.99", "3.7.0"), ("3.6.33", "4.0.0")):
+            self.setUp()
+            r = self.check(old, new)
+            self.assertEqual(r.returncode, 0, (old, new, r.out))
+
+    def test_other_steps_are_blocked(self):
+        for old, new in (("3.6.33", "3.6.35"),      # skipped one
+                         ("3.6.33", "3.7.1"),       # Y raised but Z not reset
+                         ("3.6.33", "4.1.0"),       # X raised but Y not reset
+                         ("3.6.33", "3.6.32"),      # backwards
+                         ("3.6.33", "3.8.0")):      # skipped a Y
+            self.setUp()
+            r = self.check(old, new)
+            self.assertEqual(r.returncode, 1, (old, new, r.out))
+            self.assertIn("VERSION STEP", r.out, (old, new))
+
+    def test_an_untouched_version_passes(self):
+        # a contributor's commit never touches the version
+        self.set_versions("3.6.33", commit=True)
+        (self.repo / "notes.txt").write_text("a harmless line\n")
+        self.git("add", "notes.txt")
+        r = self.run_hook("pre-commit")
+        self.assertEqual(r.returncode, 0, r.out)
+
+    def test_the_wrapper_must_carry_the_version_of_the_generator(self):
+        r = self.check("3.6.33", "3.6.34", wrapper="3.6.33")
+        self.assertEqual(r.returncode, 1, r.out)
+        self.assertIn("VERSION MISMATCH", r.out)
 
 
 class CommitMsg(HookBase):

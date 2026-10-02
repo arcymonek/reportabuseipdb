@@ -1,17 +1,17 @@
 **English** | [Polski](docs/pl/CHANGELOG.md)
 
-Version: 3.6.33 (`abuseipdb_report.py`)
-
 # Changelog
 
 Notable changes for people who run the tool. Every entry is mirrored in [docs/pl/CHANGELOG.md](docs/pl/CHANGELOG.md). Format:
 [Keep a Changelog](https://keepachangelog.com/). The detailed history of every commit is in `git log`.
 
-Version numbering is `X.Y.Z`. The project version is the version of `abuseipdb_report.py`. It rises when the **program**
-changes: the two scripts or the meaning of a line in `abuseipdb.conf.example` (`Z` for a fix, `Y` for a new function or
-config key, `X` is a deliberate decision). Changes to hooks, tests, CI, templates and documentation do not raise it; the
-ones that matter to maintainers and contributors are listed under "Development" with a date. `abuseipdb_send.sh` has
-its own version (currently 1.1.7) and follows the same rule.
+Version numbering is `X.Y.Z`. The project has one version, shared by `abuseipdb_report.py` and `abuseipdb_send.sh` (check
+it with `--version`). It rises when the **program** changes: the two scripts or the meaning of a line in
+`abuseipdb.conf.example` (`Z` for a fix, with no upper limit; `Y` for a new function or config key; `X` is a deliberate
+decision). Changes to hooks, tests, CI, templates and documentation do not raise it; the ones that matter to maintainers
+and contributors are listed under "Development" with a date. Not every version is a release: the versions the maintainer
+marks with a git tag appear as [GitHub Releases](https://github.com/arcymonek/reportabuseipdb/releases), and each
+Release lists every entry below that is newer than the previous Release.
 
 ## Unreleased
 
@@ -21,6 +21,11 @@ its own version (currently 1.1.7) and follows the same rule.
 
 Hooks, tests, CI and GitHub files. Not versioned: these changes do not affect what runs on your server.
 
+- 2026-10-02 - Versioning simplified: one version for both scripts (the wrapper adopts the generator's version, so
+  `abuseipdb_send.sh --version` now shows the project version instead of 1.1.7), `Z` has no upper limit (no rollover at 99),
+  documents no longer carry a "Version:" line, and the pre-commit hook accepts a `Y` or `X` step, which it used to refuse.
+- 2026-10-02 - Tags and GitHub Releases: a version tag `vX.Y.Z` pushed to GitHub starts `.github/workflows/release.yml`,
+  which checks the tag against the code and the changelog and creates a Release (`tools/release_notes.sh` builds the notes).
 - 2026-10-02 - A test pins that community blocklist alerts (`kind` `capi`) are never reported.
 - 2026-10-01 - The Polish versions of `CHANGELOG`, `CONTRIBUTING`, `SECURITY` and `CODE_OF_CONDUCT` moved from the root to
   `docs/pl/` (as `docs/pl/X.md`); `README.pl.md` stays in the root. The pre-commit hook and the tests follow the new pairs.

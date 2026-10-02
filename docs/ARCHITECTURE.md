@@ -1,7 +1,5 @@
 **English** | [Polski](pl/ARCHITECTURE.md)
 
-Version: 3.6.33 (`abuseipdb_report.py`)
-
 # Architecture
 
 ## Components

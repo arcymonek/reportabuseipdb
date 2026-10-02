@@ -1,7 +1,5 @@
 [English](README.md) | **Polski**
 
-Wersja: 3.6.33 (`abuseipdb_report.py`)
-
 # reportabuseipdb
 
 Automatyczne, zgodne z polityką zgłaszanie do [AbuseIPDB](https://www.abuseipdb.com/) atakujących wykrytych przez

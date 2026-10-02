@@ -1,7 +1,5 @@
 **English** | [Polski](pl/DEVELOPMENT.md)
 
-Version: 3.6.33 (`abuseipdb_report.py`)
-
 # Development
 
 ## Repository layout
@@ -102,30 +100,49 @@ deprecated one:
 
 ## Versioning
 
-- Format `X.Y.Z`. The project version is the version of `abuseipdb_report.py` (`SCRIPT_VERSION` and the docstring
-  header). It answers one question for the person who runs the tool: "did the program change?" So it rises when the
-  **program** changes, and only then:
+- The project has **one version**, `X.Y.Z`: `SCRIPT_VERSION` in `abuseipdb_report.py`, repeated in `abuseipdb_send.sh`
+  (the hook and `tests/test_versioning.py` insist that the two are equal). It answers one question for the person who
+  runs the tool: "did the program change?" So it rises when the **program** changes, and only then:
   - `Z` by 1 for a fix or any change in behaviour of `abuseipdb_report.py` or `abuseipdb_send.sh` (a new check, a changed
-    message, alert, exit code or validation), or in the meaning of a line of `abuseipdb.conf.example`;
-  - `Y` by 1 (and `Z` back to 0) for a new function or a new config key; after `Z` reaches 99 the next version also
-    raises `Y` (3.6.99 is followed by 3.7.0);
-  - `X` is a deliberate, manual decision.
+    message, alert, exit code or validation), or in the meaning of a line of `abuseipdb.conf.example`. `Z` has no upper
+    limit (3.6.100 follows 3.6.99);
+  - `Y` by 1 (and `Z` back to 0) for a new function or a new config key;
+  - `X` by 1 (and `Y`, `Z` back to 0) is a deliberate, manual decision, for a change that breaks existing setups.
 - Changes to `tools/` (hooks), `tests/`, `.github/` (CI, forms), `docs/`, the README, `CONTRIBUTING.md`, `AGENTS.md` and
-  other templates do **not** raise the version. Those that matter to maintainers and contributors (a new or fixed hook
-  rule, a CI change, a new document) get one dated line under "Development" in both changelogs; a typo does not need
-  a line.
-- `abuseipdb_send.sh` has its own `SCRIPT_VERSION` and follows the same rule whenever the wrapper changes (update the
-  test that asserts its version string too).
+  other templates do **not** raise the version, and neither does a change that touches only comments inside the scripts.
+  Those that matter to maintainers and contributors (a new or fixed hook rule, a CI change, a new document) get one dated
+  line under "Development" in both changelogs; a typo does not need a line.
+- **Where the version is written, and nowhere else:** `SCRIPT_VERSION` in the two scripts, and the
+  `## X.Y.Z - date` headings of `CHANGELOG.md` and `docs/pl/CHANGELOG.md`. Documents carry no "Version:" line (it was the
+  main source of forgotten edits), and the scripts' header comments do not repeat the number. `tests/test_versioning.py`
+  fails if a "Version:" or "Wersja:" line comes back.
 - A branch carries at most one version change, in its last commit. Two bumps on one branch would raise the version by
   two steps once merged, and the hook only compares each commit with the one before it.
-- In the commit that raises the version update: the version in the script, the `Version:` line at the top of
-  `README.md` and of every document in `docs/`, the `Wersja:` line in every Polish counterpart, and both changelogs
-  (a new `## X.Y.Z - date` entry; `tests/test_versioning.py` looks for that heading).
-- The pre-commit hook enforces what can be checked: the documents must show the same version as `SCRIPT_VERSION`, and a
-  commit that changes the version must raise it by exactly one step. A commit that leaves the version alone passes the
-  hook, so contributors never have to touch it: they describe their change under "Unreleased" in `CHANGELOG.md`, and the
-  maintainer decides whether it raises the version, completes `docs/pl/CHANGELOG.md` and moves the note when merging.
-  `tests/test_versioning.py` checks the consistency as well.
+- In the commit that raises the version update: `SCRIPT_VERSION` in both scripts and a new `## X.Y.Z - date` entry in both
+  changelogs (`tests/test_versioning.py` looks for that heading). The maintainer states the proposed number and the
+  reason before committing.
+- The pre-commit hook enforces what can be checked: a commit that changes the version must make exactly one allowed step
+  (`Z+1`, `Y+1` with `Z=0`, or `X+1` with `Y=Z=0`), and the wrapper must carry the same version as the generator. A commit
+  that leaves the version alone passes the hook, so contributors never have to touch it: they describe their change under
+  "Unreleased" in `CHANGELOG.md`, and the maintainer decides whether it raises the version, completes
+  `docs/pl/CHANGELOG.md` and moves the note when merging.
+
+### Tags and Releases
+
+A version number and a release are two different things. Every change of the program raises the number, so `main` passes
+through many versions; only the ones the maintainer chooses become a **release**.
+
+- A release is a git tag `vX.Y.Z` on a commit that is already merged, deployed and checked on the server, plus a GitHub
+  Release created from it. It marks a version that is worth pointing operators to. The decision is the maintainer's;
+  nothing is tagged automatically.
+- Create an annotated tag (`git tag -a vX.Y.Z -m "Release X.Y.Z"`) and push it by name to each remote, one at a time:
+  `git push origin vX.Y.Z`, then `git push github vX.Y.Z`. Never use `git push --tags`: it would publish every local tag.
+- Pushing a tag to GitHub starts `.github/workflows/release.yml`. It checks that the tag equals `SCRIPT_VERSION` and that
+  the changelog has an entry for it (otherwise it stops and creates nothing), builds the release notes with
+  `tools/release_notes.sh` and creates the Release. The notes contain every changelog entry newer than the previous tag,
+  because between two releases the number rises many times and an operator updating needs all of those notes.
+- A wrong release is fixed by deleting the Release and the tag (`git push github --delete vX.Y.Z`, `git tag -d vX.Y.Z`)
+  and tagging the right commit. Deleting a published tag is a deliberate action: ask first.
 
 ## Language rules
 
@@ -137,7 +154,7 @@ deprecated one:
   root or in `docs/`) and `docs/pl/X.md`.
   Each file starts with a language switch line. The pre-commit hook refuses a commit that stages one side of a pair
   only, or where the number of headings differs.
-- `AGENTS.md` is the one exception: English only, no Polish twin, no version line, because coding agents read it and a
+- `AGENTS.md` is the one exception: English only, no Polish twin, because coding agents read it and a
   reader does not pick a language. Keep it in step with these rules when they change.
 - Contributors write English only (see [CONTRIBUTING.md](../CONTRIBUTING.md)). They commit with `EN_ONLY=1`, which
   makes the hook skip only the pairing rule. The maintainer supplies the Polish side (see the next section).
@@ -201,5 +218,7 @@ this repository. Nothing else changes: the branch is still merged only by the ma
   at the green run of a branch before merging it. A ruleset is not available for a private repository on a free
   account (GitHub answers HTTP 403), so create it right after the repository becomes public.
 - Keep the "unofficial, not affiliated" notice in both READMEs.
+- Tag the first public release (see "Tags and Releases" under Versioning). The release workflow cannot be tried before
+  the first tag, so run it once while the repository is still private (and delete that test tag and Release afterwards).
 - Check that no document contains a real host name, domain, address or ntfy topic (the privacy scan does this on every
   commit if your config lists your names).

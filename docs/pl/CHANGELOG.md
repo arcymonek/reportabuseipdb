@@ -1,17 +1,17 @@
 [English](../../CHANGELOG.md) | **Polski**
 
-Wersja: 3.6.33 (`abuseipdb_report.py`)
-
 # Historia zmian
 
 Istotne zmiany dla osób, które uruchamiają narzędzie. Każdy wpis ma odpowiednik w [CHANGELOG.md](../../CHANGELOG.md). Format:
 [Keep a Changelog](https://keepachangelog.com/). Szczegółowa historia każdego commita jest w `git log`.
 
-Numeracja to `X.Y.Z`. Wersją projektu jest wersja `abuseipdb_report.py`. Rośnie, gdy zmienia się **program**: dwa
-skrypty albo znaczenie linii w `abuseipdb.conf.example` (`Z` przy poprawce, `Y` przy nowej funkcji lub nowym kluczu
-konfiguracji, `X` to świadoma decyzja). Zmiany hooków, testów, CI, szablonów i dokumentacji jej nie podnoszą; te, które
-są ważne dla opiekuna i kontrybutorów, są wypisane w sekcji "Development" z datą. `abuseipdb_send.sh` ma własną wersję
-(obecnie 1.1.7) i podlega tej samej regule.
+Numeracja to `X.Y.Z`. Projekt ma jedną wersję, wspólną dla `abuseipdb_report.py` i `abuseipdb_send.sh` (sprawdzisz ją
+przez `--version`). Rośnie, gdy zmienia się **program**: dwa skrypty albo znaczenie linii w `abuseipdb.conf.example`
+(`Z` przy poprawce, bez górnej granicy; `Y` przy nowej funkcji lub nowym kluczu konfiguracji; `X` to świadoma decyzja).
+Zmiany hooków, testów, CI, szablonów i dokumentacji jej nie podnoszą; te, które są ważne dla opiekuna i kontrybutorów,
+są wypisane w sekcji "Development" z datą. Nie każda wersja jest wydaniem: wersje, które opiekun oznaczy tagiem git,
+pojawiają się jako [GitHub Releases](https://github.com/arcymonek/reportabuseipdb/releases), a każdy Release zawiera
+wszystkie wpisy poniżej nowsze niż poprzedni Release.
 
 ## Niewydane
 
@@ -21,6 +21,11 @@ są ważne dla opiekuna i kontrybutorów, są wypisane w sekcji "Development" z 
 
 Hooki, testy, CI i pliki GitHuba. Bez numeru wersji: te zmiany nie wpływają na to, co działa na twoim serwerze.
 
+- 2026-10-02 - Uproszczone wersjonowanie: jedna wersja dla obu skryptów (wrapper przejmuje wersję generatora, więc
+  `abuseipdb_send.sh --version` pokazuje teraz wersję projektu zamiast 1.1.7), `Z` nie ma górnej granicy (bez przeskoku
+  przy 99), dokumenty nie mają już linii "Wersja:", a hook pre-commit przyjmuje krok `Y` lub `X`, który wcześniej odrzucał.
+- 2026-10-02 - Tagi i GitHub Releases: tag wersji `vX.Y.Z` wypchnięty na GitHub uruchamia `.github/workflows/release.yml`,
+  który sprawdza tag względem kodu i changeloga i tworzy Release (notatki buduje `tools/release_notes.sh`).
 - 2026-10-02 - Test potwierdza, że alerty z blocklist społeczności (`kind` `capi`) nigdy nie są zgłaszane.
 - 2026-10-01 - Polskie wersje `CHANGELOG`, `CONTRIBUTING`, `SECURITY` i `CODE_OF_CONDUCT` przeniesione z katalogu głównego
   do `docs/pl/` (jako `docs/pl/X.md`); `README.pl.md` zostaje w katalogu głównym. Hook pre-commit i testy uwzględniają

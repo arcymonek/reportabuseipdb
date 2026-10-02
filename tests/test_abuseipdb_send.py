@@ -8,6 +8,7 @@ The generator and curl are MOCKS - the tests send nothing to AbuseIPDB or ntfy.
 import fcntl
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -646,7 +647,8 @@ class Misc(SendBase):
     def test_args(self):
         self.assertEqual(self.run_sh("--bogus").returncode, 2)
         v = self.run_sh("--version")
-        self.assertEqual((v.returncode, v.stdout.strip()), (0, "abuseipdb_send.sh v1.1.7"))
+        version = re.search(r'^SCRIPT_VERSION="([^"]+)"', SEND.read_text(), re.M).group(1)
+        self.assertEqual((v.returncode, v.stdout.strip()), (0, f"abuseipdb_send.sh v{version}"))
         self.assertEqual(self.run_sh("--help").returncode, 0)
 
     def test_log_trim_is_in_place_and_keeps_appending(self):

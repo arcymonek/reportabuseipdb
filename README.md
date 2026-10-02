@@ -1,7 +1,5 @@
 **English** | [Polski](README.pl.md)
 
-Version: 3.6.33 (`abuseipdb_report.py`)
-
 # reportabuseipdb
 
 Automated, policy-compliant reporting of attackers detected by your own [CrowdSec](https://www.crowdsec.net/)
