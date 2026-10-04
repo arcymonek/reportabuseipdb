@@ -6,7 +6,7 @@
 ![python: 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)
 ![platforma: Linux (systemd)](https://img.shields.io/badge/platforma-Linux%20%28systemd%29-blue)
 ![zależności pythona: brak](https://img.shields.io/badge/zale%C5%BCno%C5%9Bci%20pythona-brak-brightgreen)
-![zgłasza: tylko własne wykrycia](https://img.shields.io/badge/zg%C5%82asza-tylko%20w%C5%82asne%20wykrycia-brightgreen)
+![zgłasza: tylko lokalne wykrycia](https://img.shields.io/badge/zg%C5%82asza-tylko%20lokalne%20wykrycia-brightgreen)
 
 [Szybki start](#szybki-start) · [Konfiguracja](#konfiguracja) · [Bezpieczniki](#bezpieczniki) ·
 [Dokumentacja](#dokumentacja) · [Changelog](docs/pl/CHANGELOG.md) ·

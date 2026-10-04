@@ -6,7 +6,7 @@
 ![python: 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)
 ![platform: Linux (systemd)](https://img.shields.io/badge/platform-Linux%20%28systemd%29-blue)
 ![python dependencies: none](https://img.shields.io/badge/python%20dependencies-none-brightgreen)
-![reports: own detections only](https://img.shields.io/badge/reports-own%20detections%20only-brightgreen)
+![reports: local detections only](https://img.shields.io/badge/reports-local%20detections%20only-brightgreen)
 
 [Quick start](#quick-start) · [Configuration](#configuration) · [Safeguards](#safeguards) ·
 [Documentation](#documentation) · [Changelog](CHANGELOG.md) ·
