@@ -1,6 +1,16 @@
+# reportabuseipdb
+
 **English** | [Polski](README.pl.md)
 
-# reportabuseipdb
+![license: MIT](https://img.shields.io/badge/license-MIT-blue)
+![python: 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)
+![platform: Linux (systemd)](https://img.shields.io/badge/platform-Linux%20%28systemd%29-blue)
+![python dependencies: none](https://img.shields.io/badge/python%20dependencies-none-brightgreen)
+![reports: own detections only](https://img.shields.io/badge/reports-own%20detections%20only-brightgreen)
+
+[Quick start](#quick-start) · [Configuration](#configuration) · [Safeguards](#safeguards) ·
+[Documentation](#documentation) · [Changelog](CHANGELOG.md) ·
+[Contributing and security](#contributing-and-security) · [License and author](#license-and-author)
 
 Automated, policy-compliant reporting of attackers detected by your own [CrowdSec](https://www.crowdsec.net/)
 instance to [AbuseIPDB](https://www.abuseipdb.com/).
