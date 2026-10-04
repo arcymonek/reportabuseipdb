@@ -40,11 +40,10 @@
 # Read here: ABUSEIPDB_API_KEY, NTFY_TOPIC, NTFY_URL and OWN_NAME_MARKERS (a live run is
 # REFUSED while the marker list is empty or still holds the example values; alerts are NOT
 # sent to the example ntfy topic). The generator reads the same file (--config).
-# Deprecated fallback while migrating: ~/.secrets/abuseipdb_api_key and ~/.secrets/ntfy_topic.
 # Log: stdout (cron appends to abuseipdb_cron.log).
 
 # One version for the whole project: keep it equal to SCRIPT_VERSION in abuseipdb_report.py (the pre-commit hook checks).
-SCRIPT_VERSION="3.6.33"
+SCRIPT_VERSION="3.6.34"
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 export LC_ALL=C
 set -u
@@ -57,8 +56,6 @@ WM_FILE="$STATE_DIR/abuseipdb_last_ok"      # epoch of the end of the last succe
 API_URL="https://api.abuseipdb.com/api/v2/bulk-report"
 
 CONFIG_FILE="${ABUSEIPDB_CONFIG:-$HOME/.secrets/abuseipdb.conf}"
-LEGACY_KEY_FILE="$HOME/.secrets/abuseipdb_api_key"     # deprecated, see the header
-LEGACY_TOPIC_FILE="$HOME/.secrets/ntfy_topic"          # deprecated, see the header
 
 # conf_get KEY: the last non-empty value of KEY in the config file (empty if the file
 # or the key is missing). The file is read as text with sed; it is never executed.
@@ -134,7 +131,7 @@ trim_log() {
     fi
 }
 
-# resolve_topic: prints the ntfy topic. Order: explicit file (env), config key, deprecated file.
+# resolve_topic: prints the ntfy topic. Order: explicit file (env), config key.
 resolve_topic() {
     local t
     if [ -n "$NTFY_TOPIC_FILE" ]; then
@@ -142,7 +139,6 @@ resolve_topic() {
         return 0
     fi
     t="$(conf_get NTFY_TOPIC | tr -d '[:space:]')"
-    if [ -z "$t" ] && [ -r "$LEGACY_TOPIC_FILE" ]; then t="$(tr -d '[:space:]' < "$LEGACY_TOPIC_FILE")"; fi
     printf '%s' "$t"
 }
 
@@ -341,11 +337,6 @@ if [ -n "$KEY_FILE" ]; then                       # explicit key file (tests)
 else
     KEY_SRC="$CONFIG_FILE"
     KEY="$(conf_get ABUSEIPDB_API_KEY | tr -d '[:space:]')"
-    if [ -z "$KEY" ] && [ -r "$LEGACY_KEY_FILE" ]; then
-        KEY_SRC="$LEGACY_KEY_FILE"
-        KEY="$(tr -d '[:space:]' < "$LEGACY_KEY_FILE")"
-        log "WARNING: API key read from the deprecated file $LEGACY_KEY_FILE - move it to ABUSEIPDB_API_KEY in $CONFIG_FILE"
-    fi
     [ -n "$KEY" ] || fail "API key missing: set ABUSEIPDB_API_KEY in $CONFIG_FILE"
 fi
 [ "$KEY" != "$PLACEHOLDER_KEY" ] || fail "ABUSEIPDB_API_KEY is still the example value of abuseipdb.conf.example: set your own key in $KEY_SRC"

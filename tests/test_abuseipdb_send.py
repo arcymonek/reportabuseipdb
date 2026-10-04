@@ -419,27 +419,6 @@ class Config(SendBase):
         self.assertEqual(self.gen_calls()[0][:2], ["--config", str(self.conf)])
         self.assertEqual(self.validate_calls()[0][:2], ["--config", str(self.conf)])
 
-    def test_legacy_files_are_a_deprecated_fallback(self):
-        (self.T / "home" / ".secrets").mkdir()
-        (self.T / "home" / ".secrets" / "abuseipdb_api_key").write_text(KEY + "\n")
-        (self.T / "home" / ".secrets" / "ntfy_topic").write_text(TOPIC + "\n")
-        env = self.use_config("OWN_NAME_MARKERS=example.org\n")
-        r = self.run_sh(**env)
-        self.assertEqual(r.returncode, 0, r.stdout)
-        self.assertIn("deprecated file", r.stdout)
-        self.assertEqual(self.curl_calls()[0]["stdin"], f"Key: {KEY}\n")
-        self.run_sh("--force", FAKE_RC="2", **env)
-        self.assertIn(TOPIC, self.ntfy()[0]["stdin"])
-
-    def test_config_wins_over_legacy_files(self):
-        (self.T / "home" / ".secrets").mkdir()
-        (self.T / "home" / ".secrets" / "abuseipdb_api_key").write_text("LEGACY" + "x" * 30 + "\n")
-        env = self.use_config(f"OWN_NAME_MARKERS=example.org\nABUSEIPDB_API_KEY={KEY}\n")
-        r = self.run_sh(**env)
-        self.assertEqual(r.returncode, 0, r.stdout)
-        self.assertEqual(self.curl_calls()[0]["stdin"], f"Key: {KEY}\n")
-        self.assertNotIn("deprecated", r.stdout)
-
     def test_example_ntfy_topic_never_receives_alerts(self):
         env = self.use_config(f"OWN_NAME_MARKERS=real.test\nABUSEIPDB_API_KEY={KEY}\n"
                               "NTFY_TOPIC=your-private-ntfy-topic\n")

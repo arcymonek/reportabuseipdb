@@ -143,8 +143,6 @@ zatrzymują przebieg z błędem, zamiast po cichu wyłączyć bezpiecznik (komen
 - `EXTRA_EXCLUDE_SCENARIOS`: scenariusze CrowdSeca rozdzielone przecinkami, których nigdy nie zgłaszać, np. taki, który dawał fałszywe alarmy na twoim ruchu; krótka nazwa (`http-probing`) pasuje do każdego autora, pełna (`autor/nazwa`) tylko do tego autora; tylko dodaje do wbudowanych wykluczeń (opcjonalny)
 
 Obok generowany jest `~/.secrets/ssh_trusted_seen.txt` (IP z udanym logowaniem SSH, wpisy wygasają po 60 dniach).
-Dawne osobne pliki `abuseipdb_api_key`, `ntfy_topic` i `abuseipdb_exclude.txt` nadal działają jako przestarzały
-zapas na czas migracji; plik konfiguracji ma pierwszeństwo.
 
 Dane robocze obok skryptów (ignorowane przez git): `reports.csv`, `abuseipdb_cron.log`, `.state/`.
 

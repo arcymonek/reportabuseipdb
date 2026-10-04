@@ -95,8 +95,6 @@ date -u -d @"$(cat .state/abuseipdb_last_ok)"
 - Cała konfiguracja to jeden plik, `~/.secrets/abuseipdb.conf` (tryb 600, katalog w trybie 700); wzór to
   `abuseipdb.conf.example`. Klucz API i temat ntfy nigdy nie pojawiają się w repozytorium, argumentach, logach ani na
   liście procesów. Plik jest parsowany jako tekst i nigdy nie jest wykonywany.
-- Dawne osobne pliki `abuseipdb_api_key`, `ntfy_topic` i `abuseipdb_exclude.txt` to przestarzały zapas: config ma
-  pierwszeństwo, a wrapper loguje ostrzeżenie, gdy musi czytać stary plik klucza. Po migracji usuń je.
 - Config (wykluczenia, znaczniki własnych nazw) i trwała lista zaufanych IP z SSH to stan trudny do odtworzenia,
   chroniący przed zgłoszeniem własnego adresu. Dodaj `~/.secrets/` do własnej rutyny kopii zapasowych.
 - Cofnięcie złego wydania: `git checkout <poprzedni tag lub commit>` w katalogu instalacji, `--dry-run`, a jeśli

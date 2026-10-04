@@ -25,7 +25,7 @@ the FAQ and the category list). The policy text can change; re-check it before r
    (`http-crawl-non_statics` fired on WebDAV bulk uploads). They stay in CrowdSec for banning but are not reported.
 3. `WEAK_ONLY_SCENARIOS`: an address whose only scenario is a weak signal (`http-bad-user-agent`, typical of
    passive research scanners) is not reported; one more specific scenario next to it qualifies it.
-4. Exclusion list (`EXCLUDE` entries of `~/.secrets/abuseipdb.conf` plus the deprecated `~/.secrets/abuseipdb_exclude.txt`),
+4. Exclusion list (`EXCLUDE` entries of `~/.secrets/abuseipdb.conf`),
    enabled by default. An invalid entry stops the run (exit code 2) instead of being skipped, because a skipped entry
    would make the address the operator wanted protected reportable.
 5. SSH auto-trust: every address with a successful SSH login in the last 60 days is excluded. The login line must

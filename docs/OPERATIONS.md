@@ -92,8 +92,6 @@ date -u -d @"$(cat .state/abuseipdb_last_ok)"
 - All configuration is one file, `~/.secrets/abuseipdb.conf` (mode 600, directory mode 700); the template is
   `abuseipdb.conf.example`. The API key and the ntfy topic never appear in the repository, arguments, logs or the
   process list. The file is parsed as text and never executed.
-- The old separate files `abuseipdb_api_key`, `ntfy_topic` and `abuseipdb_exclude.txt` are a deprecated fallback: the
-  config wins, and the wrapper logs a warning when it has to read the old key file. Delete them after migrating.
 - The config (exclusions, own-name markers) and the SSH trust store are state that is hard to rebuild and protect
   against reporting your own address. Include `~/.secrets/` in your own backup routine.
 - To roll back a bad release: `git checkout <previous tag or commit>` in the install directory, run `--dry-run`,

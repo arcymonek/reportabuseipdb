@@ -43,8 +43,7 @@ OWN_NAME_MARKERS=your-domain.example,your-host.example
 # Addresses or networks (CIDR) that are NEVER reported: your home, office, VPN.
 # One entry per line; repeat the key for more. These are added to the addresses
 # excluded automatically (the server's own public addresses and every address with a
-# successful SSH login in the last 60 days). The deprecated file
-# ~/.secrets/abuseipdb_exclude.txt is still read and added to this list.
+# successful SSH login in the last 60 days).
 #EXCLUDE=203.0.113.7
 #EXCLUDE=198.51.100.0/24
 

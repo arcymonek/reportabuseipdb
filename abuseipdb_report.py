@@ -48,8 +48,7 @@ SAFEGUARDS AGAINST REPORTING OUR OWN / AN INNOCENT IP
    our own traffic (http-crawl-non_statics).
 3. WEAK_ONLY_SCENARIOS - signals too weak to justify a report on their own.
 4. Exclusion list - ENABLED BY DEFAULT: the EXCLUDE entries of the config file
-   (~/.secrets/abuseipdb.conf) plus the legacy ~/.secrets/abuseipdb_exclude.txt,
-   no need to remember a flag in cron.
+   (~/.secrets/abuseipdb.conf), no need to remember a flag in cron.
 5. SSH auto-trust - every IP address from which an SSH login SUCCEEDED in the
    last 60 days is unconditionally excluded. This is the most effective
    automatic defence against reporting the administrator's own, changing
@@ -118,7 +117,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from urllib.parse import unquote
 
-SCRIPT_VERSION = "3.6.33"
+SCRIPT_VERSION = "3.6.34"
 
 # --- Hard limits from the AbuseIPDB documentation (bulk report) --------------
 MAX_COMMENT_BYTES = 1024      # "Truncated after 1,024 characters (bytes)"
@@ -147,9 +146,6 @@ MAX_CATEGORY_ID = 23          # https://www.abuseipdb.com/categories (1..23)
 # overrides the location; --config overrides both.
 DEFAULT_CONFIG_FILE = os.path.expanduser(
     os.environ.get("ABUSEIPDB_CONFIG") or "~/.secrets/abuseipdb.conf")
-# DEPRECATED: replaced by the EXCLUDE keys of the config file, still honoured
-# (added to the config entries, never instead of them) while migrating.
-DEFAULT_EXCLUDE_FILE = os.path.expanduser("~/.secrets/abuseipdb_exclude.txt")
 DEFAULT_SSH_TRUST_FILE = os.path.expanduser("~/.secrets/ssh_trusted_seen.txt")
 # An IPv6 home or mobile connection gets a whole /64 and its devices rotate "temporary" addresses
 # inside it, so trusting only the exact address of an SSH login would let the operator's own
@@ -544,34 +540,6 @@ def config_extra_scenarios(cfg):
         print(f"[info] {len(names)} extra scenarios excluded by the config: "
               f"{', '.join(sorted(names))}", file=sys.stderr)
     return names
-
-
-def load_exclusions(path):
-    """Loads a list of IPs/CIDRs to skip unconditionally (one per line,
-    '#' = comment). Put your own addresses here when you notice them in alerts."""
-    nets = []
-    if not path:
-        return nets
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            for lineno, line in enumerate(f, 1):
-                line = line.split("#", 1)[0].strip()
-                if not line:
-                    continue
-                try:
-                    nets.append(ipaddress.ip_network(line, strict=False))
-                except ValueError:
-                    # Fail closed, as for the EXCLUDE key (see config_exclusions).
-                    raise ConfigError(f"{path}:{lineno} - invalid exclusion entry: {line!r}")
-    except FileNotFoundError:
-        print(f"[info] exclusion file {path} does not exist (normal if you never created it)",
-              file=sys.stderr)
-    except (PermissionError, UnicodeDecodeError) as exc:
-        # Fail closed, as for the config file: an exclusion list that cannot be read is not "no list".
-        raise ConfigError(f"cannot read the exclusion file {path} ({type(exc).__name__})")
-    if nets:
-        print(f"[info] loaded {len(nets)} exclusion entries from {path}", file=sys.stderr)
-    return nets
 
 
 _ISO_FRACTION = re.compile(r"\.(\d+)")
@@ -1409,10 +1377,6 @@ def main():
                         help=f"config file with OWN_NAME_MARKERS and EXCLUDE entries, see "
                              f"abuseipdb.conf.example (default {DEFAULT_CONFIG_FILE}, "
                              f"or $ABUSEIPDB_CONFIG)")
-    parser.add_argument("--exclude-file", default=DEFAULT_EXCLUDE_FILE,
-                        help=f"DEPRECATED, use EXCLUDE in the config file. File with IPs/CIDRs to "
-                             f"skip unconditionally, added to the config entries "
-                             f"(default {DEFAULT_EXCLUDE_FILE})")
     parser.add_argument("--no-ssh-trust", action="store_true",
                         help="DISABLE auto-excluding addresses with a successful SSH login "
                              "(NOT recommended - it is the main defence against reporting your own IP)")
@@ -1482,7 +1446,7 @@ def main():
             alerts = fetch_alerts(args.since, args.limit)
 
         own_addresses = harvest_local_addresses()
-        exclusions = cfg_exclusions + load_exclusions(args.exclude_file) + own_addresses
+        exclusions = cfg_exclusions + own_addresses
         if args.no_ssh_trust:
             print("[WARNING] SSH auto-trust DISABLED by the --no-ssh-trust flag", file=sys.stderr)
         else:

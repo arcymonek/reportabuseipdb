@@ -52,7 +52,6 @@
 | `reports.csv`, `reports.csv.tmp` | generator | kasowane przez wrapper przed każdym prawdziwym przebiegiem, żeby nieaktualny plik nigdy nie został wysłany |
 | `abuseipdb_cron.log` | cron | przycinany w miejscu przez wrapper do około 2000 linii |
 | `~/.secrets/abuseipdb.conf` | operator | jedyny plik konfiguracji, tryb 600, tekst `KEY=value` nigdy nie wykonywany; każdy klucz jest opisany w `abuseipdb.conf.example` i w README. Klucz API nigdy nie trafia do argumentów ani logów, a temat ntfy dociera do `curl` przez stdin |
-| `~/.secrets/abuseipdb_api_key`, `ntfy_topic`, `abuseipdb_exclude.txt` | operator | przestarzały zapas na czas migracji; config ma pierwszeństwo, wykluczenia z obu źródeł są łączone |
 | `~/.secrets/ssh_trusted_seen.txt` | generator | zaufane adresy SSH (pojedyncze adresy; IPv6 jest poszerzane do `SSH_TRUST_IPV6_PREFIX` przy odczycie), tryb 600, wpisy wygasają po 60 dniach |
 
 ## Kody wyjścia
@@ -109,8 +108,7 @@ nazwy jako stabilny interfejs: zmiana którejkolwiek wymaga odpowiedniej zmiany 
 
 Wrapper i generator czytają ten sam plik konfiguracji (`ABUSEIPDB_CONFIG`, domyślnie `~/.secrets/abuseipdb.conf`;
 wrapper przekazuje go generatorowi przez `--config`). Pierwszeństwo, od najwyższego: jawne nadpisania ze środowiska
-(używane przez testy), plik konfiguracji, przestarzałe osobne pliki. Wykluczenia to zawsze suma wpisów `EXCLUDE` z
-configu i starego pliku wykluczeń, nigdy zamiennik, więc migracja nie może po cichu zgubić żadnego wpisu. Znaczniki
+(używane przez testy), plik konfiguracji. Wykluczenia pochodzą wyłącznie z wpisów `EXCLUDE` w configu. Znaczniki
 własnych nazw działają fail-closed: przy pustej liście, albo takiej, która nadal ma wartości przykładowe z
 `abuseipdb.conf.example`, generator ostrzega, a wrapper na żywo odmawia wysyłki i wysyła alert. Przykładowy
 `NTFY_TOPIC` nigdy nie dostaje alertów. Config jest też sprawdzany ściśle w każdym trybie generatora (także

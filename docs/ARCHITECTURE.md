@@ -52,7 +52,6 @@
 | `reports.csv`, `reports.csv.tmp` | generator | deleted by the wrapper before every real run so a stale file is never sent |
 | `abuseipdb_cron.log` | cron | trimmed in place by the wrapper to about 2,000 lines |
 | `~/.secrets/abuseipdb.conf` | operator | the single config file, mode 600, `KEY=value` text that is never executed; every key is documented in `abuseipdb.conf.example` and in the README. The API key is never in arguments or logs and the ntfy topic reaches `curl` through stdin |
-| `~/.secrets/abuseipdb_api_key`, `ntfy_topic`, `abuseipdb_exclude.txt` | operator | deprecated fallback while migrating; the config wins, exclusions from both are combined |
 | `~/.secrets/ssh_trusted_seen.txt` | generator | trusted SSH addresses (single addresses; IPv6 is widened to `SSH_TRUST_IPV6_PREFIX` when read), mode 600, entries expire after 60 days |
 
 ## Exit codes
@@ -109,8 +108,7 @@ names as a stable interface: renaming either requires a matching change in the m
 
 The wrapper and the generator read the same config file (`ABUSEIPDB_CONFIG`, default `~/.secrets/abuseipdb.conf`; the
 wrapper passes it to the generator with `--config`). Precedence, highest first: explicit environment overrides
-(used by the tests), the config file, the deprecated separate files. Exclusions are always the union of the config
-`EXCLUDE` entries and the old exclusion file, never a replacement, so a migration cannot silently drop one. Own-name
+(used by the tests), the config file. Exclusions come only from the `EXCLUDE` entries of the config. Own-name
 markers fail closed: with an empty list, or one that still holds the example values of `abuseipdb.conf.example`, the
 generator warns and a live wrapper run is refused with an alert. The example `NTFY_TOPIC` never receives alerts.
 The config is also checked strictly in every mode of the generator (including `--validate`): a malformed line, an

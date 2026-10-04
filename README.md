@@ -142,8 +142,7 @@ switching a safeguard off (comments go on their own line):
 - `EXTRA_EXCLUDE_SCENARIOS`: comma-separated CrowdSec scenarios never reported, e.g. one that gave false alarms on your own traffic; a short name (`http-probing`) matches every author, a full name (`author/name`) only that author; it only adds to the built-in exclusions (optional)
 
 Generated next to it: `~/.secrets/ssh_trusted_seen.txt` (IPs with a successful SSH login, entries expire after
-60 days). The older separate files `abuseipdb_api_key`, `ntfy_topic` and `abuseipdb_exclude.txt` still work as a
-deprecated fallback while you migrate; the config file wins.
+60 days).
 
 Runtime data next to the scripts (ignored by git): `reports.csv`, `abuseipdb_cron.log`, `.state/`.
 

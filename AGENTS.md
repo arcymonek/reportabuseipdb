@@ -27,7 +27,7 @@ and elegance come second.
 If a task seems to require touching one of these, stop and ask instead of working around it:
 
 - the 60-day age filter, the filter for non-global addresses, `EXCLUDE_SCENARIOS`, `WEAK_ONLY_SCENARIOS`, SSH
-  auto-trust (IPv6 logins trusted as a /64, never wider) and the exclusion file, and the exclusion of the operator's own public addresses;
+  auto-trust (IPv6 logins trusted as a /64, never wider) and the `EXCLUDE` list of the config file, and the exclusion of the operator's own public addresses;
 - the data source (`cscli alerts`, never `decisions`) and the `kind == "crowdsec"` filter;
 - the comment rules: fixed English constants only, ASCII, no IP address, host name or domain, at most 1024 bytes;
 - the double validation of the CSV, and the rule that a bad file never replaces the previous one;

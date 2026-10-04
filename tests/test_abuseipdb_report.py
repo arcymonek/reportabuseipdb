@@ -342,7 +342,7 @@ class HttpPortsAndExtraExclusions(unittest.TestCase):
             _write(conf, "OWN_NAME_MARKERS=example.org\nHTTP_PORTS=443\nEXTRA_EXCLUDE_SCENARIOS=http-probing\n")
             os.chmod(conf, 0o600)
             r = subprocess.run([sys.executable, str(SCRIPT), "--config", conf, "--input-json", alerts,
-                                "--no-ssh-trust", "--exclude-file", os.devnull, "--dry-run"],
+                                "--no-ssh-trust", "--dry-run"],
                                capture_output=True, text=True)
             self.assertEqual(r.returncode, 0, r.stderr)
             rows = list(csv.DictReader(io.StringIO(r.stdout.split("\n\n")[0])))
@@ -350,7 +350,7 @@ class HttpPortsAndExtraExclusions(unittest.TestCase):
             self.assertIn("Target: HTTP/HTTPS (port 443).", rows[0]["Comment"])
             _write(conf, "OWN_NAME_MARKERS=example.org\nHTTP_PORTS=443 # tls only\n")
             r = subprocess.run([sys.executable, str(SCRIPT), "--config", conf, "--input-json", alerts,
-                                "--no-ssh-trust", "--exclude-file", os.devnull, "--dry-run"],
+                                "--no-ssh-trust", "--dry-run"],
                                capture_output=True, text=True)
             self.assertEqual(r.returncode, 2, r.stderr)
 
@@ -1113,19 +1113,12 @@ class ConfigFile(unittest.TestCase):
         csv_path = os.path.join(self.tmp.name, "reports.csv")
         _write(csv_path, to_text([good_row()]), newline="")
         for args in (["--validate", csv_path],
-                     ["--input-json", self.alerts_file(), "--no-ssh-trust", "--exclude-file", os.devnull,
+                     ["--input-json", self.alerts_file(), "--no-ssh-trust",
                       "--dry-run"]):
             r = self.run_script("--config", self.conf, *args)
             self.assertEqual(r.returncode, 2, (args, r.stderr))
             self.assertIn("cannot read config file", r.stderr)
             self.assertEqual(r.stdout, "")
-
-    def test_unreadable_legacy_exclusion_file_fails_closed(self):
-        legacy = os.path.join(self.tmp.name, "exclude.txt")
-        with open(legacy, "wb") as f:
-            f.write(b"203.0.113.7\n\xff\xfe\n")
-        with self.assertRaises(m.ConfigError):
-            m.load_exclusions(legacy)
 
     def test_world_readable_config_warns(self):
         self.write("OWN_NAME_MARKERS=example.org\n", mode=0o644)
@@ -1167,13 +1160,6 @@ class ConfigFile(unittest.TestCase):
             m.config_exclusions({"EXCLUDE": ["203.0.113.7", "not-an-ip"]}, self.conf)
         self.assertIn("invalid EXCLUDE entry", str(cm.exception))
 
-    def test_invalid_legacy_exclusion_fails_closed(self):
-        legacy = os.path.join(self.tmp.name, "exclude.txt")
-        _write(legacy, "203.0.113.7  # fine\nnot-an-ip\n")
-        with self.assertRaises(m.ConfigError) as cm:
-            m.load_exclusions(legacy)
-        self.assertIn(":2 - invalid exclusion entry", str(cm.exception))
-
     def run_script(self, *args, **envover):
         env = dict(os.environ, **envover)
         return subprocess.run([sys.executable, str(SCRIPT), *args], capture_output=True, text=True, env=env)
@@ -1184,24 +1170,30 @@ class ConfigFile(unittest.TestCase):
                alert("9.9.9.9", "ssh-bf", NOW - timedelta(hours=2), events=[ev("t", service="ssh")] * 6)], path)
         return path
 
-    def test_exclude_keys_and_legacy_file_are_added_together(self):
-        legacy = os.path.join(self.tmp.name, "exclude.txt")
-        _write(legacy, "9.9.9.9  # legacy entry\n")
-        args = ["--config", self.conf, "--input-json", self.alerts_file(), "--no-ssh-trust",
-                "--exclude-file", legacy, "--dry-run"]
+    def test_exclude_key_removes_only_the_listed_address(self):
+        args = ["--config", self.conf, "--input-json", self.alerts_file(), "--no-ssh-trust", "--dry-run"]
         self.write("OWN_NAME_MARKERS=example.org\nEXCLUDE=8.8.8.8\n")
         r = self.run_script(*args)
-        self.assertEqual(r.returncode, 1, r.stderr)                    # both excluded: nothing left
+        self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("exclusion entries from the config file", r.stderr)
-        self.write("OWN_NAME_MARKERS=example.org\nEXCLUDE=203.0.113.7\n")
+        self.assertEqual([x["IP"] for x in csv.DictReader(io.StringIO(r.stdout))], ["9.9.9.9"])
+        self.write("OWN_NAME_MARKERS=example.org\nEXCLUDE=203.0.113.7\n")      # unrelated entry: nothing removed
         r = self.run_script(*args)
         self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertEqual([x["IP"] for x in csv.DictReader(io.StringIO(r.stdout))], ["8.8.8.8"])   # only legacy applies
+        self.assertEqual(sorted(x["IP"] for x in csv.DictReader(io.StringIO(r.stdout))), ["8.8.8.8", "9.9.9.9"])
+
+    def test_old_exclude_file_option_is_gone(self):
+        # The separate exclusion file was removed: EXCLUDE in the config file is the only source.
+        self.write("OWN_NAME_MARKERS=example.org\n")
+        r = self.run_script("--config", self.conf, "--input-json", self.alerts_file(), "--no-ssh-trust",
+                            "--exclude-file", os.devnull, "--dry-run")
+        self.assertEqual(r.returncode, 2, r.stderr)
+        self.assertIn("unrecognized arguments: --exclude-file", r.stderr)
 
     def test_config_exclude_alone_is_enough(self):
         self.write("OWN_NAME_MARKERS=example.org\nEXCLUDE=8.8.8.0/24\nEXCLUDE=9.9.9.9\n")
         r = self.run_script("--config", self.conf, "--input-json", self.alerts_file(),
-                            "--no-ssh-trust", "--exclude-file", os.devnull, "--dry-run")
+                            "--no-ssh-trust", "--dry-run")
         self.assertEqual(r.returncode, 1, r.stderr)
 
     def test_validate_uses_markers_from_the_config(self):
@@ -1233,8 +1225,7 @@ class ConfigFile(unittest.TestCase):
         for text, why in cases.items():
             self.write(text)
             for args in (["--validate", csv_path],
-                         ["--input-json", self.alerts_file(), "--no-ssh-trust",
-                          "--exclude-file", os.devnull, "--dry-run"]):
+                         ["--input-json", self.alerts_file(), "--no-ssh-trust", "--dry-run"]):
                 r = self.run_script("--config", self.conf, *args)
                 self.assertEqual(r.returncode, 2, (text, args, r.stderr))
                 self.assertIn(why, r.stderr)
@@ -1264,8 +1255,7 @@ class EndToEnd(unittest.TestCase):
         self.conf = os.path.join(self.tmp.name, "abuseipdb.conf")
         _write(self.conf, "OWN_NAME_MARKERS=example.org,host.example\n")
         os.chmod(self.conf, 0o600)
-        self.common = ["--config", self.conf, "--input-json", self.inp, "--no-ssh-trust",
-                       "--exclude-file", os.devnull]
+        self.common = ["--config", self.conf, "--input-json", self.inp, "--no-ssh-trust"]
 
     def test_write_validate_and_atomic(self):
         out = os.path.join(self.tmp.name, "reports.csv")
@@ -1290,7 +1280,7 @@ class EndToEnd(unittest.TestCase):
         out = os.path.join(self.tmp.name, "reports.csv")
         trust = os.path.join(self.tmp.name, "trust.txt")
         r = self.run_script("--config", self.conf, "--input-json", self.inp, "--dry-run",
-                            "--exclude-file", os.devnull, "--ssh-trust-file", trust, "--out", out)
+                            "--ssh-trust-file", trust, "--out", out)
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("Validation: OK", r.stderr)
         self.assertFalse(os.path.exists(out))
@@ -1316,7 +1306,7 @@ class EndToEnd(unittest.TestCase):
         trust = os.path.join(self.tmp.name, "trust.txt")
         out = os.path.join(self.tmp.name, "reports.csv")
         base = [sys.executable, str(SCRIPT), "--config", self.conf, "--input-json", self.inp,
-                "--exclude-file", os.devnull, "--ssh-trust-file", trust, "--out", out]
+                "--ssh-trust-file", trust, "--out", out]
         r = subprocess.run(base + ["--dry-run"], capture_output=True, text=True, env=env)
         self.assertEqual(r.returncode, 0, r.stderr)
         ips = [row["IP"] for row in csv.DictReader(io.StringIO(r.stdout))]
@@ -1343,7 +1333,7 @@ class EndToEnd(unittest.TestCase):
         _dump([alert("2001:4860:4860::1234", "http-probing", when, events=http_events(3)),
                alert("2001:4860:4861::1234", "http-probing", when, events=http_events(3)),
                alert("8.8.8.8", "http-probing", when, events=http_events(3))], self.inp)
-        base = [sys.executable, str(SCRIPT), "--input-json", self.inp, "--exclude-file", os.devnull,
+        base = [sys.executable, str(SCRIPT), "--input-json", self.inp,
                 "--ssh-trust-file", os.path.join(self.tmp.name, "trust6.txt"), "--dry-run"]
 
         def reported(extra_conf):
@@ -1382,7 +1372,7 @@ class EndToEnd(unittest.TestCase):
                   alert("9.9.9.9", "http-probing", NOW - timedelta(minutes=30), events=http_events(2))]
         _dump(alerts, self.inp)
         r = subprocess.run([sys.executable, str(SCRIPT), "--config", self.conf, "--input-json", self.inp,
-                            "--no-ssh-trust", "--exclude-file", os.devnull, "--dry-run"],
+                            "--no-ssh-trust", "--dry-run"],
                            capture_output=True, text=True, env=env)
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("Validation: OK", r.stderr)
@@ -1419,8 +1409,7 @@ class EndToEnd(unittest.TestCase):
         _write(out, "PREVIOUS")
         empty = os.path.join(self.tmp.name, "empty.json")
         _dump([], empty)
-        r = self.run_script("--config", self.conf, "--input-json", empty, "--no-ssh-trust",
-                            "--exclude-file", os.devnull, "--out", out)
+        r = self.run_script("--config", self.conf, "--input-json", empty, "--no-ssh-trust", "--out", out)
         self.assertEqual(r.returncode, 1)
         self.assertEqual(_read(out), "PREVIOUS")
         # the wrapper accepts code 1 only together with this exact line (see A3 of the 2026-10-01 audit)
@@ -1438,7 +1427,7 @@ class EndToEnd(unittest.TestCase):
             f"s=u.spec_from_file_location('m', {str(SCRIPT)!r}); mod=u.module_from_spec(s); s.loader.exec_module(mod)\n"
             "orig=mod.build_rows\n"
             "mod.build_rows=lambda a,e,*r:[[x[0],'99',x[2],x[3]] for x in orig(a,e,*r)]\n"
-            f"sys.argv=['x','--config',{self.conf!r},'--input-json',{self.inp!r},'--no-ssh-trust','--exclude-file',{os.devnull!r},'--out',{out!r}]\n"
+            f"sys.argv=['x','--config',{self.conf!r},'--input-json',{self.inp!r},'--no-ssh-trust','--out',{out!r}]\n"
             "mod.main()\n"))
         r = subprocess.run([sys.executable, wrapper], capture_output=True, text=True)
         self.assertEqual(r.returncode, 2, r.stderr)
@@ -1451,8 +1440,7 @@ class EndToEnd(unittest.TestCase):
         inp = os.path.join(self.tmp.name, "weird.json")
         _write(inp, text)
         out = os.path.join(self.tmp.name, out_name)
-        r = self.run_script("--config", self.conf, "--input-json", inp, "--no-ssh-trust",
-                            "--exclude-file", os.devnull, "--out", out)
+        r = self.run_script("--config", self.conf, "--input-json", inp, "--no-ssh-trust", "--out", out)
         return r, out
 
     def test_unexpected_crash_exits_2_not_1(self):
@@ -1483,8 +1471,7 @@ class EndToEnd(unittest.TestCase):
         self.assertIn("cannot read alerts", r.stderr)
         self.assertNotIn("Traceback", r.stderr)
         r = self.run_script("--config", self.conf, "--input-json",
-                            os.path.join(self.tmp.name, "does-not-exist.json"), "--no-ssh-trust",
-                            "--exclude-file", os.devnull)
+                            os.path.join(self.tmp.name, "does-not-exist.json"), "--no-ssh-trust")
         self.assertEqual(r.returncode, 2, r.stderr)
         self.assertIn("cannot read alerts", r.stderr)
         self.assertNotIn("Traceback", r.stderr)

@@ -41,6 +41,19 @@ Hooks, tests, CI and GitHub files. Not versioned: these changes do not affect wh
 - 2026-09-29 - `CONTRIBUTING.md`, `SECURITY.md`, a CI workflow (Python 3.9 and the newest Python, `shellcheck`).
 - 2026-09-28 - The pre-commit hook: syntax checks, the EN/PL pairing rule, version rules and a privacy scan.
 
+## 3.6.34 - 2026-10-04
+
+### Changed
+
+- The deprecated separate files `abuseipdb_api_key`, `ntfy_topic` and `abuseipdb_exclude.txt` are no longer read, and
+  the `--exclude-file` option of `abuseipdb_report.py` is gone. All local settings come only from
+  `~/.secrets/abuseipdb.conf` (key `ABUSEIPDB_API_KEY`, `NTFY_TOPIC` and `EXCLUDE` entries). The generated CSV is unchanged.
+
+### Upgrade notes
+
+- If you still use one of the old files, move its content into `~/.secrets/abuseipdb.conf` **before** updating:
+  otherwise the API key or the ntfy topic is missing, and addresses from the old exclusion file would be reportable.
+
 ## 3.6.33 - 2026-10-02
 
 ### Changed

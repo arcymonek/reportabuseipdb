@@ -26,7 +26,7 @@ FAQ i lista kategorii). Treść polityki może się zmienić; przed poleganiem n
    zgłaszane.
 3. `WEAK_ONLY_SCENARIOS`: adres, którego jedynym scenariuszem jest słaby sygnał (`http-bad-user-agent`, typowy dla
    pasywnych skanerów badawczych), nie jest zgłaszany; jeden bardziej konkretny scenariusz obok kwalifikuje go.
-4. Lista wykluczeń (wpisy `EXCLUDE` z `~/.secrets/abuseipdb.conf` plus przestarzały `~/.secrets/abuseipdb_exclude.txt`),
+4. Lista wykluczeń (wpisy `EXCLUDE` z `~/.secrets/abuseipdb.conf`),
    domyślnie włączona. Nieprawidłowy wpis zatrzymuje przebieg (kod wyjścia 2) zamiast zostać pominięty, bo pominięty
    wpis sprawiłby, że adres, który operator chciał chronić, stałby się zgłaszalny.
 5. Auto-zaufanie SSH: każdy adres z udanym logowaniem SSH w ciągu ostatnich 60 dni jest wykluczony. Linia logowania
