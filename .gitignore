@@ -16,3 +16,6 @@ __pycache__/
 CLAUDE.md
 .claude/
 .vscode/
+
+# local-only reports (audits, plans, notes); never versioned
+reports/
