@@ -17,6 +17,8 @@ jobs:
     # Pinned, not "ubuntu-latest": GitHub moves that label to Ubuntu 26 on 2026-10-19, and the tools the tests use
     # (jq, shellcheck, bash) should change when we decide, not on GitHub's schedule.
     runs-on: ubuntu-24.04
+    # The default limit is 360 minutes; a hung job would hold a runner for 6 hours.
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -26,7 +28,11 @@ jobs:
       # Third-party actions are pinned to a full commit SHA, not to a tag: a tag is a movable label, and
       # whoever controls the action's repository could move it to other code. The comment names the tag
       # the SHA was taken from. To update: see "Pinned CI actions" in docs/DEVELOPMENT.md.
+      # persist-credentials: false keeps the GitHub token out of .git/config, so later steps cannot read or reuse it.
+      # No step here pushes, so nothing needs it.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7
         with:
           python-version: ${{ matrix.python }}

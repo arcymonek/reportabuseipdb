@@ -21,6 +21,8 @@ Release lists every entry below that is newer than the previous Release.
 
 Hooks, tests, CI and GitHub files. Not versioned: these changes do not affect what runs on your server.
 
+- 2026-10-08 - The tests workflow has a 10-minute job timeout (the default is 6 hours) and `actions/checkout` no longer
+  leaves the GitHub token in `.git/config` (`persist-credentials: false`).
 - 2026-10-02 - Versioning simplified: one version for both scripts (the wrapper adopts the generator's version, so
   `abuseipdb_send.sh --version` now shows the project version instead of 1.1.7), `Z` has no upper limit (no rollover at 99),
   documents no longer carry a "Version:" line, and the pre-commit hook accepts a `Y` or `X` step, which it used to refuse.

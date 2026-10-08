@@ -21,6 +21,8 @@ wszystkie wpisy poniżej nowsze niż poprzedni Release.
 
 Hooki, testy, CI i pliki GitHuba. Bez numeru wersji: te zmiany nie wpływają na to, co działa na twoim serwerze.
 
+- 2026-10-08 - Workflow testów ma 10-minutowy limit czasu zadania (domyślnie 6 godzin), a `actions/checkout` nie zostawia
+  już tokenu GitHuba w `.git/config` (`persist-credentials: false`).
 - 2026-10-02 - Uproszczone wersjonowanie: jedna wersja dla obu skryptów (wrapper przejmuje wersję generatora, więc
   `abuseipdb_send.sh --version` pokazuje teraz wersję projektu zamiast 1.1.7), `Z` nie ma górnej granicy (bez przeskoku
   przy 99), dokumenty nie mają już linii "Wersja:", a hook pre-commit przyjmuje krok `Y` lub `X`, który wcześniej odrzucał.
