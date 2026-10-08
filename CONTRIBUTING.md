@@ -82,12 +82,15 @@ addresses.
 
 ```bash
 python3 -m unittest discover -v tests     # generator tests run anywhere; wrapper tests need Linux
-git config core.hooksPath tools           # optional: the pre-commit hook (syntax, EN/PL pairs, versions, privacy scan)
+git config core.hooksPath tools           # optional: the pre-commit hook (syntax, EN/PL pairs, versions, privacy scan, generator tests)
 ```
 
 The hook refuses a commit that changes only the English side of a documentation pair. Since you only write English,
 commit with `EN_ONLY=1 git commit ...`: that skips this one rule and keeps every other check (the privacy scan
 included). Do not use `--no-verify`, which switches all checks off.
+
+When a commit changes `abuseipdb_report.py` or its test file, the hook also runs the generator tests (about 15 s). Fix a
+failing test rather than skipping it; `NO_TESTS=1` exists only for the maintainer's work-in-progress commits.
 
 The GitHub Actions workflow runs the whole suite on Ubuntu for every pull request; it has to pass before a merge.
 

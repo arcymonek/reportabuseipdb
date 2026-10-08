@@ -75,6 +75,12 @@ python3 -m unittest -v tests/test_abuseipdb_report.py   # generator only, runs o
   container. The GitHub Actions workflow `.github/workflows/tests.yml` runs the whole suite on Ubuntu (24.04, pinned on
   purpose) with the oldest and the newest supported Python for every push to `main` and every pull request.
 - `curl`, the generator and `ntfy` are mocks; no test touches AbuseIPDB or the network.
+- The pre-commit hook runs the generator tests (about 15 s) when a commit touches `abuseipdb_report.py` or
+  `tests/test_abuseipdb_report.py`; a commit of anything else stays fast. The hook tests a copy of the INDEX (what is about
+  to be committed), not your working tree, and skips the tests when an earlier check has already refused the commit.
+  The full suite takes minutes and the wrapper tests need Linux, so CI remains the complete check. For a work-in-progress
+  commit `NO_TESTS=1 git commit ...` skips only these tests; every other check (the privacy scan included) still runs.
+  `NO_TESTS=1` is for the maintainer: a failing test is fixed or reported, never skipped to get a commit through.
 - After changing a safeguard, run a mutation check: temporarily break the safeguard (for example set
   `MAX_AGE_DAYS = 600` or empty `EXCLUDE_SCENARIOS`) and confirm that a test fails. Four mutants are known to be
   equivalent: the final ASCII assertion in `build_rows` (defence in depth behind `sanitize_comment`), the formula

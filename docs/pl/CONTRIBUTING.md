@@ -85,12 +85,15 @@ kluczy, nazw hostów lub adresów. Plik `AGENTS.md` jest tylko po angielsku i ni
 
 ```bash
 python3 -m unittest discover -v tests     # testy generatora działają wszędzie; testy wrappera wymagają Linuksa
-git config core.hooksPath tools           # opcjonalnie: hook pre-commit (składnia, pary EN/PL, wersje, skan prywatności)
+git config core.hooksPath tools           # opcjonalnie: hook pre-commit (składnia, pary EN/PL, wersje, skan prywatności, testy generatora)
 ```
 
 Hook odmawia commita, który zmienia tylko angielską stronę pary dokumentów. Skoro piszesz tylko po angielsku,
 commituj przez `EN_ONLY=1 git commit ...`: pomija to jedną regułę i zostawia wszystkie pozostałe kontrole (w tym skan
 prywatności). Nie używaj `--no-verify`, który wyłącza wszystkie kontrole.
+
+Gdy commit zmienia `abuseipdb_report.py` albo jego plik testów, hook uruchamia też testy generatora (około 15 s). Test,
+który pada, napraw zamiast pomijać; `NO_TESTS=1` istnieje wyłącznie dla commitów roboczych opiekuna.
 
 Workflow GitHub Actions uruchamia cały zestaw na Ubuntu dla każdego pull requesta; musi przejść przed scaleniem.
 

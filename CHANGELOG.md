@@ -21,6 +21,9 @@ Release lists every entry below that is newer than the previous Release.
 
 Hooks, tests, CI and GitHub files. Not versioned: these changes do not affect what runs on your server.
 
+- 2026-10-08 - The pre-commit hook runs the generator tests (about 15 s) when a commit touches `abuseipdb_report.py` or its
+  test file. It tests a copy of the index, not the working tree, and skips the tests after an earlier failure;
+  `NO_TESTS=1` skips only them (for maintainer work-in-progress commits). The hook behaviour has tests.
 - 2026-10-08 - The tests workflow has a 10-minute job timeout (the default is 6 hours) and `actions/checkout` no longer
   leaves the GitHub token in `.git/config` (`persist-credentials: false`).
 - 2026-10-02 - Versioning simplified: one version for both scripts (the wrapper adopts the generator's version, so

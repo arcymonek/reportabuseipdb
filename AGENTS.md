@@ -47,6 +47,8 @@ identical for the same `--input-json`.
   pull requests or commit messages. Tests use reserved data only: `203.0.113.0/24`, `198.51.100.0/24`, `2001:db8::/32`,
   `example.org`, `.example`, `.test`.
 - Never bypass the pre-commit hook (`--no-verify`) or edit the report templates (`TPL_*`) casually: they are published.
+- Never use `NO_TESTS=1` to get a commit past a failing test. It skips the generator tests in the pre-commit hook and is
+  only for the maintainer's work-in-progress commits; fix the test or report the failure instead.
 
 ## Commands
 

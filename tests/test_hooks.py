@@ -181,6 +181,125 @@ class VersionRules(HookBase):
         self.assertIn("VERSION MISMATCH", r.out)
 
 
+class GeneratorTests(HookBase):
+    """The generator tests that tools/pre-commit runs when a commit touches the generator or its test file.
+
+    The real test file takes about 15 s, so these tests plant a tiny stand-in at tests/test_abuseipdb_report.py in the
+    throw-away repository. The stand-ins are plain unittest files that need no particular Python version.
+    """
+    TEST_FILE = "tests/test_abuseipdb_report.py"
+    PASSING = "import unittest\n\nclass T(unittest.TestCase):\n    def test_ok(self):\n        pass\n"
+    FAILING = ("import unittest\n\nclass T(unittest.TestCase):\n"
+               "    def test_bad(self):\n        self.fail('failing on purpose')\n")
+    # Fails when the generator next to the tests (the copy of the INDEX that the hook makes) contains the marker.
+    MARKER_CHECK = ("import unittest\nfrom pathlib import Path\n\nclass T(unittest.TestCase):\n"
+                    "    def test_no_marker(self):\n"
+                    "        text = (Path(__file__).resolve().parent.parent / 'abuseipdb_report.py').read_text()\n"
+                    "        self.assertNotIn('BROKEN_MARKER', text)\n")
+
+    def commit_tests(self, body):
+        """Put a stand-in test file into the baseline commit, so that the index holds only the change under test."""
+        (self.repo / "tests").mkdir(exist_ok=True)
+        (self.repo / self.TEST_FILE).write_text(body)
+        self.git("add", self.TEST_FILE)
+        self.git("-c", "core.hooksPath=/nonexistent", "commit", "-q", "-m", "stand-in generator tests")
+
+    def stage_generator_change(self, line="# a harmless comment\n"):
+        with open(self.repo / "abuseipdb_report.py", "a") as f:
+            f.write(line)
+        self.git("add", "abuseipdb_report.py")
+
+    def test_passing_tests_let_a_generator_commit_through(self):
+        self.commit_tests(self.PASSING)
+        self.stage_generator_change()
+        r = self.run_hook("pre-commit")
+        self.assertEqual(r.returncode, 0, r.out)
+        self.assertIn("generator tests passed", r.out)
+
+    def test_failing_tests_block_a_generator_commit(self):
+        self.commit_tests(self.FAILING)
+        self.stage_generator_change()
+        r = self.run_hook("pre-commit")
+        self.assertEqual(r.returncode, 1, r.out)
+        self.assertIn("GENERATOR TESTS FAILED", r.out)
+        self.assertIn("failing on purpose", r.out)
+
+    def test_a_change_to_the_test_file_alone_also_runs_the_tests(self):
+        self.commit_tests(self.PASSING)
+        (self.repo / self.TEST_FILE).write_text(self.FAILING)
+        self.git("add", self.TEST_FILE)
+        r = self.run_hook("pre-commit")
+        self.assertEqual(r.returncode, 1, r.out)
+        self.assertIn("GENERATOR TESTS FAILED", r.out)
+
+    def test_an_unrelated_commit_does_not_run_the_tests(self):
+        # failing tests are in the baseline; a commit that touches neither the generator nor its tests stays fast
+        self.commit_tests(self.FAILING)
+        (self.repo / "notes.txt").write_text("a harmless line\n")
+        self.git("add", "notes.txt")
+        r = self.run_hook("pre-commit")
+        self.assertEqual(r.returncode, 0, r.out)
+        self.assertNotIn("generator tests", r.out)
+
+    def test_no_tests_skips_only_the_tests(self):
+        self.commit_tests(self.FAILING)
+        self.stage_generator_change()
+        r = self.run_hook("pre-commit", env=dict(self.env, NO_TESTS="1"))
+        self.assertEqual(r.returncode, 0, r.out)
+        self.assertIn("skipped (NO_TESTS=1)", r.out)
+        # ... while every other check still runs: a privacy violation is refused even with NO_TESTS=1
+        (self.repo / "notes.txt").write_text("ssh to chat.example.org\n")
+        self.git("add", "notes.txt")
+        r = self.run_hook("pre-commit", env=dict(self.env, NO_TESTS="1"))
+        self.assertEqual(r.returncode, 1, r.out)
+        self.assertIn("PRIVACY", r.out)
+
+    def test_tests_are_not_run_after_an_earlier_check_failed(self):
+        self.commit_tests(self.FAILING)
+        self.stage_generator_change()
+        (self.repo / "notes.txt").write_text("ssh to chat.example.org\n")
+        self.git("add", "notes.txt")
+        r = self.run_hook("pre-commit")
+        self.assertEqual(r.returncode, 1, r.out)
+        self.assertIn("PRIVACY", r.out)
+        self.assertIn("not run because of the errors above", r.out)
+        self.assertNotIn("GENERATOR TESTS FAILED", r.out)
+
+    def test_a_repository_without_the_test_file_is_skipped_with_a_note(self):
+        # the throw-away repositories of the other test classes look like this; the hook must not refuse them
+        self.stage_generator_change()
+        r = self.run_hook("pre-commit")
+        self.assertEqual(r.returncode, 0, r.out)
+        self.assertIn("not in the index", r.out)
+
+    def test_the_tests_judge_the_index_not_the_working_tree(self):
+        self.commit_tests(self.MARKER_CHECK)
+        clean = (self.repo / "abuseipdb_report.py").read_text()
+        # staged: clean, working tree: broken -> the commit is fine, the unstaged edit is not part of it
+        self.stage_generator_change()
+        with open(self.repo / "abuseipdb_report.py", "a") as f:
+            f.write("# BROKEN_MARKER\n")
+        r = self.run_hook("pre-commit")
+        self.assertEqual(r.returncode, 0, r.out)
+        # staged: broken, working tree: clean again -> the commit is refused although the files on disk look fine
+        self.git("reset", "-q")
+        (self.repo / "abuseipdb_report.py").write_text(clean + "# BROKEN_MARKER\n")
+        self.git("add", "abuseipdb_report.py")
+        (self.repo / "abuseipdb_report.py").write_text(clean)
+        r = self.run_hook("pre-commit")
+        self.assertEqual(r.returncode, 1, r.out)
+        self.assertIn("GENERATOR TESTS FAILED", r.out)
+
+    def test_the_temporary_copy_is_removed_afterwards(self):
+        tmpdir = Path(self._td.name) / "tmp"
+        tmpdir.mkdir()
+        self.commit_tests(self.FAILING)          # the failure path must clean up too
+        self.stage_generator_change()
+        r = self.run_hook("pre-commit", env=dict(self.env, TMPDIR=str(tmpdir)))
+        self.assertEqual(r.returncode, 1, r.out)
+        self.assertEqual(list(tmpdir.iterdir()), [], "the hook left temporary files behind")
+
+
 class CommitMsg(HookBase):
     def check(self, message):
         path = Path(self._td.name) / "MSG"

@@ -2,20 +2,23 @@
 # pre-commit hook for reportabuseipdb. Enable once per clone:
 #   git config core.hooksPath tools
 # Checks staged files: bash syntax + shellcheck for *.sh, Python syntax for *.py,
-# the EN/PL documentation pairing rule, the version rules and the privacy scan
-# (see docs/DEVELOPMENT.md).
+# the EN/PL documentation pairing rule, the version rules, the privacy scan and, when a commit changes the generator
+# (or its test file), the generator tests (see docs/DEVELOPMENT.md).
 # The privacy rules live in tools/lib-privacy.sh (shared with tools/commit-msg, which scans the message).
 # Bypass only knowingly: git commit --no-verify
 # Contributors who write English only: EN_ONLY=1 git commit ... skips just the EN/PL pairing rule (the maintainer adds
 # the Polish translation); every other check, including the privacy scan, still runs.
+# NO_TESTS=1 git commit ... skips just the generator tests (for a work-in-progress commit); every other check still
+# runs, and CI runs the tests anyway before anything is merged.
 fail=0
+testdir=""   # temporary copy of the index for the generator tests; set below, removed by the trap
 # shellcheck source=lib-privacy.sh
 . "$(cd "$(dirname "$0")" && pwd)/lib-privacy.sh"
 staged=()   # portable (no mapfile: macOS ships bash 3.2)
 while IFS= read -r -d '' path; do staged+=("$path"); done < <(git diff --cached --name-only --diff-filter=ACMR -z)
 mk() { mktemp "${TMPDIR:-/tmp}/pre-commit.XXXXXX"; }   # explicit template: works where the default temp dir is not writable
 tmp="$(mk)"; scan="$(mk)"; markers="$(mk)"
-trap 'rm -f "$tmp" "$scan" "$markers"' EXIT
+trap 'rm -f "$tmp" "$scan" "$markers"; if [ -n "$testdir" ]; then rm -rf "$testdir"; fi' EXIT
 
 for f in "${staged[@]}"; do
     case "$f" in
@@ -123,6 +126,31 @@ if [ -s "$markers" ]; then
     fi
 else
     echo "note: privacy scan of own names skipped (no OWN_NAME_MARKERS in $conf)"
+fi
+
+# Generator tests (about 15 s, so only when the commit touches the generator or its test file; the full suite takes
+# minutes and the wrapper tests need Linux, so CI keeps those). They run on a copy of the INDEX, not on the working
+# tree: the hook must judge what is about to be committed, even if you have other unstaged edits.
+# They are skipped when an earlier check already failed (the commit is refused anyway; no reason to wait), and when the
+# test file is not in the index (the throw-away repositories of tests/test_hooks.py have none).
+if in_staged abuseipdb_report.py || in_staged tests/test_abuseipdb_report.py; then
+    if [ "${NO_TESTS:-0}" = "1" ]; then
+        echo "note: generator tests skipped (NO_TESTS=1); CI still runs them"
+    elif [ "$fail" -ne 0 ]; then
+        echo "note: generator tests not run because of the errors above"
+    elif ! git cat-file -e :tests/test_abuseipdb_report.py 2> /dev/null; then
+        echo "note: generator tests skipped (tests/test_abuseipdb_report.py is not in the index)"
+    else
+        testdir="$(mktemp -d "${TMPDIR:-/tmp}/pre-commit-tests.XXXXXX")"
+        if ! git checkout-index --all --prefix="$testdir/"; then
+            echo "GENERATOR TESTS: could not copy the index to a temporary directory"; fail=1
+        elif (cd "$testdir" && python3 -m unittest tests.test_abuseipdb_report) > "$tmp" 2>&1; then
+            echo "generator tests passed"
+        else
+            echo "GENERATOR TESTS FAILED (last lines; run: python3 -m unittest tests.test_abuseipdb_report):"
+            tail -n 30 "$tmp"; fail=1
+        fi
+    fi
 fi
 
 [ "$fail" -eq 0 ] || { echo "Commit aborted. Fix the problems or use: git commit --no-verify"; exit 1; }

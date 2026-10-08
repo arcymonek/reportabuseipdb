@@ -75,6 +75,12 @@ python3 -m unittest -v tests/test_abuseipdb_report.py   # tylko generator, dzia�
   z Linuksem. Workflow GitHub Actions `.github/workflows/tests.yml` uruchamia cały zestaw na Ubuntu (24.04, przypięte
   celowo) z najstarszym i najnowszym wspieranym Pythonem przy każdym pushu na `main` i każdym pull requeście.
 - `curl`, generator i `ntfy` to atrapy; żaden test nie dotyka AbuseIPDB ani sieci.
+- Hook pre-commit uruchamia testy generatora (około 15 s), gdy commit zmienia `abuseipdb_report.py` albo
+  `tests/test_abuseipdb_report.py`; commit czegokolwiek innego pozostaje szybki. Hook testuje kopię INDEKSU (to, co za chwilę
+  trafi do commita), a nie Twój katalog roboczy, i pomija testy, gdy wcześniejsza kontrola już odrzuciła commit.
+  Cały zestaw trwa minuty, a testy wrappera wymagają Linuksa, więc pełną kontrolą pozostaje CI. Przy commicie roboczym
+  `NO_TESTS=1 git commit ...` pomija wyłącznie te testy; wszystkie pozostałe kontrole (w tym skan prywatności) działają
+  dalej. `NO_TESTS=1` jest dla opiekuna: test, który pada, naprawia się albo zgłasza, a nie pomija, żeby przepchnąć commit.
 - Po zmianie bezpiecznika zrób test mutacyjny: tymczasowo zepsuj bezpiecznik (na przykład `MAX_AGE_DAYS = 600` albo
   pusty `EXCLUDE_SCENARIOS`) i sprawdź, że któryś test pada. Cztery mutanty są znanymi równoważnikami: końcowa asercja
   ASCII w `build_rows` (obrona warstwowa za `sanitize_comment`), kontrola prefiksu formuły w walidatorze,
