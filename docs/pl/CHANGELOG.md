@@ -21,6 +21,10 @@ wszystkie wpisy poniżej nowsze niż poprzedni Release.
 
 Hooki, testy, CI i pliki GitHuba. Bez numeru wersji: te zmiany nie wpływają na to, co działa na twoim serwerze.
 
+- 2026-10-08 - Nowy skrypt opiekuna `tools/deploy-check.sh`: po pushu lub wdrożeniu pobiera `origin` i `github` i pokazuje,
+  czy lokalny `main` oraz oba zdalne repozytoria stoją na tym samym commicie (jeszcze niewypchnięty, wyprzedzony,
+  rozbieżny, zła kolejność pushy). Tylko odczyt, tryb offline z `--no-fetch`, nigdy nie wypisuje adresu zdalnego
+  repozytorium. Ma testy, a CI sprawdza teraz jego składnię i uruchamia na nim `shellcheck`.
 - 2026-10-08 - Hook pre-commit uruchamia testy generatora (około 15 s), gdy commit zmienia `abuseipdb_report.py` albo jego
   plik testów. Testuje kopię indeksu, a nie katalog roboczy, i pomija testy po wcześniejszym błędzie; `NO_TESTS=1`
   pomija tylko je (dla commitów roboczych opiekuna). Zachowanie hooka ma testy.

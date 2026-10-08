@@ -21,6 +21,10 @@ Release lists every entry below that is newer than the previous Release.
 
 Hooks, tests, CI and GitHub files. Not versioned: these changes do not affect what runs on your server.
 
+- 2026-10-08 - New maintainer script `tools/deploy-check.sh`: after a push or a deployment it fetches `origin` and
+  `github` and reports whether the local `main` and both remotes stand on the same commit (not pushed yet, ahead,
+  diverged, wrong push order). Read-only, offline mode with `--no-fetch`, never prints a remote address. It has tests, and
+  CI now checks its syntax and runs `shellcheck` on it.
 - 2026-10-08 - The pre-commit hook runs the generator tests (about 15 s) when a commit touches `abuseipdb_report.py` or its
   test file. It tests a copy of the index, not the working tree, and skips the tests after an earlier failure;
   `NO_TESTS=1` skips only them (for maintainer work-in-progress commits). The hook behaviour has tests.

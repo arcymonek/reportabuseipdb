@@ -11,6 +11,7 @@ tests/                  zestawy testów unittest
 tools/pre-commit        hook repozytorium dla plików (włączenie: git config core.hooksPath tools)
 tools/commit-msg        hook repozytorium dla komunikatu commita (ten sam skan prywatności)
 tools/lib-privacy.sh    reguły prywatności wspólne dla obu hooków (wczytywany, nie jest hookiem)
+tools/deploy-check.sh   kontrola opiekuna: czy lokalny main, origin i github stoją na tym samym commicie?
 AGENTS.md               zasady dla agentów AI (tylko po angielsku, bez polskiego odpowiednika)
 docs/, docs/pl/         dokumentacja (angielska, polska)
 README.md, README.pl.md, CHANGELOG.md, CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md
@@ -27,7 +28,7 @@ co innego, użyj gałęzi.
 | Wprost na `main` | Przez gałąź, zielone CI przed scaleniem |
 |---|---|
 | literówki i redakcja w `*.md`, które nie zmieniają opisu zachowania | `abuseipdb_report.py`, `abuseipdb_send.sh`, `abuseipdb.conf.example` |
-| polskie tłumaczenia zgodne z angielskim źródłem | `tests/`, `tools/pre-commit`, `.github/workflows/` |
+| polskie tłumaczenia zgodne z angielskim źródłem | `tests/`, `tools/` (hooki i skrypty), `.github/workflows/` |
 | wpisy w changelogu | każda zmiana opisu bezpiecznika (`docs/pl/COMPLIANCE.md`, listy bezpieczników w `README.pl.md`, `AGENTS.md`) |
 | | zmiany tego workflow |
 
@@ -59,6 +60,12 @@ co innego, użyj gałęzi.
 **Wdrożenie** (obie ścieżki): na serwerze `git pull --ff-only` w katalogu instalacji, potem
 `./abuseipdb_send.sh --dry-run`. Nigdy nie edytuj ręcznie plików w katalogu instalacji; kopia robocza musi pozostać
 czysta, żeby `--ff-only` zawsze działało.
+
+Potem, we własnym klonie, uruchom `tools/deploy-check.sh`. Pobiera `origin` i `github` i mówi, czy lokalny `main` oraz oba
+zdalne repozytoria stoją na tym samym commicie. Między pushem na `origin` a pushem na `github` pokaże `github` jako „jeszcze
+niewypchnięty” (NOT PUSHED YET), co jest oczekiwane; `AHEAD`, `DIVERGED` albo `WARNING` o kolejności oznaczają: zatrzymaj
+się i sprawdź. Skrypt tylko czyta, nigdy nie wypisuje adresu zdalnego repozytorium i nie dotyka serwera: tam
+`git log -1 --format=%h` w katalogu instalacji musi pokazać commit wypisany przez skrypt.
 
 Cron uruchamia skrypty na żywo, więc zepsuty push trafia na produkcję przy następnym pullu. Hook pre-commit, testy i
 zielone CI przed scaleniem mają to wychwycić wcześniej.

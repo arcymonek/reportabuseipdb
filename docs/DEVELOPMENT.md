@@ -11,6 +11,7 @@ tests/                  unittest suites
 tools/pre-commit        repository hook for the files (enable with: git config core.hooksPath tools)
 tools/commit-msg        repository hook for the commit message (same privacy scan)
 tools/lib-privacy.sh    the privacy rules both hooks share (sourced, not a hook)
+tools/deploy-check.sh   maintainer check: do the local main, origin and github stand on the same commit?
 AGENTS.md               rules for AI coding agents (English only, no Polish twin)
 docs/, docs/pl/         documentation (English, Polish)
 README.md, README.pl.md, CHANGELOG.md, CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md
@@ -27,7 +28,7 @@ a safeguard would say something different, use a branch.
 | Straight to `main` | Through a branch, green CI before the merge |
 |---|---|
 | typos and wording in `*.md` that do not change a description of behaviour | `abuseipdb_report.py`, `abuseipdb_send.sh`, `abuseipdb.conf.example` |
-| Polish translations that follow the English source | `tests/`, `tools/pre-commit`, `.github/workflows/` |
+| Polish translations that follow the English source | `tests/`, `tools/` (hooks and scripts), `.github/workflows/` |
 | changelog entries | any change to how a safeguard is described (`docs/COMPLIANCE.md`, the safeguard lists in `README.md`, `AGENTS.md`) |
 | | changes to this workflow |
 
@@ -59,6 +60,12 @@ a safeguard would say something different, use a branch.
 **Deploying** (both paths): on the server run `git pull --ff-only` in the install directory, then
 `./abuseipdb_send.sh --dry-run`. Never edit files in the install directory by hand; the working copy there must stay
 clean so that `--ff-only` pulls always work.
+
+Afterwards, in your own clone, run `tools/deploy-check.sh`. It fetches `origin` and `github` and tells you whether the
+local `main` and both remotes stand on the same commit. Between the push to `origin` and the push to `github` it reports
+`github` as "not pushed yet", which is expected; `AHEAD`, `DIVERGED` or a `WARNING` about the order mean stop and look.
+It only reads, never prints a remote address, and does not touch the server: there `git log -1 --format=%h` in the install
+directory must show the commit that the script prints.
 
 Cron runs the scripts live, so a broken push is deployed by the next pull. The pre-commit hook, the tests and the
 green CI before the merge exist to catch that before it happens.
