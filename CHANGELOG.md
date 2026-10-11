@@ -112,6 +112,12 @@ Versions from before the project got its own repository (2026-09-28). Main featu
 
 Hooks, tests, CI, GitHub files and documentation. Not versioned: these changes do not affect what runs on your server.
 
+- 2026-10-11 - Documentation: `SECURITY.md` is rewritten and checked against the code. Reporting comes first (GitHub
+  private reporting or e-mail, English or Polish, what to include, no live uploads as a test). New: "What does not
+  count as a vulnerability" (access to the service account, known limits of the masking, a configuration that ignores
+  the go-live list, false alarms of CrowdSec scenarios, bugs in other software), what to expect after a report, and
+  how fixes reach `main` and releases. The list of vulnerabilities no longer names a CDN (the tool cannot tell one
+  apart) and now covers addresses planted from outside and the content of ntfy alerts. No safeguard changed.
 - 2026-10-12 - Documentation: `docs/OPERATIONS.md` is reorganised along the life of an installation (a new "Reading a
   dry run", troubleshooting split into six small tables, rolling back next to updating) and corrected against the code:
   what `--dry-run` does and does not check, how a quiet day looks in the log, the side effect of `--force` on the
