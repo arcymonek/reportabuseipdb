@@ -1,6 +1,6 @@
 [English](../../CODE_OF_CONDUCT.md) | **Polski**
 
-*Nieoficjalne tłumaczenie Contributor Covenant 2.1 (oficjalnej polskiej wersji nie ma). W razie wątpliwości obowiązuje
+*Nieoficjalne tłumaczenie Contributor Covenant 2.1 (oficjalnej polskiej wersji 2.1 nie ma). W razie wątpliwości obowiązuje
 wersja angielska.*
 
 # Kodeks postępowania Contributor Covenant
@@ -27,7 +27,7 @@ Przykłady zachowań, które sprzyjają pozytywnej atmosferze w naszej społeczn
 
 Przykłady zachowań niedopuszczalnych:
 
-* używanie seksualizującego języka lub obrazów oraz zwracanie uwagi o charakterze seksualnym lub zaloty jakiegokolwiek rodzaju
+* używanie języka lub obrazów nacechowanych seksualnie oraz przejawy zainteresowania seksualnego lub zaloty jakiegokolwiek rodzaju
 * trollowanie, obraźliwe lub poniżające komentarze oraz ataki osobiste lub polityczne
 * nękanie, publiczne lub prywatne
 * publikowanie cudzych prywatnych informacji, takich jak adres zamieszkania lub e-mail, bez wyraźnej zgody tej osoby
@@ -36,11 +36,11 @@ Przykłady zachowań niedopuszczalnych:
 ## Obowiązki egzekwowania
 
 Liderzy społeczności odpowiadają za wyjaśnianie i egzekwowanie naszych standardów dopuszczalnego zachowania i podejmą
-odpowiednie, sprawiedliwe działania naprawcze wobec każdego zachowania, które uznają za nieodpowiednie, groźne,
+odpowiednie, sprawiedliwe działania naprawcze wobec każdego zachowania, które uznają za nieodpowiednie, zastraszające,
 obraźliwe lub szkodliwe.
 
 Liderzy społeczności mają prawo i obowiązek usuwać, edytować lub odrzucać komentarze, commity, kod, edycje wiki,
-zgłoszenia i inne wkłady niezgodne z tym Kodeksem postępowania oraz, gdy to stosowne, przekazywać powody decyzji
+zgłoszenia i inne formy wkładu niezgodne z tym Kodeksem postępowania oraz, gdy to stosowne, przekazywać powody decyzji
 moderacyjnych.
 
 ## Zakres
@@ -52,31 +52,31 @@ na wydarzeniu online lub offline.
 
 ## Egzekwowanie
 
-Przypadki obraźliwego, nękającego lub w inny sposób niedopuszczalnego zachowania można zgłaszać liderom społeczności
+Przypadki krzywdzącego, nękającego lub w inny sposób niedopuszczalnego zachowania można zgłaszać liderom społeczności
 odpowiedzialnym za egzekwowanie pod adresem <github@arkadiuszpolak.pl>. Wszystkie skargi zostaną rozpatrzone i zbadane
 niezwłocznie i sprawiedliwie.
 
-Wszyscy liderzy społeczności mają obowiązek szanować prywatność i bezpieczeństwo osoby zgłaszającej każdy incydent.
+Wszyscy liderzy społeczności mają obowiązek szanować prywatność i bezpieczeństwo osoby zgłaszającej jakikolwiek incydent.
 
 ## Wytyczne egzekwowania
 
 Przy ustalaniu konsekwencji każdego działania, które uznają za naruszenie tego Kodeksu postępowania, liderzy
-społeczności będą stosować poniższe Wytyczne wpływu na społeczność.
+społeczności będą stosować poniższe Wytyczne dotyczące wpływu na społeczność:
 
 ### 1. Korekta
 
 **Wpływ na społeczność**: używanie nieodpowiedniego języka lub inne zachowanie uznane w społeczności za
-nieprofesjonalne lub nimile widziane.
+nieprofesjonalne lub niemile widziane.
 
 **Konsekwencja**: prywatne, pisemne ostrzeżenie od liderów społeczności, które jasno określa naturę naruszenia i
-wyjaśnia, dlaczego zachowanie było nieodpowiednie. Można poprosić o publiczne przeprosiny.
+wyjaśnia, dlaczego zachowanie było nieodpowiednie. Liderzy mogą zażądać publicznych przeprosin.
 
 ### 2. Ostrzeżenie
 
 **Wpływ na społeczność**: naruszenie w postaci pojedynczego incydentu lub serii działań.
 
 **Konsekwencja**: ostrzeżenie z konsekwencjami przy dalszym takim zachowaniu. Zakaz interakcji z osobami
-zaangażowanymi, w tym niezamówionych kontaktów z osobami egzekwującymi Kodeks postępowania, przez określony czas.
+zaangażowanymi, w tym nieproszonych kontaktów z osobami egzekwującymi Kodeks postępowania, przez określony czas.
 Obejmuje to unikanie interakcji w przestrzeniach społeczności oraz w kanałach zewnętrznych, takich jak media
 społecznościowe. Złamanie tych warunków może prowadzić do czasowego lub stałego zbanowania.
 
@@ -86,12 +86,12 @@ społecznościowe. Złamanie tych warunków może prowadzić do czasowego lub st
 
 **Konsekwencja**: czasowy zakaz jakiejkolwiek interakcji i publicznej komunikacji ze społecznością przez określony czas.
 W tym okresie nie wolno prowadzić żadnej publicznej ani prywatnej interakcji z osobami zaangażowanymi, w tym
-niezamówionych kontaktów z osobami egzekwującymi Kodeks postępowania. Złamanie tych warunków może prowadzić do stałego
+nieproszonych kontaktów z osobami egzekwującymi Kodeks postępowania. Złamanie tych warunków może prowadzić do stałego
 zbanowania.
 
 ### 4. Stały ban
 
-**Wpływ na społeczność**: wykazywanie wzorca naruszania standardów społeczności, w tym długotrwałe nieodpowiednie
+**Wpływ na społeczność**: powtarzające się naruszanie standardów społeczności, w tym długotrwałe nieodpowiednie
 zachowanie, nękanie pojedynczej osoby albo agresja wobec grup osób lub poniżanie ich.
 
 **Konsekwencja**: stały zakaz jakiejkolwiek publicznej interakcji w obrębie społeczności.
@@ -101,7 +101,7 @@ zachowanie, nękanie pojedynczej osoby albo agresja wobec grup osób lub poniża
 Ten Kodeks postępowania jest adaptacją [Contributor Covenant][homepage], wersja 2.1, dostępnego pod adresem
 [https://www.contributor-covenant.org/version/2/1/code_of_conduct.html][v2.1]. Licencja [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
-Wytyczne wpływu na społeczność zostały zainspirowane [drabiną egzekwowania kodeksu postępowania Mozilli][Mozilla CoC].
+Wytyczne dotyczące wpływu na społeczność zostały zainspirowane [drabiną egzekwowania kodeksu postępowania Mozilli][Mozilla CoC].
 
 Odpowiedzi na najczęstsze pytania o ten kodeks znajdziesz w FAQ pod adresem [https://www.contributor-covenant.org/faq][FAQ].
 Tłumaczenia są dostępne pod adresem [https://www.contributor-covenant.org/translations][translations].
