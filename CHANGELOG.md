@@ -3,23 +3,114 @@
 # Changelog
 
 Notable changes for people who run the tool. Every entry is mirrored in [docs/pl/CHANGELOG.md](docs/pl/CHANGELOG.md). Format:
-[Keep a Changelog](https://keepachangelog.com/). The detailed history of every commit is in `git log`.
+[Keep a Changelog](https://keepachangelog.com/), with two sections of its own: "Upgrade notes" in the version entries and
+"Development" at the end of the file. The detailed history of every commit is in `git log`.
 
-Version numbering is `X.Y.Z`. The project has one version, shared by `abuseipdb_report.py` and `abuseipdb_send.sh` (check
-it with `--version`). It rises when the **program** changes: the two scripts or the meaning of a line in
-`abuseipdb.conf.example` (`Z` for a fix, with no upper limit; `Y` for a new function or config key; `X` is a deliberate
-decision). Changes to hooks, tests, CI, templates and documentation do not raise it; the ones that matter to maintainers
-and contributors are listed under "Development" with a date. Not every version is a release: the versions the maintainer
-marks with a git tag appear as [GitHub Releases](https://github.com/arcymonek/reportabuseipdb/releases), and each
-Release lists every entry below that is newer than the previous Release.
+The project has one version `X.Y.Z`, shared by both scripts (`--version` shows it). It rises only when the **program**
+changes: `Z` for a fix, `Y` for a new function or config key. The full rules are in
+[DEVELOPMENT.md](docs/DEVELOPMENT.md#versioning). Not every version is a release: the versions the maintainer marks with
+a git tag appear as [GitHub Releases](https://github.com/arcymonek/reportabuseipdb/releases), and each Release lists every
+entry that is newer than the previous Release.
 
 ## Unreleased
 
 - Nothing yet.
 
+## 3.6.34 - 2026-10-04
+
+### Changed
+
+- The deprecated separate files `abuseipdb_api_key`, `ntfy_topic` and `abuseipdb_exclude.txt` are no longer read, and
+  the `--exclude-file` option of `abuseipdb_report.py` is gone. All local settings come only from
+  `~/.secrets/abuseipdb.conf` (key `ABUSEIPDB_API_KEY`, `NTFY_TOPIC` and `EXCLUDE` entries). The generated CSV is unchanged.
+
+### Upgrade notes
+
+- If you still use one of the old files, move its content into `~/.secrets/abuseipdb.conf` **before** updating:
+  otherwise the API key or the ntfy topic is missing, and addresses from the old exclusion file would be reportable.
+
+## 3.6.33 - 2026-10-02
+
+### Changed
+
+- The log line for a CrowdSec scenario that has no known category (`unknown scenario ... - not reported`) now asks you to
+  open an issue with the scenario name instead of suggesting that you edit `CATEGORY_MAP` on your server. Editing
+  tracked code breaks `git pull --ff-only`, and the maintainer checks what a scenario detects before it is published.
+  The generated CSV is unchanged. No action needed when updating.
+
+## 3.6.32 - 2026-10-01
+
+First version prepared for a public repository. It collects all changes since 3.6.0 (2026-09-28).
+
+### Upgrade notes
+
+- **Create the single config file.** All local settings now live in `~/.secrets/abuseipdb.conf` (copy
+  `abuseipdb.conf.example`). In 3.6.32 the old files `abuseipdb_api_key`, `ntfy_topic` and `abuseipdb_exclude.txt` still
+  work as a deprecated fallback (the config wins), but since 3.6.34 they are no longer read: move their content into the
+  config and delete them.
+- **`OWN_NAME_MARKERS` is required for a live run.** A live upload is refused while the list is empty or still holds the
+  example values. A dry run only warns.
+- **The config is checked strictly.** An unknown key, a malformed line, a comment after a value or an invalid `EXCLUDE`
+  entry stops the run (exit code 2) instead of being skipped. Put comments on their own line. A config that exists but
+  cannot be read (permissions, not UTF-8) also stops the run.
+- **Unknown CrowdSec scenarios are no longer reported** (before: as "hacking"). Only `crowdsecurity` scenarios from
+  `CATEGORY_MAP` or named after a CVE are reported; a scenario of another author needs an entry under its full name.
+- **SSH logins from IPv6 trust the whole /64 network** (`SSH_TRUST_IPV6_PREFIX`, default 64, allowed 64-128, any other
+  value stops the run; set 128 for the exact address, for example on a hosting provider that shares one /64 between
+  customers). IPv4 is always exact.
+- Run `./abuseipdb_send.sh --dry-run` after updating and read the CSV.
+
+### Added
+
+- Config keys: `ABUSEIPDB_API_KEY`, `NTFY_TOPIC`, `NTFY_URL`, `OWN_NAME_MARKERS`, `EXCLUDE` (repeatable), `HTTP_PORTS`
+  (default `80/443`), `EXTRA_EXCLUDE_SCENARIOS`, `SSH_TRUST_IPV6_PREFIX`; `--config` and `ABUSEIPDB_CONFIG`; `--version`.
+- Wrapper: `ALERT_LIMIT` (crontab variable, a number from 1 to 9999999, default 5000) raises the number of alerts read;
+  new ntfy alerts "data cut off" and "safeguard not working".
+- SSH auto-trust recognises `keyboard-interactive/<device>`, `hostbased` and `gssapi-*` logins and reads the journal of
+  both `ssh` and `sshd`.
+
+### Changed
+
+- Alerts to ntfy are sent over IPv4 (`curl -4`) and no longer contain the install path or the home directory.
+- The fetch from `cscli` reaches one hour before the window, so an alert that starts before the boundary but is created
+  inside it is not lost.
+- `ReportDate` and all times are converted to UTC; addresses are written in one canonical spelling (compressed IPv6,
+  IPv4-mapped addresses as plain IPv4).
+- A sample request that contains an own name, the reported IP, one of the server's own addresses or an e-mail address is
+  left out of the comment (also when written percent-encoded) instead of blocking the whole file.
+
+### Fixed
+
+- A crash of the generator no longer looks like "no qualifying reports": any unexpected error ends with exit code 2, and the
+  wrapper trusts exit code 1 only together with its message. Before, such a crash could silently close the time window.
+- Python 3.9 and 3.10 parse journal and CrowdSec timestamps correctly (a UTC offset without a colon, long fractions of a
+  second).
+- A path with a comma or semicolon no longer breaks the upload (the `curl -F` path is quoted).
+- `--limit 0` no longer produces a false "data cut off" alert.
+
+### Security
+
+- Values of query parameters that look like credentials (`token`, `key`, `password`, `session`, `jwt` and similar) are
+  replaced by `***` in sample requests (best effort, not a guarantee).
+- A double quote in a sample is written as `%22` and a comment never ends with a backslash (the AbuseIPDB CSV parser
+  treats a backslash as an escape character).
+- The own-name, reported-IP and e-mail checks also test percent-decoded text.
+- A scenario named after a CVE is trusted only for the author `crowdsecurity`.
+
+## 3.5 and earlier
+
+Versions from before the project got its own repository (2026-09-28). Main features:
+
+- Disjoint time windows with a watermark and a 20 h guard.
+- `Accept: application/json`, HTTP and JSON reply checks, the API key through stdin, retries only for transient errors.
+- ntfy alerts and a unique-event counter.
+- Strict SSH login matching and a persistent SSH trust store.
+- `--validate` mode.
+- `http-open-proxy` reported as category 14 (9 would claim that the reported host is an open proxy).
+
 ## Development
 
-Hooks, tests, CI and GitHub files. Not versioned: these changes do not affect what runs on your server.
+Hooks, tests, CI, GitHub files and documentation. Not versioned: these changes do not affect what runs on your server.
 
 - 2026-10-11 - Documentation: `docs/ARCHITECTURE.md` is rewritten to match the code (a window with no reports, the
   `[TRUNCATED]` and `[SAFEGUARD-OFF]` alerts, a corrupted watermark, the configuration checks) and its error table now
@@ -56,89 +147,3 @@ Hooks, tests, CI and GitHub files. Not versioned: these changes do not affect wh
   `EN_ONLY=1` lets contributors who write English only commit.
 - 2026-09-29 - `CONTRIBUTING.md`, `SECURITY.md`, a CI workflow (Python 3.9 and the newest Python, `shellcheck`).
 - 2026-09-28 - The pre-commit hook: syntax checks, the EN/PL pairing rule, version rules and a privacy scan.
-
-## 3.6.34 - 2026-10-04
-
-### Changed
-
-- The deprecated separate files `abuseipdb_api_key`, `ntfy_topic` and `abuseipdb_exclude.txt` are no longer read, and
-  the `--exclude-file` option of `abuseipdb_report.py` is gone. All local settings come only from
-  `~/.secrets/abuseipdb.conf` (key `ABUSEIPDB_API_KEY`, `NTFY_TOPIC` and `EXCLUDE` entries). The generated CSV is unchanged.
-
-### Upgrade notes
-
-- If you still use one of the old files, move its content into `~/.secrets/abuseipdb.conf` **before** updating:
-  otherwise the API key or the ntfy topic is missing, and addresses from the old exclusion file would be reportable.
-
-## 3.6.33 - 2026-10-02
-
-### Changed
-
-- The log line for a CrowdSec scenario that has no known category (`unknown scenario ... - not reported`) now asks you to
-  open an issue with the scenario name instead of suggesting that you edit `CATEGORY_MAP` on your server. Editing
-  tracked code breaks `git pull --ff-only`, and the maintainer checks what a scenario detects before it is published.
-  The generated CSV is unchanged. No action needed when updating.
-
-## 3.6.32 - 2026-10-01
-
-First version prepared for a public repository. It collects all changes since 3.6.0 (2026-09-28).
-
-### Upgrade notes
-
-- **Create the single config file.** All local settings now live in `~/.secrets/abuseipdb.conf` (copy
-  `abuseipdb.conf.example`). The old files `abuseipdb_api_key`, `ntfy_topic` and `abuseipdb_exclude.txt` still work as a
-  deprecated fallback; the config wins. Delete the old files after migrating.
-- **`OWN_NAME_MARKERS` is required for a live run.** A live upload is refused while the list is empty or still holds the
-  example values. A dry run only warns.
-- **The config is checked strictly.** An unknown key, a malformed line, a comment after a value or an invalid `EXCLUDE`
-  entry stops the run (exit code 2) instead of being skipped. Put comments on their own line. A config that exists but
-  cannot be read (permissions, not UTF-8) also stops the run.
-- **Unknown CrowdSec scenarios are no longer reported** (before: as "hacking"). Only `crowdsecurity` scenarios from
-  `CATEGORY_MAP` or named after a CVE are reported; a scenario of another author needs an entry under its full name.
-- **SSH logins from IPv6 trust the whole /64 network** (`SSH_TRUST_IPV6_PREFIX`, default 64; set 128 for the exact address,
-  for example on a hosting provider that shares one /64 between customers). IPv4 is always exact.
-- Run `./abuseipdb_send.sh --dry-run` after updating and read the CSV.
-
-### Added
-
-- Config keys: `NTFY_URL`, `OWN_NAME_MARKERS`, `EXCLUDE` (repeatable), `HTTP_PORTS` (default `80/443`),
-  `EXTRA_EXCLUDE_SCENARIOS`, `SSH_TRUST_IPV6_PREFIX`; `--config` and `ABUSEIPDB_CONFIG`; `--version`.
-- Wrapper: `ALERT_LIMIT` (crontab variable) raises the number of alerts read; new ntfy alerts "data cut off" and
-  "safeguard not working".
-- SSH auto-trust recognises `keyboard-interactive/<device>`, `hostbased` and `gssapi-*` logins and reads the journal of
-  both `ssh` and `sshd`.
-
-### Changed
-
-- Alerts to ntfy are sent over IPv4 (`curl -4`) and no longer contain the install path or the home directory.
-- The fetch from `cscli` reaches one hour before the window, so an alert that starts before the boundary but is created
-  inside it is not lost.
-- `ReportDate` and all times are converted to UTC; addresses are written in one canonical spelling (compressed IPv6,
-  IPv4-mapped addresses as plain IPv4).
-- A sample request that contains an own name, the reported IP, one of the server's own addresses or an e-mail address is
-  left out of the comment (also when written percent-encoded) instead of blocking the whole file.
-
-### Fixed
-
-- A crash of the generator no longer looks like "no qualifying reports": any unexpected error ends with exit code 2, and the
-  wrapper trusts exit code 1 only together with its message. Before, such a crash could silently close the time window.
-- Python 3.9 and 3.10 parse journal and CrowdSec timestamps correctly (a UTC offset without a colon, long fractions of a
-  second).
-- A path with a comma or semicolon no longer breaks the upload (the `curl -F` path is quoted).
-- `--limit 0` no longer produces a false "data cut off" alert.
-
-### Security
-
-- Values of query parameters that look like credentials (`token`, `key`, `password`, `session`, `jwt` and similar) are
-  replaced by `***` in sample requests (best effort, not a guarantee).
-- A double quote in a sample is written as `%22` and a comment never ends with a backslash (the AbuseIPDB CSV parser
-  treats a backslash as an escape character).
-- The own-name, reported-IP and e-mail checks also test percent-decoded text.
-- A scenario named after a CVE is trusted only for the author `crowdsecurity`.
-
-## 3.5 and earlier - 2026-09-28 and before
-
-Disjoint time windows with a watermark, a 20 h guard, `Accept: application/json`, HTTP and JSON reply checks, the API key
-through stdin, retries only for transient errors, ntfy alerts, a unique-event counter, strict SSH login matching,
-a persistent SSH trust store, `--validate` mode, `http-open-proxy` reported as category 14 (9 would claim that the
-reported host is an open proxy).
