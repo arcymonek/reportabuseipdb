@@ -21,6 +21,9 @@ wszystkie wpisy poniżej nowsze niż poprzedni Release.
 
 Hooki, testy, CI i pliki GitHuba. Bez numeru wersji: te zmiany nie wpływają na to, co działa na twoim serwerze.
 
+- 2026-10-11 - Dokumentacja: README jest krótsze i jaśniejsze (ponumerowany szybki start, bezpieczniki po jednej linii,
+  zaproszenie dla kontrybutorów), projekt opisany jako ukończony, a wyjaśnienie kontroli przed uruchomieniem na żywo
+  przeniesiono do [OPERATIONS.md](OPERATIONS.md#przed-pierwszym-przebiegiem-na-żywo). Żaden bezpiecznik się nie zmienił.
 - 2026-10-08 - Nowy skrypt opiekuna `tools/deploy-check.sh`: po pushu lub wdrożeniu pobiera `origin` i `github` i pokazuje,
   czy lokalny `main` oraz oba zdalne repozytoria stoją na tym samym commicie (jeszcze niewypchnięty, wyprzedzony,
   rozbieżny, zła kolejność pushy). Tylko odczyt, tryb offline z `--no-fetch`, nigdy nie wypisuje adresu zdalnego

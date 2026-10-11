@@ -21,6 +21,9 @@ Release lists every entry below that is newer than the previous Release.
 
 Hooks, tests, CI and GitHub files. Not versioned: these changes do not affect what runs on your server.
 
+- 2026-10-11 - Documentation: the README is shorter and clearer (numbered quick start, one-line safeguards, a
+  contributor invitation), the project is described as complete, and the explanation of the pre-live checks moved to
+  [docs/OPERATIONS.md](docs/OPERATIONS.md#before-the-first-live-run). No safeguard changed.
 - 2026-10-08 - New maintainer script `tools/deploy-check.sh`: after a push or a deployment it fetches `origin` and
   `github` and reports whether the local `main` and both remotes stand on the same commit (not pushed yet, ahead,
   diverged, wrong push order). Read-only, offline mode with `--no-fetch`, never prints a remote address. It has tests, and
