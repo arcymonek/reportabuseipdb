@@ -206,7 +206,7 @@ python3 -m unittest discover -v tests     # generator tests run anywhere; wrappe
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): data flow, time windows, state files, exit codes, error handling
 - [docs/COMPLIANCE.md](docs/COMPLIANCE.md): AbuseIPDB policy and API limits mapped to the implementation
 - [docs/OPERATIONS.md](docs/OPERATIONS.md): cron, monitoring, alerts, troubleshooting, first-run checklist
-- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md): workflow, tests, versioning, language rules, release checklist
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md): setup, tests, hooks, language rules, workflow, versioning, standing checks
 - [CHANGELOG.md](CHANGELOG.md): version history
 - [CONTRIBUTING.md](CONTRIBUTING.md): how to report a bug, propose a change and send a pull request
 - [SECURITY.md](SECURITY.md): how to report a vulnerability privately

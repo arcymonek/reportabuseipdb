@@ -112,6 +112,12 @@ Versions from before the project got its own repository (2026-09-28). Main featu
 
 Hooks, tests, CI, GitHub files and documentation. Not versioned: these changes do not affect what runs on your server.
 
+- 2026-10-11 - Documentation: `docs/DEVELOPMENT.md` is reorganised (the part for everyone first, the maintainer's workflow
+  after it; new sections "Setting up", "Hooks" and "Standing checks") and corrected against the code: what each hook
+  really checks (`commit-msg` scans only the key pattern and `OWN_NAME_MARKERS`), the `shellcheck` step in CI, both
+  workflows that pin `actions/checkout`, `--force-with-lease` after a rebase of a work branch, deployment after every
+  push, and that a published tag and Release cannot be taken back. `docs/ARCHITECTURE.md` describes `commit-msg` the
+  same way. No safeguard changed.
 - 2026-10-11 - Documentation: `CONTRIBUTING.md` is reorganised (a "where to go" table, setup and tests before the steps for
   sending a change) and corrected: proposals and questions go to Discussions, bugs and unknown scenarios to Issues; it
   now states the Python 3.9 and standard-library-only rule, the second hook (`commit-msg`), why tests need public

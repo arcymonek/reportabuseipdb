@@ -208,7 +208,7 @@ python3 -m unittest discover -v tests     # testy generatora działają wszędzi
 - [docs/pl/ARCHITECTURE.md](docs/pl/ARCHITECTURE.md): przepływ danych, okna czasowe, pliki stanu, kody wyjścia, obsługa błędów
 - [docs/pl/COMPLIANCE.md](docs/pl/COMPLIANCE.md): polityka i limity API AbuseIPDB odniesione do implementacji
 - [docs/pl/OPERATIONS.md](docs/pl/OPERATIONS.md): cron, monitoring, alerty, diagnostyka, lista kontrolna pierwszego przebiegu
-- [docs/pl/DEVELOPMENT.md](docs/pl/DEVELOPMENT.md): workflow, testy, wersjonowanie, zasady językowe, lista kontrolna przed publicznym repozytorium
+- [docs/pl/DEVELOPMENT.md](docs/pl/DEVELOPMENT.md): przygotowanie środowiska, testy, hooki, zasady językowe, workflow, wersjonowanie, stałe kontrole
 - [docs/pl/CHANGELOG.md](docs/pl/CHANGELOG.md): historia wersji
 - [docs/pl/CONTRIBUTING.md](docs/pl/CONTRIBUTING.md): jak zgłosić błąd, zaproponować zmianę i wysłać pull request
 - [docs/pl/SECURITY.md](docs/pl/SECURITY.md): jak prywatnie zgłosić podatność

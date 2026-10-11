@@ -114,6 +114,12 @@ Wersje sprzed wydzielenia projektu do własnego repozytorium (2026-09-28). Najwa
 
 Hooki, testy, CI, pliki GitHuba i dokumentacja. Bez numeru wersji: te zmiany nie wpływają na to, co działa na twoim serwerze.
 
+- 2026-10-11 - Dokumentacja: `docs/DEVELOPMENT.md` został uporządkowany (najpierw część dla każdego, potem workflow
+  opiekuna; nowe sekcje "Przygotowanie środowiska", "Hooki" i "Stałe kontrole") i poprawiony względem kodu: co naprawdę
+  sprawdza każdy hook (`commit-msg` skanuje tylko wzorzec klucza i `OWN_NAME_MARKERS`), krok `shellcheck` w CI, oba
+  workflow przypinające `actions/checkout`, `--force-with-lease` po rebase gałęzi roboczej, wdrożenie po każdym pushu
+  oraz to, że opublikowanego tagu i Release nie da się cofnąć. `docs/ARCHITECTURE.md` opisuje `commit-msg` tak samo.
+  Żaden bezpiecznik się nie zmienił.
 - 2026-10-11 - Dokumentacja: `CONTRIBUTING.md` został uporządkowany (tabela "dokąd z czym", przygotowanie i testy przed
   krokami wysyłania zmiany) i poprawiony: propozycje i pytania idą do Discussions, błędy i nieznane scenariusze do
   Issues; dopisano regułę Pythona 3.9 i samej biblioteki standardowej, drugi hook (`commit-msg`), powód użycia publicznych
