@@ -114,6 +114,13 @@ Wersje sprzed wydzielenia projektu do własnego repozytorium (2026-09-28). Najwa
 
 Hooki, testy, CI, pliki GitHuba i dokumentacja. Bez numeru wersji: te zmiany nie wpływają na to, co działa na twoim serwerze.
 
+- 2026-10-12 - Dokumentacja: `docs/OPERATIONS.md` został uporządkowany według życia instalacji (nowa sekcja "Jak
+  czytać wynik dry-run", diagnostyka podzielona na sześć małych tabel, wycofanie zmian obok aktualizacji) i poprawiony
+  względem kodu: co `--dry-run` sprawdza, a czego nie, jak wygląda spokojny dzień w logu, skutek uboczny `--force` dla
+  następnego zaplanowanego przebiegu, skąd próg monitora 36 h, priorytety alertów, test `sudo -n cscli alerts list
+  --limit 1`, czym naprawdę jest blokada, jak wycofać wydanie i wszystkie klucze konfiguracji, które zatrzymują
+  generator. Dodano brakujące komunikaty (brak tematu ntfy, brak dziennika systemowego, awarie wysyłki) i kroki po
+  zgłoszeniu własnego adresu. Żaden bezpiecznik się nie zmienił.
 - 2026-10-11 - Dokumentacja: `docs/DEVELOPMENT.md` został uporządkowany (najpierw część dla każdego, potem workflow
   opiekuna; nowe sekcje "Przygotowanie środowiska", "Hooki" i "Stałe kontrole") i poprawiony względem kodu: co naprawdę
   sprawdza każdy hook (`commit-msg` skanuje tylko wzorzec klucza i `OWN_NAME_MARKERS`), krok `shellcheck` w CI, oba

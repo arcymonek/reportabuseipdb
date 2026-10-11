@@ -112,6 +112,13 @@ Versions from before the project got its own repository (2026-09-28). Main featu
 
 Hooks, tests, CI, GitHub files and documentation. Not versioned: these changes do not affect what runs on your server.
 
+- 2026-10-12 - Documentation: `docs/OPERATIONS.md` is reorganised along the life of an installation (a new "Reading a
+  dry run", troubleshooting split into six small tables, rolling back next to updating) and corrected against the code:
+  what `--dry-run` does and does not check, how a quiet day looks in the log, the side effect of `--force` on the
+  next scheduled run, why the monitor threshold is 36 h, alert priorities, the `sudo -n cscli alerts list --limit 1`
+  test, what the lock really is, how to roll back, and all configuration keys that stop the generator. It adds the
+  missing messages (no ntfy topic, no system journal, upload failures) and the steps after a reported own address.
+  No safeguard changed.
 - 2026-10-11 - Documentation: `docs/DEVELOPMENT.md` is reorganised (the part for everyone first, the maintainer's workflow
   after it; new sections "Setting up", "Hooks" and "Standing checks") and corrected against the code: what each hook
   really checks (`commit-msg` scans only the key pattern and `OWN_NAME_MARKERS`), the `shellcheck` step in CI, both
