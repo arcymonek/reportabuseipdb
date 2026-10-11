@@ -22,7 +22,7 @@ AbuseIPDB i bezpieczniki są w [COMPLIANCE.md](COMPLIANCE.md), obsługa (cron, a
 |---|---|
 | `tests/` | Testy jednostkowe i end-to-end (Python `unittest`; wrapper jest testowany z atrapami `curl`, generatora i `ntfy`, bez sieci) oraz testy hooków, wersjonowania i narzędzi. |
 | `tools/pre-commit` | Hook repozytorium: kontrola składni, reguła parowania dokumentacji EN/PL, reguły wersji, skan prywatności i testy generatora. |
-| `tools/commit-msg` | Hook repozytorium: ten sam skan prywatności zastosowany do komunikatu commita, który też jest publikowany. |
+| `tools/commit-msg` | Hook repozytorium: wzorzec klucza API i skan `OWN_NAME_MARKERS` zastosowane do komunikatu commita, który też jest publikowany. |
 | `tools/lib-privacy.sh` | Reguły prywatności wspólne dla obu hooków (wczytywany, nie jest hookiem). |
 | `tools/deploy-check.sh` | Narzędzie opiekuna: sprawdza (tylko odczyt), czy lokalny `main`, `origin` i `github` stoją na tym samym commicie. |
 | `tools/release_notes.sh` | Buduje notatki wydania z `CHANGELOG.md`. |

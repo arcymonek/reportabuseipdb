@@ -22,7 +22,7 @@ troubleshooting) is in [OPERATIONS.md](OPERATIONS.md), and work on the code is i
 |---|---|
 | `tests/` | Unit and end-to-end tests (Python `unittest`; the wrapper is tested with mocks for `curl`, the generator and `ntfy`, with no network) plus tests of the hooks, the versioning and the tools. |
 | `tools/pre-commit` | Repository hook: syntax checks, the EN/PL documentation pairing rule, version rules, a privacy scan and the generator tests. |
-| `tools/commit-msg` | Repository hook: the same privacy scan applied to the commit message, which is published too. |
+| `tools/commit-msg` | Repository hook: the API key pattern and the `OWN_NAME_MARKERS` scan applied to the commit message, which is published too. |
 | `tools/lib-privacy.sh` | The privacy rules both hooks share (sourced, not a hook). |
 | `tools/deploy-check.sh` | Maintainer tool: checks (read-only) that the local `main`, `origin` and `github` stand on the same commit. |
 | `tools/release_notes.sh` | Builds the release notes from `CHANGELOG.md`. |
