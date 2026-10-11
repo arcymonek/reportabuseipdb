@@ -34,7 +34,7 @@ Wszystko, co mogłoby sprawić, że narzędzie:
   CrowdSeca;
 - ujawni coś o operatorze w komentarzu zgłoszenia lub w alercie ntfy: nazwę domeny lub hosta, własny adres IP,
   ścieżkę instalacji, nazwę użytkownika;
-- opublikuje w komentarzu dane logowania lub dane osobowe z cudzego żądania w przypadku, który opisana ochrona
+- opublikuje w komentarzu dane uwierzytelniające lub dane osobowe z cudzego żądania w przypadku, który opisana ochrona
   powinna wychwycić (sekcja "Poprawność danych w zgłoszeniu" w [COMPLIANCE.md](COMPLIANCE.md));
 - ujawni klucz API albo temat ntfy (logi, lista procesów, repozytorium, alerty);
 - wykona kod lub polecenia z pliku konfiguracji, z alertów CrowdSeca albo z odpowiedzi API.

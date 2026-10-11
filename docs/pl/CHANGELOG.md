@@ -68,7 +68,7 @@ Pierwsza wersja przygotowana pod publiczne repozytorium. Zbiera wszystkie zmiany
 - Wrapper: `ALERT_LIMIT` (zmienna w linii crontab, liczba od 1 do 9999999, domyślnie 5000) podnosi liczbę czytanych
   alertów; nowe alerty ntfy "data cut off" i "safeguard not working".
 - Auto-zaufanie SSH rozpoznaje logowania `keyboard-interactive/<urządzenie>`, `hostbased` i `gssapi-*` oraz czyta
-  journal zarówno `ssh`, jak i `sshd`.
+  dziennik systemowy zarówno `ssh`, jak i `sshd`.
 
 ### Zmieniono
 
@@ -84,7 +84,7 @@ Pierwsza wersja przygotowana pod publiczne repozytorium. Zbiera wszystkie zmiany
 
 - Awaria generatora nie wygląda już jak "brak kwalifikujących się zgłoszeń": każdy nieoczekiwany błąd kończy się kodem 2,
   a wrapper ufa kodowi 1 tylko razem z jego komunikatem. Wcześniej taka awaria mogła po cichu zamknąć okno czasowe.
-- Python 3.9 i 3.10 poprawnie czytają znaczniki czasu z journala i CrowdSeca (przesunięcie UTC bez dwukropka, długie
+- Python 3.9 i 3.10 poprawnie czytają znaczniki czasu z dziennika systemowego i CrowdSeca (przesunięcie UTC bez dwukropka, długie
   ułamki sekund).
 - Ścieżka z przecinkiem lub średnikiem nie psuje już wysyłki (ścieżka w `curl -F` jest ujęta w cudzysłów).
 - `--limit 0` nie wywołuje już fałszywego alertu "data cut off".

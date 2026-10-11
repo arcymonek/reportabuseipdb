@@ -76,12 +76,12 @@ Przy błędzie na dowolnym etapie operator dostaje alert ntfy.
 - Testowane z CrowdSec 1.8 i nginx jako reverse proxy. Inne wersje, dystrybucje i serwery WWW nie były testowane:
   uruchom `--dry-run`, przeczytaj wynik i daj znać, jak poszło.
 - Niewspierane: macOS i BSD (wrapper wymaga GNU `date` i `flock`). Bez systemd (np. w kontenerze) auto-zaufanie SSH
-  nie ma journala do czytania: patrz [Zanim uruchomisz na żywo](#zanim-uruchomisz-na-żywo).
+  nie ma dziennika systemowego do czytania: patrz [Zanim uruchomisz na żywo](#zanim-uruchomisz-na-żywo).
 - `cscli` musi działać na tym samym hoście co skrypty (CrowdSec w kontenerze wymaga własnej nakładki).
 - Python 3.9 lub nowszy (rozwijany na 3.11, testowany w CI na 3.9 i na najnowszym Pythonie), tylko biblioteka standardowa.
 - CrowdSec z `cscli`, wywoływanym jako `sudo -n cscli alerts list` przez użytkownika usługi (reguła sudo bez hasła);
   gdy skrypt działa jako root, `cscli` jest wywoływany bezpośrednio i `sudo` nie jest potrzebne.
-- Użytkownik usługi musi mieć prawo odczytu całego journala (grupa `systemd-journal` lub `adm`); bez niego przebieg
+- Użytkownik usługi musi mieć prawo odczytu całego dziennika systemowego (grupa `systemd-journal` lub `adm`); bez niego przebieg
   trwa, ale auto-zaufanie SSH jest niepełne i operator dostaje alert.
 - Klucz API AbuseIPDB.
 - Opcjonalnie: temat ntfy dla alertów.
@@ -92,7 +92,7 @@ Każde zgłoszenie jest publikowane z twojego konta AbuseIPDB, więc przed pierw
 
 - **Prawdziwy adres klienta.** Za CDN, load balancerem albo proxy upewnij się, że CrowdSec widzi IP klienta.
 - **NAT.** Jeśli publiczny IP nie jest na żadnym interfejsie, dopisz go jako wpis `EXCLUDE`.
-- **Brak journala systemd.** Auto-zaufanie SSH jest wtedy puste: wpisz własne adresy jako `EXCLUDE`.
+- **Brak dziennika systemowego (systemd).** Auto-zaufanie SSH jest wtedy puste: wpisz własne adresy jako `EXCLUDE`.
 - **Własny ruch.** Scenariusz, który na nim odpala, wpisz do `EXTRA_EXCLUDE_SCENARIOS`; uruchamiaj `--dry-run` przez kilka dni.
 - **Wspólny /64 w IPv6.** Jeśli dostawca dzieli jeden /64 między klientów, ustaw `SSH_TRUST_IPV6_PREFIX=128`.
 - **Inne porty WWW.** Jeśli serwer WWW nie słucha na 80 i 443, ustaw `HTTP_PORTS`.
@@ -117,7 +117,7 @@ Dlaczego i jak: [docs/pl/OPERATIONS.md](docs/pl/OPERATIONS.md#przed-pierwszym-pr
    $EDITOR ~/.secrets/abuseipdb.conf
    ```
 
-3. Pozwól użytkownikowi usługi czytać alerty CrowdSeca bez hasła, i tylko je, oraz czytać journal dla auto-zaufania
+3. Pozwól użytkownikowi usługi czytać alerty CrowdSeca bez hasła, i tylko je, oraz czytać dziennik systemowy dla auto-zaufania
    SSH (zamień `<user>`; ścieżkę sprawdź przez `command -v cscli`; po `usermod` zaloguj się ponownie). Ostatnie
    polecenie musi zadziałać bez pytania o hasło:
 

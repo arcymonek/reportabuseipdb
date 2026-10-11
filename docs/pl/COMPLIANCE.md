@@ -37,9 +37,9 @@ może się zmienić; przed poleganiem na tej stronie sprawdź ją ponownie.
    Liczy się tylko PEŁNE logowanie (przy drugim składniku pierwszy krok jest logowany jako `Partial ...` i ignorowany).
    Czytane są obie nazwy jednostki (`ssh` na Debianie/Ubuntu, `sshd` na RHEL/Fedorze/Archu). Zaufane metody:
    `publickey`, `password`, `keyboard-interactive/<urządzenie>`, `hostbased`, `gssapi-*`; `Accepted none` (bez żadnego
-   uwierzytelnienia) nie jest zaufane. Journal, którego użytkownik nie może w całości czytać, jest zgłaszany głośno,
+   uwierzytelnienia) nie jest zaufane. Dziennik systemowy, którego użytkownik nie może w całości czytać, jest zgłaszany głośno,
    zamiast po cichu zawężać zaufanie.
-   Adresy są też trzymane w `~/.secrets/ssh_trusted_seen.txt`, bo journal jest przycinany.
+   Adresy są też trzymane w `~/.secrets/ssh_trusted_seen.txt`, bo dziennik systemowy jest przycinany.
    Logowanie z IPv6 zaufa całej sieci /64 (klucz `SSH_TRUST_IPV6_PREFIX`, 64 do 128, domyślnie 64), bo maszyna IPv6 zmienia
    "tymczasowe" adresy w obrębie swojego /64; sieci szerszej niż /64 nie da się ustawić, a 128 daje zaufanie do
    dokładnego adresu dla /64 dzielonego między klientów. IPv4 jest zawsze zaufane dokładnie, a adres IPv4-mapped
@@ -83,8 +83,8 @@ CIDR (CSV przyjmuje pojedyncze adresy).
   odrzucenie całego pliku przez walidator (brak zgłoszeń tego dnia, alert, nadrobienie w następnym przebiegu).
   Sam walidator się nie zmienił i nadal odrzuca komentarz zawierający znacznik własnej nazwy albo zgłaszany IP, jako
   ostatnia linia obrony.
-- **Poświadczenia w próbkach żądań.** Komentarz trafia do publicznej bazy, więc WARTOŚCI parametrów zapytania, których
-  nazwa wygląda na poświadczenie (`token`, `key`, `api_key`, `secret`, `password`, `session`, `PHPSESSID`, `auth`, `sig`,
+- **Dane uwierzytelniające w próbkach żądań.** Komentarz trafia do publicznej bazy, więc WARTOŚCI parametrów zapytania, których
+  nazwa wygląda na dane uwierzytelniające (`token`, `key`, `api_key`, `secret`, `password`, `session`, `PHPSESSID`, `auth`, `sig`,
   `jwt`, `code`, `csrf` i podobne), są zastępowane przez `***` (`?token=***&x=1`). Reszta żądania zostaje, więc ładunek
   ataku w zwykłym parametrze nadal jest widoczny jako dowód (`keyword=<script>` nie jest maskowane, bo nazwa jest
   dopasowywana jako całe słowo, nie jako podciąg). To działanie w miarę możliwości, nie gwarancja: sekret w samej
