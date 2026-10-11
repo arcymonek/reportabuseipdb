@@ -1,7 +1,8 @@
 #!/bin/bash
 # commit-msg hook for reportabuseipdb: the privacy scan of tools/pre-commit looks only at the files, but
-# the commit message is published too (it goes to the public history). Same rules, same helper:
-# no own domain or host name (OWN_NAME_MARKERS of the local config), no real API key or ntfy topic.
+# the commit message is published too (it goes to the public history). Same helper, two of its rules:
+# no string that looks like a real API key (80 hex characters; always checked) and no own domain or host name
+# (OWN_NAME_MARKERS of the local config). It does not look for an ntfy topic, a staged config file or KEY=/TOPIC= lines.
 # Enabled together with the other hook by:  git config core.hooksPath tools
 # No local config (a contributor's clone) = nothing to scan against, silently fine.
 # Bypass only knowingly: git commit --no-verify

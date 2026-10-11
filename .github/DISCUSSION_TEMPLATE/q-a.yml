@@ -40,7 +40,7 @@ body:
     attributes:
       label: Versions
       description: "Optional. Output of `./abuseipdb_send.sh --version` and `python3 abuseipdb_report.py --version`"
-      placeholder: "abuseipdb_send.sh v1.1.6, abuseipdb_report.py 3.6.21"
+      placeholder: "abuseipdb_send.sh vX.Y.Z, abuseipdb_report.py X.Y.Z"
   - type: textarea
     id: log
     attributes:

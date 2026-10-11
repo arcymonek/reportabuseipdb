@@ -8,7 +8,8 @@ real, locally observed attack, or reveal something about the operator? Convenien
 
 | You want to | Go to |
 |---|---|
-| report a bug, or a scenario that is skipped as unknown | [Issues](https://github.com/arcymonek/reportabuseipdb/issues/new/choose), with the bug report form |
+| report a bug | [Issues](https://github.com/arcymonek/reportabuseipdb/issues/new/choose), with the bug report form |
+| report a scenario that is skipped as unknown | [Issues](https://github.com/arcymonek/reportabuseipdb/issues/new/choose), with the unknown scenario form |
 | suggest a change or ask a question | [Discussions](https://github.com/arcymonek/reportabuseipdb/discussions) |
 | report a vulnerability | privately, see [SECURITY.md](SECURITY.md) |
 | send code or documentation | a fork and a pull request, see "How to send a change" below |
@@ -33,8 +34,8 @@ them needs a very good reason and will be reviewed with that in mind.
 A new CrowdSec scenario in `CATEGORY_MAP` needs the weakest category set that the log really supports and a test; see
 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). If you only want to stop reporting a scenario on your own server, use
 `EXTRA_EXCLUDE_SCENARIOS` in your config instead. If you want a scenario from a new CrowdSec collection to be reported,
-open an issue with the bug report form and give its full name (`author/name`) and what it detects, instead of editing
-the code on your server.
+open an issue with the unknown scenario form instead of editing the code on your server. It asks for the full name
+(`author/name`, copied from the log line `unknown scenario ... - not reported`) and for what the scenario detects.
 
 ## Setting up and testing
 

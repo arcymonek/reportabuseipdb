@@ -151,6 +151,12 @@ Hooki, testy, CI, pliki GitHuba i dokumentacja. Bez numeru wersji: te zmiany nie
 - 2026-10-11 - Dokumentacja: README jest krótsze i jaśniejsze (ponumerowany szybki start, bezpieczniki po jednej linii,
   zaproszenie dla kontrybutorów), projekt opisany jako ukończony, a wyjaśnienie kontroli przed uruchomieniem na żywo
   przeniesiono do [OPERATIONS.md](OPERATIONS.md#przed-pierwszym-przebiegiem-na-żywo). Żaden bezpiecznik się nie zmienił.
+- 2026-10-11 - Pliki GitHuba i narzędzia: nowy formularz zgłoszenia "Unknown scenario" (nieznany scenariusz; log prosi o
+  zgłoszenie z nazwą scenariusza, a jedynym formularzem był formularz błędu); wybór formularza i `CONTRIBUTING.md`
+  zostały dostosowane. Przykłady wersji w formularzach nie wskazują już starego numeru, szablon pull requesta opisuje
+  regułę fałszywych danych tak jak `CONTRIBUTING.md` (publiczny resolver zastępuje atakującego), a `AGENTS.md` wymienia
+  oba hooki i `EN_ONLY=1`. Komentarze w nagłówkach `tools/commit-msg`, `tools/pre-commit` i `tools/lib-privacy.sh`
+  mówią teraz, co hooki naprawdę skanują; zachowanie bez zmian. Żaden bezpiecznik się nie zmienił.
 - 2026-10-08 - Nowy skrypt opiekuna `tools/deploy-check.sh`: po pushu lub wdrożeniu pobiera `origin` i `github` i pokazuje,
   czy lokalny `main` oraz oba zdalne repozytoria stoją na tym samym commicie (jeszcze niewypchnięty, wyprzedzony,
   rozbieżny, zła kolejność pushy). Tylko odczyt, tryb offline z `--no-fetch`, nigdy nie wypisuje adresu zdalnego

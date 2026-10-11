@@ -2,4 +2,4 @@ blank_issues_enabled: false
 contact_links:
   - name: Question or idea
     url: https://github.com/arcymonek/reportabuseipdb/discussions
-    about: Ask how something works or suggest a change. Use an issue only for a bug.
+    about: Ask how something works or suggest a change. Use an issue only for a bug or for a scenario that is skipped as unknown.

@@ -13,7 +13,7 @@ Everything you write here is public: no real host names, domains, own IP address
 - [ ] I did not weaken a safeguard (see [AGENTS.md](https://github.com/arcymonek/reportabuseipdb/blob/main/AGENTS.md)), or I started a discussion and agreed on it first.
 - [ ] If I touched a safeguard or code next to one, I broke it on purpose and a test failed (mutation check).
 - [ ] A refactor or translation leaves the generated CSV byte-for-byte identical for the same `--input-json`.
-- [ ] Tests use only fake data (reserved addresses, `example.org`, fake keys); nothing real, nothing uploaded to AbuseIPDB.
+- [ ] Tests use only fake data (reserved addresses such as `203.0.113.0/24`, `example.org`, fake keys); where a test needs an address that passes the tool's filter, a well-known public resolver stands in for the attacker. Nothing real, nothing uploaded to AbuseIPDB.
 - [ ] Documentation is updated in English; I did not raise the version (describe the change under "Unreleased" in `CHANGELOG.md`; the maintainer translates and versions).
 - [ ] If an AI assistant wrote part of this, I read the diff myself.
 

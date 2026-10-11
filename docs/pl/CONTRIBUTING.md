@@ -8,7 +8,8 @@ zgłosi coś, co nie jest prawdziwym, lokalnie zaobserwowanym atakiem, albo ujaw
 
 | Chcesz | Dokąd |
 |---|---|
-| zgłosić błąd albo scenariusz pomijany jako nieznany | [Issues](https://github.com/arcymonek/reportabuseipdb/issues/new/choose), z formularzem zgłoszenia błędu |
+| zgłosić błąd | [Issues](https://github.com/arcymonek/reportabuseipdb/issues/new/choose), z formularzem zgłoszenia błędu |
+| zgłosić scenariusz pomijany jako nieznany | [Issues](https://github.com/arcymonek/reportabuseipdb/issues/new/choose), z formularzem nieznanego scenariusza |
 | zaproponować zmianę albo zadać pytanie | [Discussions](https://github.com/arcymonek/reportabuseipdb/discussions) |
 | zgłosić podatność | prywatnie, zobacz [SECURITY.md](SECURITY.md) |
 | wysłać kod albo dokumentację | fork i pull request, zobacz "Jak wysłać zmianę" niżej |
@@ -33,8 +34,9 @@ wymaga bardzo dobrego powodu i będzie z tym na uwadze przeglądany.
 Nowy scenariusz CrowdSeca w `CATEGORY_MAP` wymaga najsłabszego zestawu kategorii, który log naprawdę uzasadnia, oraz
 testu; patrz [docs/pl/DEVELOPMENT.md](DEVELOPMENT.md). Jeśli chcesz tylko przestać zgłaszać scenariusz na
 własnym serwerze, użyj `EXTRA_EXCLUDE_SCENARIOS` w swoim configu. Jeśli chcesz, żeby scenariusz z nowej kolekcji
-CrowdSeca był zgłaszany, otwórz issue z formularzem zgłoszenia błędu i podaj jego pełną nazwę (`autor/nazwa`) oraz
-opis, co wykrywa, zamiast edytować kod na swoim serwerze.
+CrowdSeca był zgłaszany, otwórz issue z formularzem nieznanego scenariusza zamiast edytować kod na swoim serwerze.
+Formularz pyta o pełną nazwę (`autor/nazwa`, skopiowaną z linii logu `unknown scenario ... - not reported`) oraz o to,
+co scenariusz wykrywa.
 
 ## Przygotowanie i testy
 

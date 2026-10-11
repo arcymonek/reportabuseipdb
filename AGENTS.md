@@ -11,7 +11,8 @@ Polish; see `CONTRIBUTING.md`.
 - `abuseipdb_report.py`: generator and validator of the bulk-report CSV (Python, standard library only, Python 3.9 or
   newer). It sends nothing itself.
 - `abuseipdb_send.sh`: cron wrapper (bash). Picks the time window, runs the generator, validates, uploads, alerts.
-- `tests/`: unittest suites. `tools/pre-commit`: repository hook. `docs/`, `docs/pl/`: documentation.
+- `tests/`: unittest suites. `tools/`: the repository hooks (`pre-commit`, `commit-msg`) and their helpers. `docs/`,
+  `docs/pl/`: documentation.
 
 Read `docs/ARCHITECTURE.md`, `docs/COMPLIANCE.md` and `docs/DEVELOPMENT.md` before a non-trivial change.
 
@@ -27,7 +28,8 @@ and elegance come second.
 If a task seems to require touching one of these, stop and ask instead of working around it:
 
 - the 60-day age filter, the filter for non-global addresses, `EXCLUDE_SCENARIOS`, `WEAK_ONLY_SCENARIOS`, SSH
-  auto-trust (IPv6 logins trusted as a /64, never wider) and the `EXCLUDE` list of the config file, and the exclusion of the operator's own public addresses;
+  auto-trust (IPv6 logins trusted as a /64, never wider) and the `EXCLUDE` list of the config file, and the exclusion
+  of the operator's own public addresses;
 - the data source (`cscli alerts`, never `decisions`) and the `kind == "crowdsec"` filter;
 - the comment rules: fixed English constants only, ASCII, no IP address, host name or domain, at most 1024 bytes;
 - the double validation of the CSV, and the rule that a bad file never replaces the previous one;
@@ -47,7 +49,8 @@ identical for the same `--input-json`.
   pull requests or commit messages. Tests use fake data only: the reserved ranges `203.0.113.0/24`, `198.51.100.0/24`,
   `2001:db8::/32` (they are not global, so the tool's own filter drops them; where a test needs an address that passes
   the filter, a well-known public resolver stands in for the attacker), and `example.org`, `.example`, `.test` names.
-- Never bypass the pre-commit hook (`--no-verify`) or edit the report templates (`TPL_*`) casually: they are published.
+- Never bypass the hooks (`--no-verify` switches off both `pre-commit` and `commit-msg`) or edit the report templates
+  (`TPL_*`) casually: they are published.
 - Never use `NO_TESTS=1` to get a commit past a failing test. It skips the generator tests in the pre-commit hook and is
   only for the maintainer's work-in-progress commits; fix the test or report the failure instead.
 
@@ -55,7 +58,7 @@ identical for the same `--input-json`.
 
 ```bash
 python3 -m unittest discover -v tests     # generator tests run anywhere; wrapper tests need Linux (flock, GNU date, jq)
-git config core.hooksPath tools           # enable the pre-commit hook once per clone
+git config core.hooksPath tools           # enable the hooks (pre-commit, commit-msg) once per clone
 ```
 
 Run the suite on Python 3.9 as well as on the newest version when you can: timestamp parsing differs before 3.11. The
@@ -65,10 +68,11 @@ GitHub Actions workflow does this for every pull request.
 
 - Code, comments, log and error messages, `--help`, alerts, tests, commit messages, issues and pull requests: English
   only. Comments explain why, not only what. Keep code simple and readable; avoid clever tricks.
-- Documentation exists in English and Polish (`README.md` and `README.pl.md`, `CHANGELOG.md` and
-  `docs/pl/CHANGELOG.md`, `docs/X.md` and `docs/pl/X.md`). English is the source. As a contributor you write and update **English only**; the
-  maintainer adds the Polish translation. Do not create or edit Polish files yourself. This file (`AGENTS.md`) has no
-  Polish twin.
+- Documentation exists in English and Polish (`README.md` and `README.pl.md`, every other `X.md` in the root or in
+  `docs/` and its twin `docs/pl/X.md`). English is the source. As a contributor you write and update **English only**
+  and commit with `EN_ONLY=1 git commit ...`, which makes the pre-commit hook skip only its EN/PL pairing rule (the
+  other checks still run); the maintainer adds the Polish translation. Do not create or edit Polish files yourself.
+  This file (`AGENTS.md`) has no Polish twin.
 - Do not raise the version. Describe your change under "Unreleased" in `CHANGELOG.md`; the maintainer decides
   whether the version rises (it does when the program changes) and translates when merging.
 - One topic per pull request. Explain in plain language what changed and why: the reviewer may not read every line, so
@@ -99,6 +103,6 @@ GitHub Actions workflow does this for every pull request.
 | how a run works, state files, exit codes | `docs/ARCHITECTURE.md` |
 | AbuseIPDB policy mapped to the code | `docs/COMPLIANCE.md` |
 | cron, alerts, troubleshooting | `docs/OPERATIONS.md` |
-| workflow, tests, versioning, language rules | `docs/DEVELOPMENT.md` |
+| workflow, tests, hooks, versioning, language rules | `docs/DEVELOPMENT.md` |
 | contributor rules for humans | `CONTRIBUTING.md` |
 | reporting a vulnerability | `SECURITY.md` |

@@ -42,15 +42,15 @@ body:
     attributes:
       label: Wrapper version
       description: "Output of `./abuseipdb_send.sh --version`"
-      placeholder: "abuseipdb_send.sh v1.1.6"
+      placeholder: "abuseipdb_send.sh vX.Y.Z"
     validations:
       required: true
   - type: input
     id: report-version
     attributes:
       label: Generator version
-      description: "Output of `python3 abuseipdb_report.py --version`"
-      placeholder: "abuseipdb_report.py 3.6.21"
+      description: "Output of `python3 abuseipdb_report.py --version` (both scripts show the same version number)"
+      placeholder: "abuseipdb_report.py X.Y.Z"
     validations:
       required: true
   - type: input

@@ -1,0 +1,74 @@
+name: Unknown scenario
+description: The log says "unknown scenario ... - not reported" for a CrowdSec scenario you want reported
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The tool reports only scenarios it knows. For any other it logs `unknown scenario <author/name> - not reported`
+        and skips its alerts on purpose: it never guesses a category. This form asks the maintainer to check what the
+        scenario detects before it is added. Please do not edit `CATEGORY_MAP` on your server.
+
+        **Before you paste anything:** remove your own domain and host names, your home directory path, your ntfy topic
+        and your own IP addresses. Never paste the API key or the config file.
+
+        **A security problem does not belong here.** Report it privately, see
+        [SECURITY.md](https://github.com/arcymonek/reportabuseipdb/blob/main/SECURITY.md).
+
+        This issue will be public. A question ("how do I...?") is better asked in
+        [Discussions](https://github.com/arcymonek/reportabuseipdb/discussions).
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      description: Everything you write or paste below is public and cannot be fully taken back.
+      options:
+        - label: I removed my own domain and host names, home directory path, ntfy topic and own IP addresses from everything below.
+          required: true
+        - label: I am not pasting the API key or the config file (`abuseipdb.conf`).
+          required: true
+  - type: input
+    id: scenario
+    attributes:
+      label: Scenario name
+      description: "The full name (`author/name`), copied exactly from the log line `unknown scenario ... - not reported`"
+      placeholder: "author/name"
+    validations:
+      required: true
+  - type: textarea
+    id: detects
+    attributes:
+      label: What the scenario detects
+      description: |
+        Which attack or behaviour, and which service it protects (a web application, a mail server, ...). A link to its
+        page on the CrowdSec Hub helps. The maintainer decides on the category only after checking this.
+    validations:
+      required: true
+  - type: input
+    id: collection
+    attributes:
+      label: Collection
+      description: "Optional. The collection that contains the scenario (`cscli collections list`)"
+  - type: input
+    id: crowdsec-version
+    attributes:
+      label: CrowdSec version
+      description: "Output of `cscli version` (the line with the version number is enough)"
+    validations:
+      required: true
+  - type: input
+    id: report-version
+    attributes:
+      label: Generator version
+      description: "Output of `python3 abuseipdb_report.py --version` (the scenario may be known in a newer version)"
+      placeholder: "abuseipdb_report.py X.Y.Z"
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log line
+      description: |
+        Optional. The `unknown scenario ...` line from `abuseipdb_cron.log` or from `./abuseipdb_send.sh --dry-run` (it
+        sends nothing). Only that line, not the whole file; read it once more before you paste: hosts, IP addresses,
+        the ntfy topic.
+      render: shell

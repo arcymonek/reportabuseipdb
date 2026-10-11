@@ -148,6 +148,12 @@ Hooks, tests, CI, GitHub files and documentation. Not versioned: these changes d
 - 2026-10-11 - Documentation: the README is shorter and clearer (numbered quick start, one-line safeguards, a
   contributor invitation), the project is described as complete, and the explanation of the pre-live checks moved to
   [docs/OPERATIONS.md](docs/OPERATIONS.md#before-the-first-live-run). No safeguard changed.
+- 2026-10-11 - GitHub files and tools: a new issue form "Unknown scenario" (the log asks for an issue with the scenario
+  name, but the only form was the bug report); the issue chooser and `CONTRIBUTING.md` follow. The version examples in the
+  forms no longer name an old number, the pull request template states the fake-data rule like `CONTRIBUTING.md` (a
+  public resolver stands in for the attacker), and `AGENTS.md` names both hooks and `EN_ONLY=1`. The header comments of
+  `tools/commit-msg`, `tools/pre-commit` and `tools/lib-privacy.sh` now say what the hooks really scan; behaviour is
+  unchanged. No safeguard changed.
 - 2026-10-08 - New maintainer script `tools/deploy-check.sh`: after a push or a deployment it fetches `origin` and
   `github` and reports whether the local `main` and both remotes stand on the same commit (not pushed yet, ahead,
   diverged, wrong push order). Read-only, offline mode with `--no-fetch`, never prints a remote address. It has tests, and

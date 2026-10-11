@@ -15,10 +15,11 @@ privacy_markers() {
         | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | grep -v '^$' > "$1"
 }
 
-# esc() makes a string safe inside a sed pattern.
+# privacy_esc() makes a string safe inside a sed pattern.
 privacy_esc() { printf '%s' "$1" | sed 's/[][\.*^$/]/\\&/g'; }
 
-# Only the author's contact details are allowed in the repository (see AGENTS.md / CLAUDE.md):
+# Only the author's contact details are allowed in the repository (see "Configuration and the privacy scan" in
+# docs/DEVELOPMENT.md):
 #   github@<domain>, the bare domain, the author's name, and the GitHub profile path.
 # The bare domain is removed ONLY when it is not the tail of a longer host name: "nas.<domain>" is a
 # host of the operator's own server and must still be caught by the markers, and "someone@<domain>" is
