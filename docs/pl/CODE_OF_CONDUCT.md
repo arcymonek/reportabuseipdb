@@ -69,7 +69,7 @@ społeczności będą stosować poniższe Wytyczne dotyczące wpływu na społec
 nieprofesjonalne lub niemile widziane.
 
 **Konsekwencja**: prywatne, pisemne ostrzeżenie od liderów społeczności, które jasno określa naturę naruszenia i
-wyjaśnia, dlaczego zachowanie było nieodpowiednie. Liderzy mogą zażądać publicznych przeprosin.
+wyjaśnia, dlaczego zachowanie było nieodpowiednie. Liderzy mogą poprosić o publiczne przeprosiny.
 
 ### 2. Ostrzeżenie
 

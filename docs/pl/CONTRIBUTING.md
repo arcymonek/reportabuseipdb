@@ -78,7 +78,7 @@ Nie potrzebujesz uprawnień zapisu ani zaproszenia: pracuj w forku.
    Rebase przepisuje twoją gałąź, więc wypchnij ją do swojego forka przez `git push --force-with-lease`.
 
 Opiekun stosuje zaakceptowane zmiany na swoim komputerze, dodaje polskie tłumaczenie oraz, gdy zmienia się program,
-wersję (patrz "Accepting a pull request" w [docs/pl/DEVELOPMENT.md](DEVELOPMENT.md#przyjmowanie-pull-requesta)).
+wersję (patrz "Przyjmowanie pull requesta" w [docs/pl/DEVELOPMENT.md](DEVELOPMENT.md#przyjmowanie-pull-requesta)).
 GitHub oznacza potem twój pull request jako scalony lub zamknięty. Stałych kontrybutorów można później zaprosić do
 wypychania gałęzi bezpośrednio do tego repozytorium; scala nadal opiekun.
 

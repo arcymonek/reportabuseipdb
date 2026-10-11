@@ -22,7 +22,7 @@ entry that is newer than the previous Release.
 
 - The deprecated separate files `abuseipdb_api_key`, `ntfy_topic` and `abuseipdb_exclude.txt` are no longer read, and
   the `--exclude-file` option of `abuseipdb_report.py` is gone. All local settings come only from
-  `~/.secrets/abuseipdb.conf` (key `ABUSEIPDB_API_KEY`, `NTFY_TOPIC` and `EXCLUDE` entries). The generated CSV is unchanged.
+  `~/.secrets/abuseipdb.conf` (the keys `ABUSEIPDB_API_KEY` and `NTFY_TOPIC`, and `EXCLUDE` entries). The generated CSV is unchanged.
 
 ### Upgrade notes
 
@@ -35,7 +35,7 @@ entry that is newer than the previous Release.
 
 - The log line for a CrowdSec scenario that has no known category (`unknown scenario ... - not reported`) now asks you to
   open an issue with the scenario name instead of suggesting that you edit `CATEGORY_MAP` on your server. Editing
-  tracked code breaks `git pull --ff-only`, and the maintainer checks what a scenario detects before it is published.
+  tracked code breaks `git pull --ff-only`, and the maintainer checks what a scenario detects before it goes into the public database.
   The generated CSV is unchanged. No action needed when updating.
 
 ## 3.6.32 - 2026-10-01
