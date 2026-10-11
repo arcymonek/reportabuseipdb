@@ -21,6 +21,10 @@ Release lists every entry below that is newer than the previous Release.
 
 Hooks, tests, CI and GitHub files. Not versioned: these changes do not affect what runs on your server.
 
+- 2026-10-11 - Documentation: `docs/ARCHITECTURE.md` is rewritten to match the code (a window with no reports, the
+  `[TRUNCATED]` and `[SAFEGUARD-OFF]` alerts, a corrupted watermark, the configuration checks) and its error table now
+  shows what happens to the watermark in each situation. It links to COMPLIANCE.md and OPERATIONS.md instead of
+  repeating them. No safeguard changed.
 - 2026-10-11 - Documentation: the README is shorter and clearer (numbered quick start, one-line safeguards, a
   contributor invitation), the project is described as complete, and the explanation of the pre-live checks moved to
   [docs/OPERATIONS.md](docs/OPERATIONS.md#before-the-first-live-run). No safeguard changed.

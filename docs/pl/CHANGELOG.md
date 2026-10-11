@@ -21,6 +21,10 @@ wszystkie wpisy poniżej nowsze niż poprzedni Release.
 
 Hooki, testy, CI i pliki GitHuba. Bez numeru wersji: te zmiany nie wpływają na to, co działa na twoim serwerze.
 
+- 2026-10-11 - Dokumentacja: `docs/pl/ARCHITECTURE.md` został przepisany zgodnie z kodem (okno bez zgłoszeń, alerty
+  `[TRUNCATED]` i `[SAFEGUARD-OFF]`, uszkodzony znacznik, kontrole konfiguracji), a jego tabela błędów pokazuje teraz,
+  co dzieje się ze znacznikiem w każdej sytuacji. Odsyła do COMPLIANCE.md i OPERATIONS.md zamiast je powtarzać. Żaden
+  bezpiecznik się nie zmienił.
 - 2026-10-11 - Dokumentacja: README jest krótsze i jaśniejsze (ponumerowany szybki start, bezpieczniki po jednej linii,
   zaproszenie dla kontrybutorów), projekt opisany jako ukończony, a wyjaśnienie kontroli przed uruchomieniem na żywo
   przeniesiono do [OPERATIONS.md](OPERATIONS.md#przed-pierwszym-przebiegiem-na-żywo). Żaden bezpiecznik się nie zmienił.
