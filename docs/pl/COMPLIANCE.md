@@ -16,7 +16,7 @@ może się zmienić; przed poleganiem na tej stronie sprawdź ją ponownie.
 | Przy ciągłym nadużyciu zgłaszać IP mniej więcej raz na dobę (FAQ) | Jeden przebieg na dobę, jeden wiersz na IP, blokada 20 h we wrapperze. |
 | Bez źródeł, które łatwo sfałszować, jak floody SYN/UDP; TCP tylko po pełnym three-way handshake, UDP nigdy (polityka) | Tylko scenariusze z logów aplikacyjnych (HTTP, SSH): żądanie lub próba logowania dotarły do aplikacji, więc handshake TCP był pełny. |
 | Bez zgłaszania na podstawie cudzego wskaźnika pewności (polityka) | Źródłem są tylko lokalne alerty (`kind == "crowdsec"`). Wpisy z blocklist (lista społeczności, listy subskrybowane w konsoli CrowdSeca) przychodzą jako alerty z `kind` równym `capi` i są ignorowane: obserwował je ktoś inny, nie ten serwer. |
-| Fałszywe zgłoszenia grożą zawieszeniem konta | Siedem niezależnych bezpieczników, patrz niżej. |
+| Fałszywe zgłoszenia grożą zawieszeniem konta | Kilka niezależnych bezpieczników, wymienionych niżej. |
 
 ## Bezpieczniki przed zgłoszeniem własnego lub niewinnego adresu
 
@@ -94,8 +94,9 @@ CIDR (CSV przyjmuje pojedyncze adresy).
   własnej nazwy i zgłaszanego IP: na adres e-mail daje ostrzeżenie (`[validation-warn]`), a własnych publicznych
   adresów serwera w ogóle nie sprawdza, więc te dwie rzeczy wyłapuje wyłącznie generator przy wyborze próbek.
 - **Cudzysłowy i backslashe.** Strona bulk-report mówi, że backslashe i cudzysłowy wymagają eskejpowania: parser CSV
-  AbuseIPDB traktuje backslash jako znak ucieczki. Cudzysłów jest zapisywany jako `%22`, a komentarz nigdy nie kończy
-  się backslashem; walidator odrzuca backslash przed cudzysłowem lub na końcu. Pozostałe backslashe zostają jako dowód.
+  AbuseIPDB traktuje backslash jako znak ucieczki. Cudzysłów jest zapisywany jako `%22`, a końcowy backslash
+  komentarza jako `%5C`; jeśli po obcięciu komentarza do 1024 bajtów na końcu zostanie backslash, jest on dodatkowo
+  usuwany. Walidator odrzuca backslash przed cudzysłowem lub na końcu. Pozostałe backslashe zostają jako dowód.
 
 ## Kategorie
 

@@ -65,7 +65,7 @@ included). Do not use `--no-verify`, which switches all checks off. Fix a failin
 You do not need write access or an invitation: work in a fork.
 
 1. Fork the repository on GitHub (the "Fork" button), then clone **your fork**.
-2. Create a branch for one topic, named by type and topic (`fix-`, `feat-`, `test-` or `ci-`):
+2. Create a branch for one topic, named by type and topic (`fix-`, `feat-`, `test-`, `ci-` or `docs-`):
    `git switch -c fix-short-description`.
 3. Make the change, run the tests, commit with an English message (see "Pull requests" below).
 4. Push the branch to your fork: `git push -u origin fix-short-description`.

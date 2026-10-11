@@ -16,7 +16,7 @@ text can change; re-check it before relying on this page.
 | Report an IP about once a day for continuous abuse (FAQ) | One run per day, one row per IP, 20 h guard in the wrapper. |
 | No spoofable sources such as SYN/UDP floods; TCP only after a completed three-way handshake, UDP never (policy) | Only application-log scenarios (HTTP, SSH): the request or login attempt reached the application, so the TCP handshake was complete. |
 | Do not report based on someone else's confidence score (policy) | Source is local alerts only (`kind == "crowdsec"`). Blocklist entries (community blocklist, lists subscribed in the CrowdSec console) arrive as alerts with `kind` `capi` and are ignored: another party observed them, not this server. |
-| False reports risk account suspension | Seven independent safeguards, see below. |
+| False reports risk account suspension | Several independent safeguards, listed below. |
 
 ## Safeguards against reporting our own or an innocent address
 
@@ -93,8 +93,9 @@ CIDR ranges (the bulk CSV takes single addresses).
   server's own public addresses are not checked by it at all, so those two are caught only by the generator when it
   chooses the samples.
 - **Quotes and backslashes.** The bulk-report page says that backslashes and quotes require escaping: the AbuseIPDB
-  CSV parser treats a backslash as an escape character. A double quote is written as `%22` and the comment never ends
-  with a backslash; the validator rejects a backslash before a quote or at the end. Other backslashes stay as evidence.
+  CSV parser treats a backslash as an escape character. A double quote is written as `%22`, and a trailing backslash
+  of the comment is written as `%5C`; if cutting the comment to 1024 bytes leaves a backslash at the end, that one is
+  removed as well. The validator rejects a backslash before a quote or at the end. Other backslashes stay as evidence.
 
 ## Categories
 

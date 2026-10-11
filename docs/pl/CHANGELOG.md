@@ -114,6 +114,11 @@ Wersje sprzed wydzielenia projektu do własnego repozytorium (2026-09-28). Najwa
 
 Hooki, testy, CI, pliki GitHuba i dokumentacja. Bez numeru wersji: te zmiany nie wpływają na to, co działa na twoim serwerze.
 
+- 2026-10-11 - Dokumentacja: drobne poprawki spójności po przepisaniu. `docs/pl/COMPLIANCE.md` mówi teraz, że końcowy
+  backslash komentarza zamienia się na `%5C`, a ten, który zostanie po obcięciu do 1024 bajtów, jest usuwany, i nie
+  podaje już liczby bezpieczników. README mówi, że `--dry-run` pokazuje tylko kilka przykładowych wierszy, i
+  wskazuje, gdzie jest cały CSV. `CONTRIBUTING.md` wymienia przedrostek gałęzi `docs-`, a `docs/pl/DEVELOPMENT.md`
+  zaznacza, że `EN_ONLY=1` służy też opiekunowi do poprawki jednej strony. Żaden bezpiecznik się nie zmienił.
 - 2026-10-11 - Dokumentacja: `SECURITY.md` został napisany od nowa i sprawdzony względem kodu. Na początku jest zgłaszanie
   (prywatne zgłoszenie na GitHubie albo e-mail, po polsku lub angielsku, co dołączyć, bez żywych wysyłek na próbę).
   Nowe: "Co nie jest podatnością" (dostęp do konta usługi, znane ograniczenia maskowania, konfiguracja niezgodna z
@@ -121,7 +126,7 @@ Hooki, testy, CI, pliki GitHuba i dokumentacja. Bez numeru wersji: te zmiany nie
   spodziewać po zgłoszeniu oraz jak poprawki trafiają na `main` i do wydań. Lista podatności nie wymienia już CDN
   (narzędzie nie potrafi go rozpoznać), a obejmuje adresy podsunięte z zewnątrz i treść alertów ntfy. Żaden
   bezpiecznik się nie zmienił.
-- 2026-10-12 - Dokumentacja: `docs/OPERATIONS.md` został uporządkowany według życia instalacji (nowa sekcja "Jak
+- 2026-10-11 - Dokumentacja: `docs/OPERATIONS.md` został uporządkowany według życia instalacji (nowa sekcja "Jak
   czytać wynik dry-run", diagnostyka podzielona na sześć małych tabel, wycofanie zmian obok aktualizacji) i poprawiony
   względem kodu: co `--dry-run` sprawdza, a czego nie, jak wygląda spokojny dzień w logu, skutek uboczny `--force` dla
   następnego zaplanowanego przebiegu, skąd próg monitora 36 h, priorytety alertów, test `sudo -n cscli alerts list

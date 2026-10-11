@@ -32,7 +32,7 @@ The project is a pair of tools for a self-hosted Linux server:
 > Written by the author in collaboration with Claude Code (Anthropic).
 > The author is not a professional programmer, which is why the project has extensive tests and documentation.
 >
-> Before live use, run `--dry-run` and review the CSV.
+> Before live use, run `--dry-run` and read the result ([how to read it](docs/OPERATIONS.md#reading-a-dry-run)).
 
 ## The main rule
 
@@ -72,7 +72,7 @@ On an error at any stage the operator gets an ntfy alert.
 - Linux with systemd, `bash`, `curl`, `jq`, `flock` (util-linux), GNU `date`, `journalctl` and `ip`.
 - Tested only on Debian 12 (production) and Ubuntu 24.04 (CI).
 - Tested with CrowdSec 1.8 and nginx as the reverse proxy. Other versions, distributions and web servers are
-  untested: run `--dry-run`, read the CSV and let me know how it went.
+  untested: run `--dry-run`, read the result and let me know how it went.
 - Not supported: macOS and BSD (the wrapper needs GNU `date` and `flock`). Without systemd (for example in a
   container) SSH auto-trust has no journal to read: see [Before you go live](#before-you-go-live).
 - `cscli` must run on the same host as the scripts (CrowdSec in a container needs a wrapper of your own).
@@ -131,6 +131,9 @@ Why and how: [docs/OPERATIONS.md](docs/OPERATIONS.md#before-the-first-live-run).
    ```bash
    ./abuseipdb_send.sh --dry-run
    ```
+
+   It shows only a few example rows; how to see the whole CSV is in
+   [Reading a dry run](docs/OPERATIONS.md#reading-a-dry-run).
 
 5. Add the crontab entry. One run per day: AbuseIPDB asks to report the same IP about once a day.
 

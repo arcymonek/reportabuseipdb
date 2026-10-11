@@ -65,7 +65,7 @@ prywatności). Nie używaj `--no-verify`, który wyłącza wszystkie kontrole. T
 Nie potrzebujesz uprawnień zapisu ani zaproszenia: pracuj w forku.
 
 1. Zrób fork repozytorium na GitHubie (przycisk "Fork"), potem sklonuj **swój fork**.
-2. Utwórz gałąź na jeden temat, nazwaną według typu i tematu (`fix-`, `feat-`, `test-` albo `ci-`):
+2. Utwórz gałąź na jeden temat, nazwaną według typu i tematu (`fix-`, `feat-`, `test-`, `ci-` albo `docs-`):
    `git switch -c fix-krotki-opis`.
 3. Wprowadź zmianę, uruchom testy, zrób commit z komunikatem po angielsku (patrz "Pull requesty" niżej).
 4. Wypchnij gałąź do swojego forka: `git push -u origin fix-krotki-opis`.

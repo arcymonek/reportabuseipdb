@@ -32,7 +32,7 @@ Projekt to para narzędzi dla samodzielnie hostowanego serwera z Linuksem:
 > Napisane przez autora we współpracy z Claude Code (Anthropic).
 > Autor nie jest zawodowym programistą, dlatego projekt ma rozbudowane testy i dokumentację.
 >
-> Przed użyciem na żywo uruchom `--dry-run` i przejrzyj CSV.
+> Przed użyciem na żywo uruchom `--dry-run` i przeczytaj wynik ([jak go czytać](docs/pl/OPERATIONS.md#jak-czytać-wynik-dry-run)).
 
 ## Najważniejsza zasada
 
@@ -74,7 +74,7 @@ Przy błędzie na dowolnym etapie operator dostaje alert ntfy.
 - Linux z systemd, `bash`, `curl`, `jq`, `flock` (util-linux), GNU `date`, `journalctl` i `ip`.
 - Testowane tylko na Debianie 12 (produkcja) i Ubuntu 24.04 (CI).
 - Testowane z CrowdSec 1.8 i nginx jako reverse proxy. Inne wersje, dystrybucje i serwery WWW nie były testowane:
-  uruchom `--dry-run`, przejrzyj CSV i daj znać, jak poszło.
+  uruchom `--dry-run`, przeczytaj wynik i daj znać, jak poszło.
 - Niewspierane: macOS i BSD (wrapper wymaga GNU `date` i `flock`). Bez systemd (np. w kontenerze) auto-zaufanie SSH
   nie ma journala do czytania: patrz [Zanim uruchomisz na żywo](#zanim-uruchomisz-na-żywo).
 - `cscli` musi działać na tym samym hoście co skrypty (CrowdSec w kontenerze wymaga własnej nakładki).
@@ -133,6 +133,9 @@ Dlaczego i jak: [docs/pl/OPERATIONS.md](docs/pl/OPERATIONS.md#przed-pierwszym-pr
    ```bash
    ./abuseipdb_send.sh --dry-run
    ```
+
+   Pokazuje tylko kilka przykładowych wierszy; jak zobaczyć cały CSV, opisuje
+   [Jak czytać wynik dry-run](docs/pl/OPERATIONS.md#jak-czytać-wynik-dry-run).
 
 5. Dodaj wpis w crontabie. Jedno uruchomienie na dobę: AbuseIPDB prosi, by ten sam adres zgłaszać mniej więcej raz na dobę.
 

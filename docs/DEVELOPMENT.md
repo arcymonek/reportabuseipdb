@@ -98,7 +98,8 @@ privacy scan".
 Two variables switch off single checks while every other check keeps running:
 
 - `EN_ONLY=1 git commit ...` skips only the EN/PL pairing rule. This is the contributor mode: a contributor writes
-  English only, and the maintainer adds the Polish side.
+  English only, and the maintainer adds the Polish side. The maintainer can also use it to fix one side of a pair on
+  its own (for example a typo in a translation); the hook then does not compare the heading counts, so check them by hand.
 - `NO_TESTS=1 git commit ...` skips only the generator tests, for example for a maintainer's work-in-progress commit. A
   failing test is fixed or reported, never skipped to get a commit through.
 

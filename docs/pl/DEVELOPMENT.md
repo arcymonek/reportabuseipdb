@@ -96,7 +96,8 @@ prywatności".
 Dwie zmienne wyłączają pojedyncze kontrole, a wszystkie pozostałe działają dalej:
 
 - `EN_ONLY=1 git commit ...` pomija tylko regułę par EN/PL. To tryb kontrybutora: kontrybutor pisze tylko po angielsku,
-  polską stronę dodaje opiekun.
+  polską stronę dodaje opiekun. Opiekun może go też użyć do poprawki jednej strony pary (na przykład literówki w
+  tłumaczeniu); hook nie porówna wtedy liczby nagłówków, więc sprawdź ją ręcznie.
 - `NO_TESTS=1 git commit ...` pomija tylko testy generatora, na przykład przy commicie roboczym opiekuna. Test, który
   pada, naprawia się albo zgłasza; nigdy nie pomija się go, żeby przepchnąć commit.
 
