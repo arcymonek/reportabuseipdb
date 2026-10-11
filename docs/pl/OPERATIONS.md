@@ -32,6 +32,28 @@ monitora.
 | `abuseipdb: count mismatch` | zapisane + odrzucone różni się od wysłanych | sprawdź odpowiedź API w logu |
 | ostrzeżenie z twojego zewnętrznego monitora | brak udanego przebiegu od ponad 36 h albo brak/uszkodzenie skryptu lub znacznika | sprawdź `crontab -l`, `systemctl status cron`, log |
 
+## Przed pierwszym przebiegiem na żywo
+
+Każde zgłoszenie jest publikowane z twojego konta AbuseIPDB. README wymienia te punkty po jednej linii; tu jest
+dłuższe wyjaśnienie.
+
+- **CrowdSec musi widzieć prawdziwy adres klienta.** Za Cloudflare lub innym CDN, load balancerem albo proxy, które
+  nie przekazuje IP klienta (np. userland proxy Dockera), CrowdSec widzi adres proxy i to narzędzie zgłosiłoby CDN.
+  Najpierw skonfiguruj moduł real-IP serwera WWW (`set_real_ip_from` / `real_ip_header` w nginx) i rozważ dopisanie
+  zakresów CDN jako wpisów `EXCLUDE` na wszelki wypadek.
+- **Za NAT wyklucz swój publiczny adres.** Na wielu maszynach w chmurze publiczny IP nie jest na żadnym interfejsie,
+  więc bezpiecznik "własne adresy publiczne" (czytany z `ip addr`) go nie widzi. Dopisz go jako wpis `EXCLUDE`.
+- **Journal systemd.** Auto-zaufanie SSH czyta udane logowania z journald. Bez niego (np. w kontenerze) bezpiecznik
+  jest pusty: wpisz własne adresy jako `EXCLUDE`.
+- **Twój ruch, twoje fałszywe alarmy.** Scenariusz, który odpala na twoim legalnym ruchu (masowe uploady, WebDAV,
+  monitoring), należy do `EXTRA_EXCLUDE_SCENARIOS`. Uruchamiaj `--dry-run` przez kilka dni i czytaj CSV, zanim
+  pozwolisz cronowi cokolwiek wysłać.
+- **IPv6 i wspólny /64.** Udane logowanie SSH z adresu IPv6 zaufa całemu jego /64 (twoje urządzenia zmieniają
+  "tymczasowe" adresy w jego obrębie), więc inne urządzenia twojej sieci też nie będą zgłaszane. Przy hostingu, w
+  którym jeden /64 dzieli wielu klientów, ustaw `SSH_TRUST_IPV6_PREFIX=128`, żeby zaufać tylko dokładnemu adresowi.
+  IPv4 jest zawsze dokładne.
+- **Inne porty WWW.** Jeśli serwer WWW nie słucha na 80 i 443, ustaw `HTTP_PORTS`, inaczej zgłoszenia podadzą zły port.
+
 ## Lista kontrolna pierwszego przebiegu (po świeżej instalacji lub przeprowadzce)
 
 1. `./abuseipdb_send.sh --version` i `python3 abuseipdb_report.py --version`.

@@ -31,6 +31,29 @@ when `.state/abuseipdb_last_ok` is older than 36 h. The file name is a stable in
 | `abuseipdb: count mismatch` | saved + rejected differs from sent | inspect the API answer in the log |
 | a warning from your external monitor | no successful run for over 36 h, or the script or watermark is missing or invalid | check `crontab -l`, `systemctl status cron`, the log |
 
+## Before the first live run
+
+Every report is published under your AbuseIPDB account. The README lists these points in one line each; this is the
+longer explanation.
+
+- **CrowdSec must see the real client address.** Behind Cloudflare or another CDN, a load balancer or a proxy that
+  does not pass the client IP (for example Docker's userland proxy), CrowdSec sees the proxy's address and this tool
+  would report the CDN. Configure the real-IP module of your web server (`set_real_ip_from` / `real_ip_header` in
+  nginx) first, and consider adding the CDN ranges as `EXCLUDE` entries as a safety net.
+- **Behind NAT, exclude your public address.** On many cloud VMs the public IP is not on any interface, so the
+  "own public addresses" safeguard (read from `ip addr`) cannot see it. Add it as an `EXCLUDE` entry.
+- **systemd journal.** SSH auto-trust reads successful logins from journald. Without it (for example in a container)
+  the safeguard is empty: list your own addresses as `EXCLUDE` entries.
+- **Your traffic, your false alarms.** A scenario that fires on your own legitimate traffic (bulk uploads, WebDAV,
+  monitoring) belongs in `EXTRA_EXCLUDE_SCENARIOS`. Run `--dry-run` for a few days and read the CSV before you let
+  cron upload anything.
+- **IPv6 and a shared /64.** A successful SSH login from an IPv6 address trusts its whole /64 (your devices rotate
+  "temporary" addresses inside it), so other devices of your network are not reported either. On a hosting provider
+  that shares one /64 between customers, set `SSH_TRUST_IPV6_PREFIX=128` to trust the exact address only. IPv4 is
+  always exact.
+- **Other web ports.** If your web server does not listen on 80 and 443, set `HTTP_PORTS`, or the reports state a
+  wrong port.
+
 ## First-run checklist (after a fresh install or a move)
 
 1. `./abuseipdb_send.sh --version` and `python3 abuseipdb_report.py --version`.
