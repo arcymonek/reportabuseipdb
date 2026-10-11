@@ -3,7 +3,8 @@
 # AbuseIPDB compliance
 
 Verified on 2026-09-29 against the raw AbuseIPDB documentation (API v2, the `bulk-report` form, the reporting policy,
-the FAQ and the category list). The policy text can change; re-check it before relying on this page.
+the FAQ and the category list; the "Address families" row in the last table was re-checked on 2026-10-01). The policy
+text can change; re-check it before relying on this page.
 
 ## Policy rules and how they are met
 
@@ -23,6 +24,9 @@ the FAQ and the category list). The policy text can change; re-check it before r
    ranges) are never reported. `is_private` alone does not catch CGNAT, so `is_global` is used.
 2. `EXCLUDE_SCENARIOS`: scenarios with a documented history of false alarms on legitimate traffic
    (`http-crawl-non_statics` fired on WebDAV bulk uploads). They stay in CrowdSec for banning but are not reported.
+   The operator can add scenarios that give false alarms on their own traffic with `EXTRA_EXCLUDE_SCENARIOS` in the
+   config (a short name matches every author, `author/name` only that author). That key can only add exclusions, never
+   remove a built-in one.
 3. `WEAK_ONLY_SCENARIOS`: an address whose only scenario is a weak signal (`http-bad-user-agent`, typical of
    passive research scanners) is not reported; one more specific scenario next to it qualifies it.
 4. Exclusion list (`EXCLUDE` entries of `~/.secrets/abuseipdb.conf`),
@@ -41,7 +45,9 @@ the FAQ and the category list). The policy text can change; re-check it before r
    IPv4-mapped address (`::ffff:a.b.c.d`) is treated as the plain IPv4. The remembered list keeps single addresses;
    the widening happens when it is read. Other devices in the same /64 are therefore not reported either:
    under-reporting, never a false report.
-6. The server's own public addresses (from `ip addr`) are always excluded.
+6. The server's own public addresses (from `ip addr`) are excluded. If the `ip` program is missing or fails, the run
+   goes on without this safeguard, prints a `[SAFEGUARD-OFF]` line and the wrapper sends an alert; list the addresses
+   as `EXCLUDE` entries then.
 7. Unknown scenarios are never reported: only scenarios of the author `crowdsecurity` that are in `CATEGORY_MAP` or
    named after a real CVE id (`cve-YYYY-NNNN...`) qualify. A CVE id in the name of another author's scenario is not
    enough (`someone/postfix-cve-...` is not a web application attack). A scenario for another service (postfix,
@@ -74,7 +80,7 @@ CIDR ranges (the bulk CSV takes single addresses).
   A sample that contains an own-name marker, the reported IP or one of the server's own public addresses is left out
   of the comment; the report and its other samples stay. Before 3.6.4 one such path made the validator reject the
   whole file (no reports that day, an alert, a catch-up on the next run). The validator itself is unchanged and still
-  rejects such a comment as the last line of defence.
+  rejects a comment that contains an own-name marker or the reported IP, as the last line of defence.
 - **Credentials in sample requests.** The comment goes into a public database, so the VALUES of query parameters
   whose name looks like a credential (`token`, `key`, `api_key`, `secret`, `password`, `session`, `PHPSESSID`, `auth`,
   `sig`, `jwt`, `code`, `csrf` and similar) are replaced by `***` (`?token=***&x=1`). The rest of the request stays, so
@@ -82,7 +88,10 @@ CIDR ranges (the bulk CSV takes single addresses).
   name is matched as a whole word, not as a substring). This is best effort, not a guarantee: a secret inside the path
   itself (`/share/<token>`), under an unusual parameter name or in a percent-encoded name is not recognised.
 - **E-mail addresses in sample requests.** The AbuseIPDB FAQ asks not to put personal information in comments, so a
-  sample that looks like it contains an e-mail address is left out, like a sample with an own name. The own-name, reported-IP and e-mail checks also run on the percent-decoded text (one and two rounds), so `www%2Eexample%2Eorg` is caught like `www.example.org`; the validator does the same.
+  sample that looks like it contains an e-mail address is left out, like a sample with an own name. The own-name, reported-IP and e-mail checks also run on the percent-decoded text (one and two rounds), so `www%2Eexample%2Eorg` is caught like `www.example.org`. The validator decodes the same way, but it
+  enforces only the own-name and reported-IP checks: an e-mail address gives it a warning (`[validation-warn]`) and the
+  server's own public addresses are not checked by it at all, so those two are caught only by the generator when it
+  chooses the samples.
 - **Quotes and backslashes.** The bulk-report page says that backslashes and quotes require escaping: the AbuseIPDB
   CSV parser treats a backslash as an escape character. A double quote is written as `%22` and the comment never ends
   with a backslash; the validator rejects a backslash before a quote or at the end. Other backslashes stay as evidence.

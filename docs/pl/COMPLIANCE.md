@@ -3,7 +3,8 @@
 # Zgodność z AbuseIPDB
 
 Zweryfikowane 2026-09-29 na surowej dokumentacji AbuseIPDB (API v2, formularz `bulk-report`, polityka zgłaszania,
-FAQ i lista kategorii). Treść polityki może się zmienić; przed poleganiem na tej stronie sprawdź ją ponownie.
+FAQ i lista kategorii; wiersz "Rodziny adresów" w ostatniej tabeli sprawdzono ponownie 2026-10-01). Treść polityki
+może się zmienić; przed poleganiem na tej stronie sprawdź ją ponownie.
 
 ## Reguły polityki i sposób ich spełnienia
 
@@ -23,7 +24,9 @@ FAQ i lista kategorii). Treść polityki może się zmienić; przed poleganiem n
    dokumentacyjne) nigdy nie są zgłaszane. Samo `is_private` nie łapie CGNAT, dlatego używane jest `is_global`.
 2. `EXCLUDE_SCENARIOS`: scenariusze o udokumentowanej historii fałszywych alarmów na legalnym ruchu
    (`http-crawl-non_statics` odpalał na masowych uploadach WebDAV). Zostają w CrowdSecu do banowania, ale nie są
-   zgłaszane.
+   zgłaszane. Operator może dodać scenariusze dające fałszywe alarmy na jego własnym ruchu kluczem
+   `EXTRA_EXCLUDE_SCENARIOS` w configu (krótka nazwa pasuje do każdego autora, `autor/nazwa` tylko do tego autora).
+   Ten klucz może tylko dodawać wykluczenia, nigdy nie usunie wbudowanego.
 3. `WEAK_ONLY_SCENARIOS`: adres, którego jedynym scenariuszem jest słaby sygnał (`http-bad-user-agent`, typowy dla
    pasywnych skanerów badawczych), nie jest zgłaszany; jeden bardziej konkretny scenariusz obok kwalifikuje go.
 4. Lista wykluczeń (wpisy `EXCLUDE` z `~/.secrets/abuseipdb.conf`),
@@ -43,12 +46,14 @@ FAQ i lista kategorii). Treść polityki może się zmienić; przed poleganiem n
    (`::ffff:a.b.c.d`) jest traktowany jak zwykłe IPv4. Lista zapamiętanych trzyma pojedyncze adresy; poszerzenie
    następuje przy jej odczycie. Inne urządzenia w tym samym /64 też nie są więc zgłaszane: niedoraportowanie, nigdy
    fałszywe zgłoszenie.
-6. Własne publiczne adresy serwera (z `ip addr`) są zawsze wykluczone.
+6. Własne publiczne adresy serwera (z `ip addr`) są wykluczone. Gdy brakuje programu `ip` albo zawiedzie, przebieg
+   idzie dalej bez tego bezpiecznika, wypisuje linię `[SAFEGUARD-OFF]`, a wrapper wysyła alert; wtedy wpisz te adresy
+   jako `EXCLUDE`.
 7. Nieznane scenariusze nigdy nie są zgłaszane: kwalifikują się tylko scenariusze autora `crowdsecurity`, które są w
    `CATEGORY_MAP` albo nazwane od prawdziwego identyfikatora CVE (`cve-RRRR-NNNN...`). Identyfikator CVE w nazwie
    scenariusza innego autora nie wystarcza (`ktos/postfix-cve-...` to nie atak na aplikację webową). Scenariusz dla innej
-   usługi (postfix, MySQL) albo własnej aplikacji operatora poszedłby inaczej do bazy jako "hacking", czyli fałszywe
-   zgłoszenie. Scenariusz innego autora jest zgłaszany dopiero po dopisaniu go przez operatora do `CATEGORY_MAP` pod
+   usługi (postfix, MySQL) albo własnej aplikacji operatora w przeciwnym razie trafiłby do bazy jako "hacking", czyli
+   fałszywe zgłoszenie. Scenariusz innego autora jest zgłaszany dopiero po dopisaniu go przez operatora do `CATEGORY_MAP` pod
    pełną nazwą (`autor/nazwa`); ta sama krótka nazwa od innego autora (`ktos/ssh-bf`) nie jest zaufana.
 
 Świadomie nie robimy: białej listy ASN (ASN mówi, gdzie wynajęto maszynę, a nie o intencji) ani zgłaszania zakresów
@@ -76,7 +81,8 @@ CIDR (CSV przyjmuje pojedyncze adresy).
   Próbka zawierająca znacznik własnej nazwy, zgłaszany IP albo jeden z własnych adresów publicznych serwera jest
   pomijana w komentarzu; zgłoszenie i jego pozostałe próbki zostają. Przed 3.6.4 jedna taka ścieżka powodowała
   odrzucenie całego pliku przez walidator (brak zgłoszeń tego dnia, alert, nadrobienie w następnym przebiegu).
-  Sam walidator się nie zmienił i nadal odrzuca taki komentarz jako ostatnia linia obrony.
+  Sam walidator się nie zmienił i nadal odrzuca komentarz zawierający znacznik własnej nazwy albo zgłaszany IP, jako
+  ostatnia linia obrony.
 - **Poświadczenia w próbkach żądań.** Komentarz trafia do publicznej bazy, więc WARTOŚCI parametrów zapytania, których
   nazwa wygląda na poświadczenie (`token`, `key`, `api_key`, `secret`, `password`, `session`, `PHPSESSID`, `auth`, `sig`,
   `jwt`, `code`, `csrf` i podobne), są zastępowane przez `***` (`?token=***&x=1`). Reszta żądania zostaje, więc ładunek
@@ -84,7 +90,9 @@ CIDR (CSV przyjmuje pojedyncze adresy).
   dopasowywana jako całe słowo, nie jako podciąg). To działanie w miarę możliwości, nie gwarancja: sekret w samej
   ścieżce (`/share/<token>`), pod nietypową nazwą parametru albo w nazwie zakodowanej procentowo nie zostanie rozpoznany.
 - **Adresy e-mail w próbkach żądań.** FAQ AbuseIPDB prosi, by nie umieszczać danych osobowych w komentarzach, więc
-  próbka wyglądająca na zawierającą adres e-mail jest pomijana, tak jak próbka z własną nazwą. Kontrole własnej nazwy, zgłaszanego IP i e-maila działają też na tekście zdekodowanym procentowo (jedna i dwie rundy), więc `www%2Eexample%2Eorg` jest wychwytywane tak samo jak `www.example.org`; walidator robi to samo.
+  próbka wyglądająca na zawierającą adres e-mail jest pomijana, tak jak próbka z własną nazwą. Kontrole własnej nazwy, zgłaszanego IP i e-maila działają też na tekście zdekodowanym procentowo (jedna i dwie rundy), więc `www%2Eexample%2Eorg` jest wychwytywane tak samo jak `www.example.org`. Walidator dekoduje tak samo, ale wymusza (błąd) tylko kontrole
+  własnej nazwy i zgłaszanego IP: na adres e-mail daje ostrzeżenie (`[validation-warn]`), a własnych publicznych
+  adresów serwera w ogóle nie sprawdza, więc te dwie rzeczy wyłapuje wyłącznie generator przy wyborze próbek.
 - **Cudzysłowy i backslashe.** Strona bulk-report mówi, że backslashe i cudzysłowy wymagają eskejpowania: parser CSV
   AbuseIPDB traktuje backslash jako znak ucieczki. Cudzysłów jest zapisywany jako `%22`, a komentarz nigdy nie kończy
   się backslashem; walidator odrzuca backslash przed cudzysłowem lub na końcu. Pozostałe backslashe zostają jako dowód.
