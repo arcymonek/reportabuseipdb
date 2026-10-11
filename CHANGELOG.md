@@ -112,6 +112,11 @@ Versions from before the project got its own repository (2026-09-28). Main featu
 
 Hooks, tests, CI, GitHub files and documentation. Not versioned: these changes do not affect what runs on your server.
 
+- 2026-10-11 - Documentation: `CONTRIBUTING.md` is reorganised (a "where to go" table, setup and tests before the steps for
+  sending a change) and corrected: proposals and questions go to Discussions, bugs and unknown scenarios to Issues; it
+  now states the Python 3.9 and standard-library-only rule, the second hook (`commit-msg`), why tests need public
+  resolvers, and that a rebased branch is pushed with `--force-with-lease`. The pull request template and `AGENTS.md`
+  follow. No safeguard changed.
 - 2026-10-11 - Documentation: `docs/ARCHITECTURE.md` is rewritten to match the code (a window with no reports, the
   `[TRUNCATED]` and `[SAFEGUARD-OFF]` alerts, a corrupted watermark, the configuration checks) and its error table now
   shows what happens to the watermark in each situation. It links to COMPLIANCE.md and OPERATIONS.md instead of

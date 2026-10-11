@@ -114,6 +114,11 @@ Wersje sprzed wydzielenia projektu do własnego repozytorium (2026-09-28). Najwa
 
 Hooki, testy, CI, pliki GitHuba i dokumentacja. Bez numeru wersji: te zmiany nie wpływają na to, co działa na twoim serwerze.
 
+- 2026-10-11 - Dokumentacja: `CONTRIBUTING.md` został uporządkowany (tabela "dokąd z czym", przygotowanie i testy przed
+  krokami wysyłania zmiany) i poprawiony: propozycje i pytania idą do Discussions, błędy i nieznane scenariusze do
+  Issues; dopisano regułę Pythona 3.9 i samej biblioteki standardowej, drugi hook (`commit-msg`), powód użycia publicznych
+  resolverów w testach oraz to, że gałąź po rebase wypycha się przez `--force-with-lease`. Szablon pull requesta i
+  `AGENTS.md` idą w ślad za tym. Żaden bezpiecznik się nie zmienił.
 - 2026-10-11 - Dokumentacja: `docs/pl/ARCHITECTURE.md` został przepisany zgodnie z kodem (okno bez zgłoszeń, alerty
   `[TRUNCATED]` i `[SAFEGUARD-OFF]`, uszkodzony znacznik, kontrole konfiguracji), a jego tabela błędów pokazuje teraz,
   co dzieje się ze znacznikiem w każdej sytuacji. Odsyła do COMPLIANCE.md i OPERATIONS.md zamiast je powtarzać. Żaden

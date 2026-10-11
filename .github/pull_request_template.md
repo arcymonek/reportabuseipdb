@@ -10,7 +10,7 @@ Everything you write here is public: no real host names, domains, own IP address
 ## Checklist
 
 - [ ] One topic; the tests pass locally (`python3 -m unittest discover -v tests`).
-- [ ] I did not weaken a safeguard (see [AGENTS.md](https://github.com/arcymonek/reportabuseipdb/blob/main/AGENTS.md)), or I opened an issue and agreed on it first.
+- [ ] I did not weaken a safeguard (see [AGENTS.md](https://github.com/arcymonek/reportabuseipdb/blob/main/AGENTS.md)), or I started a discussion and agreed on it first.
 - [ ] If I touched a safeguard or code next to one, I broke it on purpose and a test failed (mutation check).
 - [ ] A refactor or translation leaves the generated CSV byte-for-byte identical for the same `--input-json`.
 - [ ] Tests use only fake data (reserved addresses, `example.org`, fake keys); nothing real, nothing uploaded to AbuseIPDB.

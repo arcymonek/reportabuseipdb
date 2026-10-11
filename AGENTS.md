@@ -44,8 +44,9 @@ identical for the same `--input-json`.
   mocks in the tests and `--dry-run`.
 - Never print, log, commit or paste the API key, the ntfy topic or the real config file. Tests use fake keys and topics.
 - Never put a real host name, domain, own IP address, home directory path or ntfy topic into code, tests, docs, issues,
-  pull requests or commit messages. Tests use reserved data only: `203.0.113.0/24`, `198.51.100.0/24`, `2001:db8::/32`,
-  `example.org`, `.example`, `.test`.
+  pull requests or commit messages. Tests use fake data only: the reserved ranges `203.0.113.0/24`, `198.51.100.0/24`,
+  `2001:db8::/32` (they are not global, so the tool's own filter drops them; where a test needs an address that passes
+  the filter, a well-known public resolver stands in for the attacker), and `example.org`, `.example`, `.test` names.
 - Never bypass the pre-commit hook (`--no-verify`) or edit the report templates (`TPL_*`) casually: they are published.
 - Never use `NO_TESTS=1` to get a commit past a failing test. It skips the generator tests in the pre-commit hook and is
   only for the maintainer's work-in-progress commits; fix the test or report the failure instead.
